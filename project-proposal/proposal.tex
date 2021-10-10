@@ -1,0 +1,408 @@
+\documentclass{article}
+\usepackage{parskip,xspace}
+\usepackage{geometry,array} 
+\usepackage{natbib}
+\usepackage[colorlinks,citecolor=red,urlcolor=blue,bookmarks=false,hypertexnames=true]{hyperref} 
+\usepackage{longtable} 
+\usepackage{setspace} \onehalfspacing
+
+
+\def\authorname{Marcus A.\ K.\ September\xspace}
+\def\authorcollege{Clare College\xspace}
+\def\authoremail{maks2@cam.ac.uk}
+\def\dissertationtitle{Advantages of parallel compared with serial computation,
+for route-planning problems and how increased data size may affect this}
+
+\title{
+    % {\small /=====$\backslash$ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ /=====$\backslash$} \\
+    {\large Part II Computer Science Project Proposal} \\~\\
+    \dissertationtitle}
+\author{
+    \authorname, \authorcollege \\~\\
+    Originator: Dr J. Modi \\ }
+
+\begin{document}
+\maketitle
+
+\paragraph{Project supervisor:}%
+\label{par:Project Supervisor}
+Dr J. Modi
+
+\paragraph{Director of studies:}%
+\label{par:Director of Studies:}
+Prof L. C. Paulson % TODO: title right
+
+\paragraph{Project overseers:}%
+\label{par:Project Overseers:}
+Prof R. Mantiuk \& Prof A. M. Pitts % TODO: titles right?
+
+\newpage
+
+% Introduction XXX: need more work
+\section*{Introduction}
+
+The all-pairs shortest path (APSP) problem is relevant for minimising resource
+costs when travelling across a road network or a railway network. There are
+many known serial algorithms for solving this problem, but with a highly
+parallel processor, there might be more efficient solutions. After multiplying
+a graph's adjacency matrix with itself $n$ times, it is possible to find the
+shortest paths of length $n$ between all pairs of nodes. This can be used to
+construct an algorithm that solves APSP.  Matrix multiplication is also a
+highly parallel problem, meaning there is a lot of potential gain from running
+it on a multiprocessor.
+
+Many massively parallel processors have hundreds or thousands of CPUs, each
+with their own private memory. The CPUs then pass data and work to each other
+using interconnect channels.  For problems where the input data is so large
+that it needs to be distributed across the CPUs private memory, the communication
+cost is often the performance bottleneck. Therefore, algorithms built for these
+multiprocessors need to minimize the amount of memory movement.  For matrix
+multiplication, this can be done by employing techniques discovered by G. C.
+Fox, S. W. Otto, and L. E. Cannon \cite{fox, cannon}.
+
+This project aims to develop an algorithm to solve APSP using matrix
+multiplication.  Since I do not have access to a physical massively parallel
+processor, it will be simulated in Java. I will then parallelize the matrix
+multiplication step of the algorithm, and use above mentioned optimizations to
+minimize the data movement. If time allows, I intend to explore whether the
+advantage of parallelising APSP is still significant when the problem size is
+orders of magnitude larger than the number of CPUs in the multiprocessor. The
+matrix multiplication based algorithm could also be compared with a
+parallelised implementation of the Floyd-Warshall algorithm, as the two are
+similar in nature. Further extension work includes optimising the algorithm
+through graph compression and investigating the effect of different processor
+interconnect topologies.
+
+% Starting point XXX: finished-
+\section*{Starting point}%
+\label{sec:Starting Point}
+
+\begin{itemize}
+    \item I have experience with writing modular, object-oriented code in Java from the
+        Object-Oriented Programming course and the Further Java course.
+    \item I have some knowledge of parallel programming concepts from the
+        Concurrent and Distributed Systems course. I also have a bit of
+        experience using these concepts in code through the Further Java
+        course.
+    \item I know some of the principles behind parallel processors through the Computer Design course
+    \item I am familiar with some route-planning algorithms like Dijkstra's algorithm through the Algorithms course
+\end{itemize}
+
+% Resources required XXX: finished-
+\section*{Resources required}%
+\label{sec:Resources Required}
+
+I will use my own computer (an Acer Nitro Laptop), running both Ubuntu Linux 18.04 LTS
+and Windows 10, to both write and run all of my code. It has a quad-core CPU
+(an Intel i5-8300H @ 2.30Ghz), 8 GB of RAM, and an NVIDIA GTX 1050 Mobile.  I
+accept full responsibility for this machine and I have made contingency plans
+to protect myself against hardware and/or software failure. In case of failure, I plan to
+use the machines provided by the MCS for development.
+
+The source code, associated data, and my dissertation will be regularly version controlled
+using a private \texttt{git} repository hosted by GitHub. This repository will also regularly
+be copied over to the Computer Laboratory MCS server.
+
+% Substance and Structure of the Project XXX: finish-
+\section*{Substance and structure of the project}%
+\label{sec:Substance and Structure of the Project}
+
+The aim of this project is to implement a matrix multiplication based algorithm that solves
+APSP, and to parallelise the matrix multiplication step to run
+efficiently on a massively parallel processor with a distributed memory model. That is, the processor
+will have a large number of processing elements and each of these will have their own private memory.
+The core part of the project can be divided into several phases:
+
+\paragraph{Data preparation and research}%
+\label{par:Preparation research}
+
+The project will start of with a research phase where I look into parallel
+computing concepts, specifically the importance of minimizing memory movement,
+and techniques for parallelising matrix multiplication \cite{cannon, fox}.
+Research will be done on techniques for evaluating the performance of parallel
+systems and algorithms, which will be used when planning the evaluation.
+Additionally, I will plan the different software modules of my project through
+use of UML diagrams.
+
+% Easy because there's coordinates, so can just extract a random circle. Would
+% be nice to plot in matplotlib!
+The graphs I intend to use will be taken from road network datasets found at
+\cite{road-data}. A set of graphs with a wide range of sizes is required for
+rigorous evaluation of the algorithm. To acquire this, I will create a program
+that extracts subsections of the datasets. The nodes in the graphs are labelled
+with their longitude and latitude, so this could for instance be done by
+removing all the nodes that fall outside of some arbitrarily drawn geographic circle.
+
+\paragraph{APSP algorithm}%
+\label{par:APSP Algorithm}
+
+In this step, I will solve APSP using repeated matrix multiplication of the
+graph's adjacency matrix.  The algorithm should also be able to reconstruct the
+list of nodes that make up the shortest paths. I will start with a serial
+matrix multiplication routine, and test the algorithm for correctness on small
+graphs. Later, the matrix multiplication routine will be parallelised and optimisations
+like Cannon's algorithm or Fox-Otto's algorithm will be applied \cite{fox,cannon}. 
+
+\paragraph{Simulating multiprocessor}%
+\label{par:Simulating Multiprocessor}
+
+Since I do not have access to a massively parallel processor, I will simulate
+one using Java's \texttt{Thread} API.  Each processing element will be
+represented by a Java \texttt{Thread}, and this will be abstracted away in this
+phase.  Each simulated processing element will have its own private memory,
+consisting of a few Java variables. The only memory movement will be processing
+elements sending variables to each other or receiving data from some manager
+\texttt{Thread}. I will implement a counter for the number of such memory
+transfers as well as having a timer in each thread. This will give metrics for
+the communication and computation cost, respectively, which I can use during
+my evaluations. I do not intend to simulate the more complicated aspects of
+a processor, such as memory mapping, caches and job scheduling.
+
+\paragraph{Parallelising matrix multiplication}%
+\label{par:Parallelising Matrix Multiplication}
+
+After deciding whether to implement Fox-Otto's algorithm or Cannon's algorithm,
+I will implement it using the framework developed in the previous phase
+\cite{fox, cannon}. After this, the implementation will be integrated into the
+APSP algorithm.
+
+% Possible extensions XXX: finish-
+\section*{Possible extensions}%
+\label{sec:Possible extensions}
+
+\begin{enumerate}
+    \item Generalise the implementation of Cannon's/Fox-Otto's to also work when
+        the number of processing elements is smaller than the problem size.
+        Then move onto evaluating the advantage of parallelization as this ratio
+        ( $\#~nodes~/~\#~CPUs$) increases.
+    \item Optimise the APSP algorithm using graph compression techniques, such as
+        removing redundant nodes.
+    \item Look into different processor network topologies, and how they affect
+        the communication cost of running Cannon's or Fox-Otto's algorithm.
+    \item Parallelise Floyd-Warshall's algorithm and compare the
+        computation and communication cost with the matrix multiplication-based
+        APSP algorithm.
+\end{enumerate}
+
+% Success criteria XXX: finished-
+\section*{Success criteria}%
+\label{sec:Success criteria}
+
+The project will be considered successful if all of the following criteria are met:
+\begin{itemize}
+    \item Implemented an algorithm based on matrix multiplication that can find the
+        length of the shortest path between all pairs of nodes in a graph, and it is able
+        to give the list of nodes that make up such paths.
+    \item Parallelised the matrix multiplication routine of the algorithm to run on a simulated
+        massively parallel processor, where each processing element can send data to each
+        other through simulated interconnects.
+    \item The parallel matrix multiplication routine is optimised to minimise the
+        amount of data movement between processing elements, which is done
+        by using techniques such as
+        Cannon's algorithm or Fox-Otto's algorithm \cite{fox, cannon}.
+    \item The evaluation of the algorithm demonstrates that there is an advantage to
+        parallel computation compared to theoretical serial algorithms for solving APSP.
+\end{itemize}
+
+% Timetable XXX: TODO
+\section*{Timetable}%
+\label{sec:Timetable}
+
+\marginpar{\scriptsize \textbf{Comment to overseers:} I have mainly focused on the work items
+when writing this timetable draft. I am not sure how time-consuming each of them are,
+prior to doing research and planning. I am also uncertain how many weeks should be set aside
+for extension work.}
+
+\begin{longtable}{m{40pt}m{75pt}m{265pt}}
+    \hline
+    \hline
+    \textbf{Week} & \textbf{Date} & \textbf{Description} \\
+    \hline
+    1 -- 3 & 7 Oct - 27 Oct & % Weeks & Date range
+    \textbf{Project proposal and research}
+    \begin{itemize}
+        \item Incorporate feedback on project proposal draft and hand in the
+            final project proposal
+        \item Research parallel computing concepts, parallel matrix
+            multiplication algorithms like \cite{fox, cannon}, and how to evaluate
+            parallel systems
+        \item Write small fragments of Java code that incorporates these concepts
+        \item Set up version control and sort out typesetting of dissertation
+    \end{itemize}
+    \textbf{Milestones}
+    \begin{itemize}
+        \item Project proposal handed in by October 15th
+        \item Decided on whether to implement Fox-Otto's algorithm or Cannon's algorithm
+    \end{itemize} \\
+    \hline
+    4 -- 5 & 28 Oct - 10 Nov & % Weeks & Date range
+    \textbf{Data preparation and planning}
+    \begin{itemize}
+        \item Create program that extracts subsection of graphs from \cite{road-data}
+        \item Plan evaluation of the algorithm, using knowledge obtained in the research
+            phase
+        \item Plan the structure of the code, and how the components interact
+    \end{itemize}
+    \textbf{Milestones}
+    \begin{itemize}
+        \item Data extractor program written
+        \item UML diagrams of core project components created
+    \end{itemize} \\
+    \hline
+    6 -- 8 & 11 Nov - 1 Dec & % Weeks & Date range
+    \textit{Due to my unit of assessment, productivity during this slot might be lower.}
+
+    \textbf{APSP algorithm}
+    \begin{itemize}
+        \item Write serial matrix multiplication routine
+        \item Implement algorithm to compute all pairs shortest path using matrix multiplication
+        \item Make algorithm reconstruct the list of nodes in the shortest paths
+        \item Test algorithm for correctness
+    \end{itemize}
+    \textbf{Milestones}
+    \begin{itemize}
+        \item APSP algorithm written
+        \item Algorithm produces correct results on small graphs
+    \end{itemize} \\
+    \hline
+    9 -- 11 & 2 Dec - 22 Dec & % Weeks & Date range
+    \textbf{Simulating multiprocessor I}
+    \begin{itemize}
+        \item Write simulation framework that allows running many CPUs in isolation,
+            measuring their computation time
+        \item Write code fragments to test this
+    \end{itemize}
+    \textbf{Simulating multiprocessor II}
+    \begin{itemize}
+        \item Incorporate an interconnect topology into the framework
+        \item Allow the simulated CPUs in the multiprocessor to communicate by sending
+            data to each other through this interconnect network
+        \item Create methods to find metrics for the communication cost
+        \item Write code fragments to test this
+    \end{itemize}
+    \textbf{Milestones}
+    \begin{itemize}
+        \item Simple multiprocessor simulation written
+        \item Simulation extended to support threads passing each other data
+        \item Quantitative computation and communication cost metrics  are produced
+            when running test fragments
+    \end{itemize} \\
+    \hline
+    12 -- 13 & 23 Dec - 5 Jan & % Weeks & Date range
+    \textit{This time slot will work as slack time if the project is behind}
+    \textbf{Christmas break} \\
+    \hline
+    14 -- 15 & 6 Jan - 19 Jan &
+    \textbf{Implement efficient parallel matrix multiplication and progress report}
+    \begin{itemize}
+        \item Implement Fox-Otto's or Cannon's algorithm, using
+            the multiprocessor simulation framework
+        \item Write progress report
+    \end{itemize}
+    \textbf{Milestones}
+    \begin{itemize}
+        \item Written parallel matrix multiplication algorithm
+        \item Progress report submitted by ?? date
+    \end{itemize} \\
+    \hline
+    16 -- 17 & 20 Jan - 2 Feb & % Weeks & Date range
+    \textbf{Evaluation}
+    \begin{itemize}
+        \item Evaluate the performance of the parallel APSP algorithm, and compare it with
+            a theoretical serial implementation
+        \item Compare the advantage of parallelism with theoretical serial implementations
+            as the problem size increases relative to the number of processing
+            elements (extension)
+    \end{itemize}
+    \textbf{Milestones}
+    \begin{itemize}
+        \item Theoretical comparison between parallel implementation and serial
+            alternative has been made
+        \item Quantitative measurement of the performance of the parallel
+            implementation has been done
+    \end{itemize} \\
+    \hline
+    18 -- 20 & 3 feb - 16 Feb & % Weeks & Date range
+    
+    \textit{This timeslot is dedicated to extension work. If the project is
+    running behind, this slot will instead serve as slack time.}
+    \textbf{Extensions}
+
+    \begin{itemize}
+        \item Generalise Cannon's or Fox-Otto's algorithm to work when the
+            number of CPUs do not match the problem size
+        \item Do qualitative evaluation on the algorithm's performance as the
+            ratio $\#~nodes~/~\#~CPUs$ increases.
+        \item Optimise the algorithm using graph compression
+        \item Investigate the performance effect of different interconnect topologies
+        \item Parallelise Floyd-Warshall's algorithm and compare its performance with
+            the core algorithm
+    \end{itemize}
+    \textbf{Milestones}
+    \begin{itemize}
+        \item Theoretical evaluation of the advantage of parallelism as the
+            ratio $\#~nodes~/~\#~CPUs$ increases.
+        \item Quantitative measurements of the algorithm's performance as this ratio
+            changes have been made
+        \item The performance effect of graph compression has been measured quantitatively
+        \item A theoretical and/or quantitative evaluation of the effect of different
+            interconnect topologies have been made
+        \item Written parallel implementation of Floyd-Warhsall's algorithm
+    \end{itemize} \\
+    \hline
+    21 -- 22 & 24 Feb - 9 Mar & % Weeks & Date range
+    \textbf{Dissertation writing I}
+    \begin{itemize}
+        \item Write first draft of dissertation
+        \item Send draft to Director of Studies
+    \end{itemize}
+    \textbf{Milestones}
+    \begin{itemize}
+        \item Completed first draft of dissertation
+    \end{itemize} \\
+    \hline
+    23 -- 24 & 10 Mar - 23 Mar & % Weeks & Date range
+    \textbf{Dissertation writing II}
+    \begin{itemize}
+        \item Incorporate feedback from first dissertation draft, producing a second draft
+    \end{itemize}
+    \textbf{Milestones}
+    \begin{itemize}
+        \item Completed second draft of dissertation
+    \end{itemize} \\
+    \hline
+    25 -- 26 & 24 Mar - 6 Apr & % Weeks & Date range
+    \textbf{Dissertation writing III}
+    \begin{itemize}
+        \item Repeatedly review the dissertation
+        \item Refine the layout and the diagrams
+    \end{itemize}
+    \textbf{Milestones}
+    \begin{itemize}
+        \item Submitted final dissertation by May 13th
+    \end{itemize} \\
+    \hline
+\end{longtable}
+
+% The timeline:
+% * 10 work packages, each about a fortnight of work
+% * First is preparotry work
+% * Last 3 is writing dissertation
+% * 5th package includes progress report due ???
+% * Final deadline May 13 (but aim to finish way ahead please >_<//
+
+% 1 Prep work
+% 2 Planning
+% 3 APSP algorithm
+% 4 Simulate
+% 5 Simulate + progress report
+% 6 Implement parallel matrix multiplication technique
+% 7 Evaluate
+% 8  Diss -> make first draft
+% 9  Diss -> go through review of first draft of diss
+% 10 Diss -> review
+
+\bibliographystyle{plain}
+\bibliography{bibliography}
+
+\end{document}

@@ -1,0 +1,37 @@
+% Fox-Otto algorithm original perp
+@article{fox,
+    title = {Matrix algorithms on a hypercube I: Matrix multiplication},
+    journal = {Parallel Computing},
+    volume = {4},
+    number = {1},
+    pages = {17-31},
+    year = {1987},
+    issn = {0167-8191},
+    doi = {https://doi.org/10.1016/0167-8191(87)90060-3},
+    url = {https://www.sciencedirect.com/science/article/pii/0167819187900603},
+    author = {G.C Fox and S.W Otto and A.J.G Hey},
+    keywords = {Matrix multiplication, Caltech Hypercube, performance analysis, communication overhead, load balancing},
+    abstract = {We discuss algorithms for matrix multiplication on a concurrent processor containing a two-dimensional mesh or richer topology. We present detailed performance measurements on hypercubes with 4, 16, and 64 nodes, and analyze them in terms of communication overhead and load balancing. We show that the decomposition into square subblocks is optimal C code implementing the algorithms is available.}
+}
+
+@techreport{cannon,
+    number = {1994-25},
+    author = {H. Gupta and P. Sadayappan},
+    booktitle = {Proceedings of the Sixth Annual ACM Symposium on Parallel Algorithms and Architectures, 1994 (SPAA '94)},
+    title = {Communication Efficient Matrix-Multiplication on Hypercubes.},
+    type = {Technical Report},
+    publisher = {Stanford InfoLab},
+    institution = {Stanford Infolab},
+    year = {1994},
+    url = {http://ilpubs.stanford.edu:8090/59/},
+    abstract = {1 Introduction Dense matrix multiplication is used in a variety of applications and is one of the core components in many scientific computations. The standard way of multiplying two matrices of size n  n requires O(n 3 ) floating point operations on a sequential machine. Since dense matrix multiplication is computationally expensive, the development of effcient algorithms for large distributed memory machines is of great interest. Matrix multiplication is a very regular computation and lends itself well to parallel implementation. One of the effcient approaches to design other parallel matrix or graph algorithms is to decompose them into a sequence of matrix multiplications [3, 9]. One of the earliest distributed algorithms proposed for matrix multiplication was by Cannon [2] in 1969 for 2-D meshes. Ho, Johnsson, and Edelman in [8] presented a variant of Cannon's algorithm which uses the full bandwidth of a 2-D grid embedded in a hypercube. Some other algorithms are by Dekel, Nassimi, and Sahni [3], Berntsen [1] and Fox, Otto, and Hey [4]. Gupta and Kumar in [5] discuss the scalability of these algorithms and their variants. In this paper we propose two new algorithms for hypercubes. The algorithms proposed in this paper are better than all previously proposed algorithms for a wide range of matrix sizes and number of processors. The rest of the paper is organized as follows. In Section 2 we state our assumptions and discuss the communication models used. In Section 3 we discuss the previously proposed algorithms. In Section 4 we present the new algorithms. Section 5 presents some optimality results. In Section 6, we analyze the performance of the algorithms on hypercubes for three different communication cost W e present our conclusions in Section 7. 2 Communication Models In this paper we analyze the performance of the various algorithms presented for hypercube architectures. Throughout this paper, we refer to a 2-ary n-cube as a hypercube and all the logarithms}
+}
+
+@misc{road-data,
+    author = {F. Li},
+    title = {Real Datasets for Spatial Databases: Road Networks and Points of Interest},
+    howpublished = {\url{https://www.cs.utah.edu/~lifeifei/SpatialDataset.htm}},
+    publisher = {University of Utah},
+    institution = {University of Utah},
+    year = {2005}
+}

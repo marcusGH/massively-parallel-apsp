@@ -1,0 +1,64 @@
+\documentclass{article}
+\usepackage{parskip}
+
+\title{Phase 1 - September: Advantages of parallel compared with serial computation, for route-planning problems and how increased data size may affect this.}
+
+\begin{document}
+\maketitle
+
+\subsection*{ Phase 1 Project Selection Status Report}
+
+Name: Marcus Alexander Karmi September
+
+College: Clare
+
+CRSID: maks2
+
+Director of Studies: Lawrence Paulson
+
+\subsection*{Please complete 1, 2 and 3 below.}
+
+\begin{enumerate}
+    \item \textit{Please write 100 words on your current project ideas.}
+
+         It's possible to solve APSP through repeated squaring of
+         the adjacency matrix. Since parallelising matrix multiplication is a
+         well-explored area, APSP may be solved more efficiently on a multi-core system
+         by using efficient parallel matrix multiplication techniques, compared to
+         serial alternatives.
+
+         I'll implement such a parallel algorithm in Java, using efficient
+         matrix multiplication techniques that minimise data movement, as well
+         as  other optimizations. With Java's Thread API, I can simulate a
+         processor with an arbitrary amount of cores, interconnected through
+         arbitrary network topologies. I'll evaluate the advantage of my
+         parallel implementation, and then see how this advantage and the
+         design of the algorithm change as the data size increases relative to
+         the number of processing elements available.
+
+     \item \textit{Please list names of potential project supervisors, indicating
+             any interactions you have had with them, for example: not
+         contacted, awaiting reply, in discussion, agreed to supervise.}
+
+         Dr Jagdish J. Modi (jm505):
+         \begin{itemize}
+             \item Agreed to supervise
+             \item I have been in contact with Dr J. Modi through several email exchanges
+                 and we have had two Zoom calls.
+         \end{itemize}
+
+
+\item \textit{Is there any chance that your project will involve any
+computing resources other than the Computing Service's MCS and
+software that is already installed there, for example: your own
+machine, machines in College, special peripherals, imported
+software packages, special hardware, network access, substantial
+extra disc space on the MCS. If so indicate below what, and what it is needed for.}
+
+\begin{itemize}
+    \item My personal laptop, needed for running my Java programs
+    \item Real-world graph datasets, needed for evaluating my algorithm
+\end{itemize}
+\end{enumerate}
+
+\end{document}
