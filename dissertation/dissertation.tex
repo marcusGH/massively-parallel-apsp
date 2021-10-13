@@ -1,0 +1,79 @@
+%% Based on the
+%%   ACS project dissertation template
+%%
+%% Currently designed for printing two-sided, but if you prefer to
+%% print single-sided just remove ",twoside,openright" from the
+%% \documentclass[] line below.
+
+\documentclass[a4paper,12pt,oneside,openright]{report}
+
+\usepackage[a4paper, margin=50pt]{geometry} 
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks,
+    citecolor=red,
+    linkcolor=black,
+    urlcolor=black,
+    hypertexnames=true
+}
+\usepackage{calc}
+\usepackage{setspace}
+\usepackage{titling}
+
+\def\authorname{Marcus Alexander Karmi September\xspace}
+\def\examination{Computer Science Tripos -- Part II}
+\def\authorcollege{Clare College\xspace}
+\def\authoremail{maks2@cam.ac.uk}
+\def\signaturedate{XX. XX. YYYY.}
+
+% Proforma content
+\def\candidatenumber{2244E}
+\def\year{2022}
+\def\wordcount{????}
+\def\linecount{??}
+\def\originator{Dr Jagdish Modi}
+\def\supervisor{Dr Jagdish Modi}
+
+% TODO: change this
+\def\dissertationtitle{Advantages of Parallel Compared with Serial Computation, for Route-Planning Problems and How Increased Data Size May Effect This}
+\usepackage{epsfig,graphicx,parskip,setspace,tabularx,xspace}
+\usepackage{changepage}
+
+%% START OF DOCUMENT
+\begin{document}
+
+\pagestyle{empty}
+\singlespacing
+\input{titlepage}
+\onehalfspacing
+\input{declaration}
+\input{proforma}
+
+\singlespacing
+\pagenumbering{roman}
+\setcounter{page}{0}
+\pagestyle{plain}
+\tableofcontents
+\listoffigures
+\listoftables
+
+\onehalfspacing
+
+%% START OF MAIN TEXT
+
+\chapter{Introduction}
+\pagenumbering{arabic}
+\setcounter{page}{1}
+
+Some text
+\chapter{Preparation}
+
+Some more text
+\chapter{Implementation}
+Even more text
+\chapter{Evaluation}
+text
+\chapter{Conclusions}
+text
+
+\end{document}
