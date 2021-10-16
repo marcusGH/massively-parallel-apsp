@@ -10,11 +10,8 @@
 \def\authorname{Marcus A.\ K.\ September\xspace}
 \def\authorcollege{Clare College\xspace}
 \def\authoremail{maks2@cam.ac.uk}
-\def\dissertationtitle{Advantages of parallel compared with serial computation,
-for route-planning problems and how increased data size may affect this}
-
+\def\dissertationtitle{A parallel algorithm for all-pairs shortest paths that minimises data movement}
 \title{
-    % {\small /=====$\backslash$ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ /=====$\backslash$} \\
     {\large Part II Computer Science Project Proposal} \\~\\
     \dissertationtitle}
 \author{
@@ -30,11 +27,11 @@ Dr J. Modi
 
 \paragraph{Director of studies:}%
 \label{par:Director of Studies:}
-Prof L. C. Paulson % TODO: title right
+Prof L. C. Paulson
 
 \paragraph{Project overseers:}%
 \label{par:Project Overseers:}
-Prof R. Mantiuk \& Prof A. M. Pitts % TODO: titles right?
+Prof R. Mantiuk \& Prof A. M. Pitts
 
 \newpage
 
@@ -94,8 +91,7 @@ interconnect topologies.
 
 I will use my own computer (an Acer Nitro Laptop), running both Ubuntu Linux 18.04 LTS
 and Windows 10, to both write and run all of my code. It has a quad-core CPU
-(an Intel i5-8300H @ 2.30Ghz), 8 GB of RAM, and an NVIDIA GTX 1050 Mobile.  I
-accept full responsibility for this machine and I have made contingency plans
+(an Intel i5-8300H @ 2.30Ghz), 8 GB of RAM, and an NVIDIA GTX 1050 Mobile.  I accept full responsibility for this machine and I have made contingency plans
 to protect myself against hardware and/or software failure. In case of failure, I plan to
 use the machines provided by the MCS for development.
 
@@ -141,44 +137,49 @@ graph's adjacency matrix.  The algorithm should also be able to reconstruct the
 list of nodes that make up the shortest paths. I will start with a serial
 matrix multiplication routine, and test the algorithm for correctness on small
 graphs. Later, the matrix multiplication routine will be parallelised and optimisations
-like Cannon's algorithm or Fox-Otto's algorithm will be applied \cite{fox,cannon}. 
+such as Fox-Otto's will be applied \cite{fox}.
 
-\paragraph{Simulating multiprocessor}%
+\paragraph{Simulating multiprocessor and preparing evaluation}%
 \label{par:Simulating Multiprocessor}
 
 Since I do not have access to a massively parallel processor, I will simulate
 one using Java's \texttt{Thread} API.  Each processing element will be
 represented by a Java \texttt{Thread}, and this will be abstracted away in this
-phase.  Each simulated processing element will have its own private memory,
+phase. Each simulated processing element will have its own private memory,
 consisting of a few Java variables. The only memory movement will be processing
 elements sending variables to each other or receiving data from some manager
-\texttt{Thread}. I will implement a counter for the number of such memory
-transfers as well as having a timer in each thread. This will give metrics for
-the communication and computation cost, respectively, which I can use during
-my evaluations. I do not intend to simulate the more complicated aspects of
+\texttt{Thread}. I do not intend to simulate the more complicated aspects of
 a processor, such as memory mapping, caches and job scheduling.
+
+The framework I develop in this phase will also be used for my quantitative
+evaluations.  One approach is to include a timer in each Java thread and take
+the maximum of these times after each computation phase. By doing this for all
+the computation phases of the algorithms -- which have communication phases
+in-between -- I would get an estimate of the computation time. For the
+communication time, I could count the number of memory transfers in the
+communication phase and estimate how long this would take by using realistic
+values for memory latency for existing multiprocessors.
 
 \paragraph{Parallelising matrix multiplication}%
 \label{par:Parallelising Matrix Multiplication}
 
-After deciding whether to implement Fox-Otto's algorithm or Cannon's algorithm,
-I will implement it using the framework developed in the previous phase
-\cite{fox, cannon}. After this, the implementation will be integrated into the
-APSP algorithm.
+In this phase I will implement Fox-Otto's algorithm using the framework
+developed in the previous phase \cite{fox}. After this, the
+implementation will be integrated into the APSP algorithm.
 
 % Possible extensions XXX: finish-
 \section*{Possible extensions}%
 \label{sec:Possible extensions}
 
 \begin{enumerate}
-    \item Generalise the implementation of Cannon's/Fox-Otto's to also work when
+    \item Generalise the implementation of Fox-Otto's algorithm to also work when
         the number of processing elements is smaller than the problem size.
         Then move onto evaluating the advantage of parallelization as this ratio
         ( $\#~nodes~/~\#~CPUs$) increases.
     \item Optimise the APSP algorithm using graph compression techniques, such as
         removing redundant nodes.
     \item Look into different processor network topologies, and how they affect
-        the communication cost of running Cannon's or Fox-Otto's algorithm.
+        the communication cost of running Fox-Otto's algorithm.
     \item Parallelise Floyd-Warshall's algorithm and compare the
         computation and communication cost with the matrix multiplication-based
         APSP algorithm.
@@ -198,20 +199,17 @@ The project will be considered successful if all of the following criteria are m
         other through simulated interconnects.
     \item The parallel matrix multiplication routine is optimised to minimise the
         amount of data movement between processing elements, which is done
-        by using techniques such as
-        Cannon's algorithm or Fox-Otto's algorithm \cite{fox, cannon}.
-    \item The evaluation of the algorithm demonstrates that there is an advantage to
-        parallel computation compared to theoretical serial algorithms for solving APSP.
+        by using techniques such as Fox-Otto's algorithm \cite{fox}.
+    \item The evaluation of the algorithm demonstrates that parallel computation gives
+        a high parallel efficiency and a significant speedup, compared with theoretical
+        serial implementations, for solving APSP
 \end{itemize}
 
-% Timetable XXX: TODO
+\newpage
+
+% Timetable
 \section*{Timetable}%
 \label{sec:Timetable}
-
-\marginpar{\scriptsize \textbf{Comment to overseers:} I have mainly focused on the work items
-when writing this timetable draft. I am not sure how time-consuming each of them are,
-prior to doing research and planning. I am also uncertain how many weeks should be set aside
-for extension work.}
 
 \begin{longtable}{m{40pt}m{75pt}m{265pt}}
     \hline
@@ -231,8 +229,8 @@ for extension work.}
     \end{itemize}
     \textbf{Milestones}
     \begin{itemize}
-        \item Project proposal handed in by October 15th
-        \item Decided on whether to implement Fox-Otto's algorithm or Cannon's algorithm
+        \item Project proposal handed in by October 18th
+        \item GitHub repository set up
     \end{itemize} \\
     \hline
     4 -- 5 & 28 Oct - 10 Nov & % Weeks & Date range
@@ -252,20 +250,6 @@ for extension work.}
     6 -- 8 & 11 Nov - 1 Dec & % Weeks & Date range
     \textit{Due to my unit of assessment, productivity during this slot might be lower.}
 
-    \textbf{APSP algorithm}
-    \begin{itemize}
-        \item Write serial matrix multiplication routine
-        \item Implement algorithm to compute all pairs shortest path using matrix multiplication
-        \item Make algorithm reconstruct the list of nodes in the shortest paths
-        \item Test algorithm for correctness
-    \end{itemize}
-    \textbf{Milestones}
-    \begin{itemize}
-        \item APSP algorithm written
-        \item Algorithm produces correct results on small graphs
-    \end{itemize} \\
-    \hline
-    9 -- 11 & 2 Dec - 22 Dec & % Weeks & Date range
     \textbf{Simulating multiprocessor I}
     \begin{itemize}
         \item Write simulation framework that allows running many CPUs in isolation,
@@ -288,6 +272,20 @@ for extension work.}
             when running test fragments
     \end{itemize} \\
     \hline
+    9 -- 11 & 2 Dec - 22 Dec & % Weeks & Date range
+    \textbf{APSP algorithm}
+    \begin{itemize}
+        \item Write serial matrix multiplication routine
+        \item Implement algorithm to compute all pairs shortest path using matrix multiplication
+        \item Make algorithm reconstruct the list of nodes in the shortest paths
+        \item Test algorithm for correctness
+    \end{itemize}
+    \textbf{Milestones}
+    \begin{itemize}
+        \item APSP algorithm written
+        \item Algorithm produces correct results on small graphs
+    \end{itemize} \\
+    \hline
     12 -- 13 & 23 Dec - 5 Jan & % Weeks & Date range
     \textit{This time slot will work as slack time if the project is behind}
     \textbf{Christmas break} \\
@@ -295,14 +293,14 @@ for extension work.}
     14 -- 15 & 6 Jan - 19 Jan &
     \textbf{Implement efficient parallel matrix multiplication and progress report}
     \begin{itemize}
-        \item Implement Fox-Otto's or Cannon's algorithm, using
+        \item Implement Fox-Otto's algorithm, using
             the multiprocessor simulation framework
         \item Write progress report
     \end{itemize}
     \textbf{Milestones}
     \begin{itemize}
         \item Written parallel matrix multiplication algorithm
-        \item Progress report submitted by ?? date
+        \item Progress report submitted by Friday February 4th
     \end{itemize} \\
     \hline
     16 -- 17 & 20 Jan - 2 Feb & % Weeks & Date range
