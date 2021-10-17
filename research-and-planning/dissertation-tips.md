@@ -29,9 +29,9 @@ Important aspects
 * demonstrate **professional approach** through use of SwEngSec techniques like:
   * Requirements analysis
   * High-level design planning
+  * _Planning for extensions when creating modules e.g. Topology creator_
   * % TODO: review SwSecEng briefly to get survey of such techniques
   * ...
-
 
 _Consider how well the candidate understood the task_
 _and analysed it. Give credit for a good introduction to the technical background, a_
