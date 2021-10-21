@@ -2,11 +2,26 @@
 
 [Dissertation writing tips](dissertation-tips.md)
 
+## Expanded timetable
+
+[Timetable](timetable.md)
+
 ## Resources
 
 **Past projects:**
 
 [vk313, 2017](https://www.cl.cam.ac.uk/teaching/projects/archive/2017/vk313-dissertation.pdf)
+
+Interesting points:
+* Used a SIMD-based model for the computation, because inherent similar instructions
+  when doing matrix multiplication.
+  * Comment: Is about justifying a design decision. In my case I will use timers in the
+    threads to estimate cost, so would be having many SISD's running together, so MIMD
+* Not very interesting/thorough evaluation (lacking imho)
+* Like yl431, said that simulation in Java did not prove to be very accurate
+  * Comment: This is a big challenge, so do research/plan how this can be made as
+    realistic as possible.
+
 
 [yl431, 2013](https://www.cl.cam.ac.uk/teaching/projects/archive/2013/yl431-dissertation.pdf)
 
@@ -69,7 +84,7 @@ Akpan, Okon H. Efficient Parallel Implementation of the Fox Algorithm 2003
     * Does it communicate with manager thread through shared memory, requiring locking?
 
 **Milestones:**
-- [ ] Got hold of Modi's book from library
+- [x] Got hold of Modi's book from library
 - [ ] Written some small fragments of Java code that uses concepts
   * _Remember: important part of preparation phase is getting practice in what you'll do in the main implementation phase_
 - [ ] The _Work plan_ is fleshed out in a lot more detail
