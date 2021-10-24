@@ -21,6 +21,12 @@ Interesting points:
 * Like yl431, said that simulation in Java did not prove to be very accurate
   * Comment: This is a big challenge, so do research/plan how this can be made as
     realistic as possible.
+* Motivated parallelism through references to (stop? in) Dennard scaling and
+  how reached limit on how much we can improve serial processors, so next
+  natural direction to get a lot of benefit is employing many different
+  processors working in parallel as -- if done appropriately with the right
+  algorithms -- gives a lot of speedup compared to cost, comparing the system
+  to a serial system.
 
 
 [yl431, 2013](https://www.cl.cam.ac.uk/teaching/projects/archive/2013/yl431-dissertation.pdf)
@@ -58,6 +64,28 @@ Akpan, Okon H. Efficient Parallel Implementation of the Fox Algorithm 2003
 
 (maybe?) Xiao, W. and Parhami, B. Structural Properties of Cayley Digraphs with Applications to Mesh and Pruned Torus Interconnection Networks 2007
 
+Modi J. Parallel Algorithms and Matrix Computation. 1988.
+
+% TODO: the text below might be better moved to separate page
+
+* More rigorous classification of parallel systems (c.f. Flynn's taxonomy) is
+  made by Gurd 1988
+* Main difference SIMD-MIMD is the inclusion of separate ALU and memory unit within
+  the processor, also allowing the processors to run asynchronously. Also common for
+  SIMD systems to more easily have more processors, so MIMD MMP might be more unrealistic
+* Regarding connectivity topology used in the parallel systems, usually the choice is
+  determined by the nature of the algorithm (e.g. circular connectivity when sorting
+  numbers), and lattice topology for matrix algorithms
+
+### Knowledge on matrix multiplication techniques
+
+[Parallel methods for matrix multiplication](http://www.hpcc.unn.ru/mskurs/ENG/DOC/pp08.pdf)
+
+[Overview, and then better approach](http://ilpubs.stanford.edu:8090/59/1/1994-25.pdf)
+
+[Berntsen's algorithm](https://reader.elsevier.com/reader/sd/pii/0167819189900914?token=7DEA6AD6448CA99933B09C9CE7E16BC284B2B325CCF1EF50536455BC35E7F123C179A35A7F02DA4270137F105B3C6177&originRegion=eu-west-1&originCreation=20211024104716)
+
+
 ## Planning
 
 [Multiprocessor simulation](multiprocessor-simulation.md)
@@ -65,8 +93,6 @@ Akpan, Okon H. Efficient Parallel Implementation of the Fox Algorithm 2003
 ...
 
 ## Research plan
-
-% TODO: continue on from 8.4 in the pink book
 
 - [x] Read _The Pink Book_, watch the "How to write a dissertation" lecture
       (and other material?) with the aim of answering the question: "What makes
@@ -76,7 +102,12 @@ Akpan, Okon H. Efficient Parallel Implementation of the Fox Algorithm 2003
   * What major items they put into the 5 chapters
   * Their method of evaluation
 - [ ] Area of knowledge to further expand on/read about:
-  - [ ] General knowledge about _parallel_ computing concepts
+  - [x] General knowledge about _parallel_ computing concepts
+    * Realised from reading Modi that these are fairly OK. List:
+      * Distributed vs. shared memory
+      * Flynn's taxonomy
+      * Processor topology
+      * Broadcasting vs. only nearest neighbour communication
   - [ ] Evaluating parallel performance
   - [ ] General overview of the different parallel matrix multiplication techniques
   - [ ] How does message passing work in these multiprocessors?:
