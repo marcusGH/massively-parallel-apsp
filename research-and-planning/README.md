@@ -81,9 +81,25 @@ Modi J. Parallel Algorithms and Matrix Computation. 1988.
 
 [Parallel methods for matrix multiplication](http://www.hpcc.unn.ru/mskurs/ENG/DOC/pp08.pdf)
 
+I have read this (details in notebook)
+
 [Overview, and then better approach](http://ilpubs.stanford.edu:8090/59/1/1994-25.pdf)
 
+Read half, more details in notebook
+
 [Berntsen's algorithm](https://reader.elsevier.com/reader/sd/pii/0167819189900914?token=7DEA6AD6448CA99933B09C9CE7E16BC284B2B325CCF1EF50536455BC35E7F123C179A35A7F02DA4270137F105B3C6177&originRegion=eu-west-1&originCreation=20211024104716)
+
+Not worth reading now, unless want to make hypercube algorithm
+
+[very detailed on communication](https://www.researchgate.net/publication/220327777_Optimum_Broadcasting_and_Personalized_Communication_in_Hypercubes)
+
+Not read yet
+
+Extra: [sparse parallel matMul](https://arxiv.org/pdf/1006.2183.pdf)
+Or was it [this one](https://www.researchgate.net/publication/220486666_Highly_Parallel_Sparse_Matrix-Matrix_Multiplication)?
+
+Cannon's and Fox-Otto are built for _dense_ matrices, so might be worth a look
+at as a further optimisation of the algorithm.
 
 
 ## Planning
@@ -109,10 +125,29 @@ Modi J. Parallel Algorithms and Matrix Computation. 1988.
       * Processor topology
       * Broadcasting vs. only nearest neighbour communication
   - [ ] Evaluating parallel performance
-  - [ ] General overview of the different parallel matrix multiplication techniques
+  - [x] General overview of the different parallel matrix multiplication techniques
+    * Fox-Otto: row broadcasting (only one P_ij needs to broadcast at a time),
+                each P_ij sends their data upwards along column
+    * Cannon:   No broadcasting, but each P_ij sends data to "far-away" node in the
+                row (which is sped up if embedded tree)
+    * Sparsity: Techniques to speed up sub computation for sparse matrices, but mainly
+                used when p << n^2, and not that effective as get close to goal because
+                then is less sparse
+                TODO: could read a bit more into exactly how that sparse method worked...
+    * Warshall: Both column and row broadcasting used??
   - [ ] How does message passing work in these multiprocessors?:
     * Are there packets being sent around, and they queue up at manager thread?
     * Does it communicate with manager thread through shared memory, requiring locking?
+
+- [ ] Expand work plan
+  * Important to get points like
+    * _When simulating multiprocessor compute element, the timer is not paused because_
+      _of JVM stuff, so some sample Java code is written to test this timing stuff_
+- [ ] Write summary of references read in research phase
+  * This phase is described in the dissertation, so write some notes that will make this
+    easier to write when you start your write-up. Also make it expandable as
+    some research (on e.g. extensions) may be done at later point, but still
+    put into this dissertation chapter
 
 **Milestones:**
 - [x] Got hold of Modi's book from library
