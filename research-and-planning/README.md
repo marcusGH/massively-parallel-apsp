@@ -101,6 +101,8 @@ Or was it [this one](https://www.researchgate.net/publication/220486666_Highly_P
 Cannon's and Fox-Otto are built for _dense_ matrices, so might be worth a look
 at as a further optimisation of the algorithm.
 
+* [Scalability of parallel algorithms for APSP, kumar](https://www.sciencedirect.com/science/article/pii/074373159190083L?via%3Dihub)
+  * See notes
 
 ## Planning
 
@@ -125,6 +127,8 @@ at as a further optimisation of the algorithm.
       * Processor topology
       * Broadcasting vs. only nearest neighbour communication
   - [ ] Evaluating parallel performance
+    * The main metrics are $speedup$ and $efficiency$
+    * Could also look at $isoefficinecy$
   - [x] General overview of the different parallel matrix multiplication techniques
     * Fox-Otto: row broadcasting (only one P_ij needs to broadcast at a time),
                 each P_ij sends their data upwards along column
@@ -138,6 +142,8 @@ at as a further optimisation of the algorithm.
   - [ ] How does message passing work in these multiprocessors?:
     * Are there packets being sent around, and they queue up at manager thread?
     * Does it communicate with manager thread through shared memory, requiring locking?
+  - [ ] Arrange supervision to discuss the parallel matrix multiplication algorithm
+        to find shortest paths
 
 - [ ] Expand work plan
   * Important to get points like
@@ -159,3 +165,12 @@ at as a further optimisation of the algorithm.
 
 - [ ] Plan code structure and `make` file
 - [ ] Plan specific evidence in evaluation (recollect ideas from notebook on this)
+
+
+Shower ideas:
+* To make privat memory access consistent, add some interface for it, that
+  loads the variable into cache and pauses timer. The variable should also be
+  _alive_ so the compiler doesn't optimize it away.
+* If making pipelined appraoch with that computation graph thing to evaluate,
+  you would need to build a framework able to handle processor sending data
+  before another processor requests that data.
