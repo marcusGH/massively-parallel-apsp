@@ -175,10 +175,19 @@ at as a further optimisation of the algorithm.
   - [ ] The data preparation helper class
 - [ ] Do data preparation (and possibly look into OSM data with python)
 - [ ] Get some experience with the **tools** I'll be using:
-  - [ ] Try to parallelise matrix operation described on Modi book p.47
-  - [ ] Play around with multithread timing in Java
+  - [X] Try to parallelise matrix operation described on Modi book p.47
+  - [X] Play around with multithread timing in Java
     * Figure out: _When simulating multiprocessor compute element, the timer is_
       _not paused because of JVM stuff??_
+    * Findings: There is very little difference in `ThreadMxBean` API and
+      `System.nanotime()` call, with the exception that the latter has
+      some massive outliers (probably due to garbage collection).
+      Doing about 1000 x 1000 processing elements caused each PE
+      to take about 5-6 microseconds (Sunway memory latency was 1 microsecond,
+      but execution time may be scaled up due to clock speed difference).
+      TODO: implement a serial version with similar timing mechanisms, and check
+      if the computed 5-6 microseconds time is accurate or not. If so, the way of
+      placing timers in the worker threads should be good to go!
 
 ## The evaluation
 
