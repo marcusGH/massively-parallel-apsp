@@ -103,6 +103,12 @@ at as a further optimisation of the algorithm.
 
 * [Scalability of parallel algorithms for APSP, kumar](https://www.sciencedirect.com/science/article/pii/074373159190083L?via%3Dihub)
   * See notes
+* [sunway supercomputer simple report](http://www.netlib.org/utk/people/JackDongarra/PAPERS/sunway-report-2016.pdf)
+  * Good summary of constants associated with the Sunway 26010 chip
+* [intel's 8*10 core chip](https://www.researchgate.net/publication/2983733_An_80-tile_sub-100-w_teraflops_processor_in_65-nm_CMOS)
+  * Latency is a lot lower, but doesn't use network since relatively small chip
+* [NoC multicast support](https://arxiv.org/pdf/1610.00751.pdf)
+  * TODO: read this!
 
 ## Planning
 
@@ -110,7 +116,7 @@ at as a further optimisation of the algorithm.
 
 ...
 
-## Research plan
+## Research phase plan
 
 - [x] Read _The Pink Book_, watch the "How to write a dissertation" lecture
       (and other material?) with the aim of answering the question: "What makes
@@ -126,7 +132,7 @@ at as a further optimisation of the algorithm.
       * Flynn's taxonomy
       * Processor topology
       * Broadcasting vs. only nearest neighbour communication
-  - [ ] Evaluating parallel performance
+  - [o] Evaluating parallel performance
     * The main metrics are $speedup$ and $efficiency$
     * Could also look at $isoefficinecy$
   - [x] General overview of the different parallel matrix multiplication techniques
@@ -138,17 +144,15 @@ at as a further optimisation of the algorithm.
                 used when p << n^2, and not that effective as get close to goal because
                 then is less sparse
                 TODO: could read a bit more into exactly how that sparse method worked...
-    * Warshall: Both column and row broadcasting used??
+    * Warshall: Both column and row broadcasting used, but only one processor per column
+                and one per row at a time -> Requirements: need to have option between both
+                point to point communication, or broadcasting horizontally, vertically, or both
   - [ ] How does message passing work in these multiprocessors?:
     * Are there packets being sent around, and they queue up at manager thread?
     * Does it communicate with manager thread through shared memory, requiring locking?
-  - [ ] Arrange supervision to discuss the parallel matrix multiplication algorithm
+  - [X] Arrange supervision to discuss the parallel matrix multiplication algorithm
         to find shortest paths
 
-- [ ] Expand work plan
-  * Important to get points like
-    * _When simulating multiprocessor compute element, the timer is not paused because_
-      _of JVM stuff, so some sample Java code is written to test this timing stuff_
 - [ ] Write summary of references read in research phase
   * This phase is described in the dissertation, so write some notes that will make this
     easier to write when you start your write-up. Also make it expandable as
@@ -161,16 +165,63 @@ at as a further optimisation of the algorithm.
   * _Remember: important part of preparation phase is getting practice in what you'll do in the main implementation phase_
 - [ ] The _Work plan_ is fleshed out in a lot more detail
 
-## Preparation plan
+## Preparation and planning phase plan
 
-- [ ] Plan code structure and `make` file
-- [ ] Plan specific evidence in evaluation (recollect ideas from notebook on this)
+- [ ] Create list of requirements for the three main components of the
+      implementation:
+  - [ ] The APSP driver
+  - [ ] The multiprocessor simulation framework (think about **evaluation**
+        and **Fox-Otto/FW** and **generalisation to n>p** while doing this)
+  - [ ] The data preparation helper class
+- [ ] Do data preparation (and possibly look into OSM data with python)
+- [ ] Get some experience with the **tools** I'll be using:
+  - [ ] Try to parallelise matrix operation described on Modi book p.47
+  - [ ] Play around with multithread timing in Java
+    * Figure out: _When simulating multiprocessor compute element, the timer is_
+      _not paused because of JVM stuff??_
 
+## The evaluation
 
-Shower ideas:
-* To make privat memory access consistent, add some interface for it, that
+    _The evaluation of the algorithm demonstrates that parallel_
+    _computation gives a high parallel efficiency for solving APSP_
+
+**Quasi-analytical evaluation:**
+* Use realistic constants for memory latency and interconnect bandwidth:
+  * Use the constants from the Sunway supercomputer, and can safely assume
+    the constants are the same for row and column broadcasting
+* Assume SIMD model, and do average of each computation phase
+* Add computation + communication time to get total parallel running time
+* Con: Need to implement serial algorithm
+* Pro: Backed in research
+
+**Quantitative complexity analysis:**
+- [ ] Has this ever been done in the past literature?
+* Get total time on many runs of the algorithm for different input sizes
+* Fit the data to a model (e.g. log n * n^k) that is based on analytical analysis
+* Compare this complexity function to theoretical serial complexities
+* Pro: Don't need to implement a serial algorithm
+* Con: No backed research on how viable this is. E.g. problematic because need
+  to run analysis for many many pairs of (n, p) where we for each fixed p do
+  many n runs and do statistical fitting
+
+**Analytical complexity analysis:**
+* Must of course be done to complement either of the above...
+
+**Using the results:**
+* _Both of the above give a function for efficiency:_
+  * Former gives data items for each choice of (n,p)
+  * Latter gives function of n for each choice of p?
+- [ ] Think about this some more...
+- [ ] Which of the above two options is most suitable?
+- [ ] What specific **evidence** would I want?
+
+## "Shower thoughts"
+* To make private memory access consistent, add some interface for it, that
   loads the variable into cache and pauses timer. The variable should also be
   _alive_ so the compiler doesn't optimize it away.
-* If making pipelined appraoch with that computation graph thing to evaluate,
+* If making pipelined approach with that computation graph thing to evaluate,
   you would need to build a framework able to handle processor sending data
   before another processor requests that data.
+* Planning phase should involve **requirements** of the like:
+  * The multiprocessor simulation supports both point-to-point sending and
+    simulated broadcasting
