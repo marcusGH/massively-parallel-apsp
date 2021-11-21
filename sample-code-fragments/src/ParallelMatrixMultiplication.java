@@ -46,9 +46,9 @@ public class ParallelMatrixMultiplication {
         if (printResult) {
             System.out.println(getString(res));
         }
-        StringBuilder s = new StringBuilder("Time in nanoseconds: [");
-        for (Long l : times) {
-            s.append(l).append(",");
+        StringBuilder s = new StringBuilder(String.valueOf(times.get(0)));
+        for (int i = 1; i < times.size(); i++) {
+            s.append(",").append(times.get(i));
         }
         // save the array to file
         try {
@@ -60,7 +60,7 @@ public class ParallelMatrixMultiplication {
             }
 
             FileWriter fw = new FileWriter(filename);
-            fw.write(s.append("]\n").toString());
+            fw.write(s.append("\n").toString());
             fw.close();
             System.out.println("Successfully wrote to file");
         } catch (IOException e) {
@@ -103,9 +103,10 @@ public class ParallelMatrixMultiplication {
     }
 
     public static void main(String[] args) {
-        ParallelMatrixMultiplication pmm = new ParallelMatrixMultiplication(1000);
+        int n = 50;
+        ParallelMatrixMultiplication pmm = new ParallelMatrixMultiplication(n);
         try {
-            pmm.square("executionTimesBean.txt", false, false);
+            pmm.square("execution-time-bean-time-" + n + ".csv", false, false);
         } catch (InterruptedException e) {
             System.out.println("The program was interrupted");
         }
