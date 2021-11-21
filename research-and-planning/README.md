@@ -161,7 +161,7 @@ at as a further optimisation of the algorithm.
 
 **Milestones:**
 - [x] Got hold of Modi's book from library
-- [ ] Written some small fragments of Java code that uses concepts
+- [x] Written some small fragments of Java code that uses concepts
   * _Remember: important part of preparation phase is getting practice in what you'll do in the main implementation phase_
 - [ ] The _Work plan_ is fleshed out in a lot more detail
 
@@ -213,6 +213,9 @@ at as a further optimisation of the algorithm.
   to run analysis for many many pairs of (n, p) where we for each fixed p do
   many n runs and do statistical fitting
 
+**Just look at Communication/Computation ratio**:
+* If $b / (a+b) < k$, then $\epsilon > 1-k$
+
 **Analytical complexity analysis:**
 * Must of course be done to complement either of the above...
 
@@ -234,3 +237,5 @@ at as a further optimisation of the algorithm.
 * Planning phase should involve **requirements** of the like:
   * The multiprocessor simulation supports both point-to-point sending and
     simulated broadcasting
+
+<!-- vim: set nospell: -->
