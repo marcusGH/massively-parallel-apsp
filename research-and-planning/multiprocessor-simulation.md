@@ -35,7 +35,7 @@
 
 * **The Worker interface**:
   * Constructor needs variables `i`, `j`, `p`, `n`, `privateMemory`,
-    `memoryController`, `syncBarrier1`, `syncBarrier2`
+    `memoryController`, `cycBarrier`
   * _The privateMemory needs to be package so that MemoryController_
     has control over it
   * Methods to override `computation(l)`:
@@ -48,15 +48,14 @@
     * `awaitRow(i, j, label) : void` (wait for data from broadcast and put in priv. memory)
     * `send(int, int, double) : void` (send data to PE at (i', j'))
     * `receive(i, j, label) : void` (receive from `shift` and put in private memory)
-  * Maintains two references `synchronisationBarrier1` and `synchronisationBarrier2`
   * Implements `Runnable` and has a `run` method with the main loop:
 
         for (int l = 0 to p) do
           algo.communicationBefore(l);
-          synchronisationBarrier1.wait();
+          cycBarrier.await();
           algo.computation(l);
           algo.communicationAfter(l);
-          synchronisationBarrier2.wait();
+          cycBarrier.await();
         end
 
   * Maintains a timer that is started before `computation` and ended after
@@ -64,7 +63,7 @@
 
 * The **MemoryController**:
   * Constructor needs `p` and `Matrix<PrivateMemory>` of the worker's private memory
-  * _We only have one object of this class, and copy is attached to algorithm interface, is a_ **MONITOR**
+  * _We only have one object of this class, and copy is attached to each worker, is a sort of_ **MONITOR**
     * Doesn't need to be monitor, but can do finer-grained control by `syncrhonize`ing on the Queues and row/cols
   * _Introduces new exception type of e.g. congested broadcast channel_
   * Maintains $p$ by $p$ array of `privateMemory`s belonging to each PE(i,j), `currentPrivateMemory`
@@ -72,7 +71,7 @@
   * Maintains a $p$ by $p$ array of FIFO queues with `receive` arguments
   * Maintains length $p$ array of rows, initialised to `None`s    \_ used for broadcasting
   * Maintains length $p$ array of columns, initialised to `None`s /
-  * Implements the following methods (which are to be used by the `Algorithm` interface's default implementation):
+  * Implements the following methods (which are to be used by the `Worker` interface's default implementation):
     * `broadcastRow(int, double)` - puts the provided value at appropriate index in `rows` and raises exception if congested
     * `broadcastCol(int, double)` - puts the provided value at appropriate index in `cols` and raises exception if congested
     * `send(int, int, double)` - puts the provided data in the queue at (i, j)
@@ -88,9 +87,10 @@
   * _Has timers in its `get` and `set` methods, which can be subtracted when doing summary of times?_
   * TODO: consider if worth to specify MemoryController-controlled labels, and restrict access to `set`ing these?
 
-* **The Manager**:
+* **The Manager<Worker>**:
   * Constructor needs `n` and `p`, and map of `label`s to `Matrix`es.
-  * _There is only one object of this class, and it creates two_ `synchronisationBarrier`s
+  * _There is only one object of this class, and it creates one_ `CyclicBarrier`
+    * This `CyclicBarrier` is given a `Runnable` object that does `memController.flush()`
   * Creates initial `PrivateMemory`s with content in map of labels, and distributes them
     to the workers (easy to generalise)
   * Creates a `memoryController`, passing it this `Matrix` of `PrivateMemory`s, which
@@ -99,16 +99,18 @@
   * Has the following methods:
     * `runAlgorithm` - In first iteration, does `run` on all workers. It then has the main loop:
 
+          // implicit loop through cyclic barrier
           for (int l = 0 to p) do
-            // Before the flushes, need to make sure all threads are finished.
-            // Consider using [ReentrantLock](https://docs.oracle.com/javase/1.5.0/docs/api/java/util/concurrent/locks/ReentrantLock.html#getQueueLength()
-            // and research if can still notifyAll() the way we do!
+            // wait for all workers to finish, then this happens
             memController.flush();
+            // then all threads started again
             syncBarr.notifyAll();
-            // do same consideration here
+            // same wait here
             memController.flush();
+            // then they start up again
             synBarr2.notifyAll();
           end
+          // Do .join() on all threads
 
   * `getComputationTimes` - returns some big data structure, which then handed
                           over to Analyse class or something
@@ -122,11 +124,20 @@ _Design decisions_:
   override `run` and use provided `broadcast`, `send`, `receive` methods!
 * Package together Worker, PrivateMemorty and MemoryController to hide the `set` and `get`
   of privateMemory entirely in the package, leaving constructor open to the Manager
+* We recreate all the threads each time we do matrix multiplication. We need to distribute new
+  private memory anyways, so easier to just start from scratch
 
 ### Driver
 
 * **APSP solver**:
-  * TODO
+  * Constructor needs `n`, `p` and adjacency `Matrix`
+  * Constructs `TimingAnalsysi` object
+  * Has method `solve`? which does:
+    * Create a manager with the `FoxOtto` class implementation
+    * Does squaring $\log n$ times
+    * Extracts computation and communication times and passes them to
+      `TimingAnalysis` object
+    * Returns result
 
 ## Comments on the evaluation framework
 
