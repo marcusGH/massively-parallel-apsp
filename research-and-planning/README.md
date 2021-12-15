@@ -77,6 +77,15 @@ Modi J. Parallel Algorithms and Matrix Computation. 1988.
   determined by the nature of the algorithm (e.g. circular connectivity when sorting
   numbers), and lattice topology for matrix algorithms
 
+[Minimizing Communication in APSP](https://www.researchgate.net/publication/235784373_Minimizing_Communication_in_All-Pairs_Shortest_Paths)
+* The approach in my project looks like approach [24], but using
+  Fox-Otto/Cannon's instead of the SUMMA-like algorithm [2].
+* One original contribution might be the investigation of the advantage
+  as the problem size increases while num. PEs is the same
+* Also interesting to reference the proof [4] that matmul semiring
+  multiplicaiton has same asymptotal complexity as other APSP solutions
+  (and how that is what the work is based on).
+
 ### Knowledge on matrix multiplication techniques
 
 [Parallel methods for matrix multiplication](http://www.hpcc.unn.ru/mskurs/ENG/DOC/pp08.pdf)

@@ -2,6 +2,8 @@
 
 [The Pink Book](https://www.cl.cam.ac.uk/teaching/projects/pinkbook.pdf)
 
+[Marking scheme](https://www.cst.cam.ac.uk/teaching/part-ii/projects/assessment)
+
 ## High-level stuff
 
 * Plan evaluation and evidence (of successful project completion) early

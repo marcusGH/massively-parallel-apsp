@@ -10,6 +10,7 @@
   * Optional methods for removing edges and nodes not in the largest connected
     component
   * Statistics methods for finding highest degree and some measure of sparsity
+  * Method to return adjacency `List`
 * **Python? graphPreperator**:
   * Takes text of file of edges and nodes' position in (long, lati)
   * Creates a circle in geographical coordinates, and extracts subgraph
