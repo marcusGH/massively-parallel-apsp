@@ -6,6 +6,7 @@ import java.io.*;
 import java.text.ParseException;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import util.Matrix;
 
@@ -115,18 +116,23 @@ public class GraphReader {
             System.out.println("    " + this.edges.get(i));
         }
 
-        // TODO: more utility stuff using adjecency matrix such as sparisty
-//        System.out.println("Distinct nodes: " + this.edges.stream().map(triple -> triple.x).distinct().count());
-//        System.out.println("Distinct nodes: " + this.edges.stream().map(triple -> triple.x).mapToInt(v -> v).max().orElse(-1));
-//        Integer
+        // compute statistics from the adjacency list
+        List<List<Pair<Integer, Double>>> neighbours = getAdjacencyList(false);
+        System.out.println("Max degree: " + neighbours.stream().mapToInt(List::size).max().orElse(-1));
+        System.out.println("Min degree: " + neighbours.stream().mapToInt(List::size).min().orElse(-1));
+        System.out.println("Average degree: " + neighbours.stream().mapToInt(List::size).average().orElse(-1));
+        IntStream.range(0, 15).forEach(
+            i -> System.out.println("Number of nodes with degree " + i + ": " + neighbours.stream().mapToInt(List::size).filter(j -> j == i).count())
+        );
     }
 
     public static void main(String[] args) {
         try {
-            GraphReader gr = new GraphReader("../datasets/small-example.cedge");
+//            GraphReader gr = new GraphReader("../datasets/small-example.cedge");
+            GraphReader gr = new GraphReader("../datasets/SF.cedge");
             gr.printSummary();
-            System.out.println("The matrix:");
-            System.out.println(gr.getAdjacencyMatrix(false));
+//            System.out.println("The matrix:");
+//            System.out.println(gr.getAdjacencyMatrix(false));
         } catch (ParseException e) {
             System.out.println("Encountered parsing error at offset " + e.getErrorOffset());
             e.printStackTrace();

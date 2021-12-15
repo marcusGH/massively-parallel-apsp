@@ -99,7 +99,7 @@ def main(argv):
     if dist is not None and doPlot:
         circle = Point(xloc, yloc).buffer(dist)
         fig, ax = plt.subplots(figsize=(13,13))
-        plotGraph(ax, nodes_gdf, edges_gdf, 0.2)
+        plotGraph(ax, nodes_gdf, edges_gdf, 0.05)
         plotGraph(ax, nodes_gdf[nodes_gdf.within(circle)], edges_gdf[edges_gdf.within(circle)])
         plt.show()
 
