@@ -1,5 +1,7 @@
 # Part II Project
 
+![Unit test workflow](https://github.com/marcusGH/part-II-project/actions/workflows/github-actions-junit-tests.yml/badge.svg)
+
 **A parallel algorithm for all-pairs shortest paths that minimises data movement**
 
 ---
