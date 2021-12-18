@@ -86,6 +86,8 @@ Modi J. Parallel Algorithms and Matrix Computation. 1988.
   multiplicaiton has same asymptotal complexity as other APSP solutions
   (and how that is what the work is based on).
 
+[Survey on all APSP](http://www.acta.sapientia.ro/acta-info/C8-1/info81-02.pdf)
+
 ### Knowledge on matrix multiplication techniques
 
 [Parallel methods for matrix multiplication](http://www.hpcc.unn.ru/mskurs/ENG/DOC/pp08.pdf)
