@@ -95,7 +95,7 @@ public class GraphReader {
     }
 
     public Matrix<Double> getAdjacencyMatrix(boolean isDirected) {
-        Matrix<Double> mat = new Matrix<>(n, Double.POSITIVE_INFINITY);
+        Matrix<Double> mat = new Matrix<>(n, () -> Double.POSITIVE_INFINITY);
         for (Triple<Integer, Integer, Double> e : edges) {
             mat.set(e.x, e.y, e.z);
             if (!isDirected) {

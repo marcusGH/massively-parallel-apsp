@@ -3,18 +3,22 @@ package util;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class Matrix<T> {
     private List<List<T>> matrix;
     // we only have square matrices
     private final int n;
 
-    public Matrix(int n, T fillValue) {
+    public Matrix(int n, Supplier<T> defaultValueSupplier) {
         this.n = n;
         // fill the matrix with n x n grid of specified fillValue
         this.matrix  = new ArrayList<>();
         for (int i = 0; i < n; i++) {
-            ArrayList<T> row = new ArrayList<>(Collections.nCopies(n, fillValue));
+            // invoke supplier n times
+            List<T> row = Stream.generate(defaultValueSupplier).limit(n).collect(Collectors.toList());
             this.matrix.add(row);
         }
     }
@@ -46,7 +50,7 @@ public class Matrix<T> {
     }
 
     public static void main(String[] args) {
-        Matrix<Double> m = new Matrix<>(5, 3.14);
+        Matrix<Double> m = new Matrix<>(5, () -> 3.14);
         m.set(2, 1, 42.0);
         System.out.println(m);
     }
