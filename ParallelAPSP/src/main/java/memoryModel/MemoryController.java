@@ -28,6 +28,7 @@ public class MemoryController<T> {
     private Matrix<Queue<Triple<Integer, Integer, String>>> receiveArguments;
 
     public MemoryController(int p, Matrix<PrivateMemory<T>> privateMemories, Topology memoryTopology) {
+        // TODO: check sizes of topology and see if match p
         this.p = p;
         this.privateMemories = privateMemories;
         this.memoryTopology = memoryTopology;
@@ -53,7 +54,8 @@ public class MemoryController<T> {
         this.receiveArguments = new Matrix<>(p, LinkedList::new);
     }
 
-    synchronized void broadcastRow(int i, int j, int row, T value) throws CommunicationChannelCongestionException {
+    synchronized void broadcastRow(int i, int j, T value) throws CommunicationChannelCongestionException {
+        int row = i;
         Pair<Integer, Integer> newID = new Pair<>(i, j);
         if (this.rowBroadcasterID.get(row).isPresent() && !this.rowBroadcasterID.get(row).get().equals(newID)) {
             throw new CommunicationChannelCongestionException("The row broadcast highway with id "
@@ -65,7 +67,8 @@ public class MemoryController<T> {
         }
     }
 
-    synchronized void broadcastCol(int i, int j, int col, T value) throws CommunicationChannelCongestionException {
+    synchronized void broadcastCol(int i, int j, T value) throws CommunicationChannelCongestionException {
+        int col = j;
         Pair<Integer, Integer> newID = new Pair<>(i, j);
         Optional<Pair<Integer, Integer>> oldID = this.colBroadcasterID.get(col);
         if (oldID.isPresent() && !oldID.get().equals(newID)) {
@@ -108,6 +111,10 @@ public class MemoryController<T> {
             this.sentData.get(receiveI, receiveJ).add(value);
             this.senderToRecipientID.set(receiveI, receiveJ, Optional.of(newID));
         }
+    }
+
+    synchronized void receiveData(int i, int j, String label) {
+        this.receiveData(i, j, 0, 0, label);
     }
 
     synchronized void receiveData(int i, int j, int mi, int mj, String label) {
