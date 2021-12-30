@@ -1,5 +1,6 @@
 package memoryModel;
 
+import jdk.jfr.Description;
 import org.junit.jupiter.api.Test;
 import util.Matrix;
 
@@ -8,11 +9,11 @@ import static org.junit.jupiter.api.Assertions.*;
 class MemoryControllerTest {
 
     @Test
+    @Description("Tests point-to-point communication with sendData and receiveData")
     void pointToPoint1() {
         // SETUP
         Matrix<PrivateMemory<Integer>> privateMemory = new Matrix<>(3, () -> new PrivateMemory<>(1));
-        Topology sgt = new SquareGridTopology(3);
-        MemoryController<Integer> mc = new MemoryController<>(3, privateMemory, sgt);
+        MemoryController<Integer> mc = new MemoryController<>(3, privateMemory, SquareGridTopology::new);
 
         // ACT
         try {
@@ -28,13 +29,13 @@ class MemoryControllerTest {
     }
 
     @Test
+    @Description("Tests point-to-point communication with sendData and receiveData")
     void pointToPoint2() {
         // SETUP
 
         // 5 x 5 grid of PEs each with 1 x 1 private memory
         Matrix<PrivateMemory<Double>> privateMemory = new Matrix<>(5, () -> new PrivateMemory<>(1));
-        Topology sgt = new SquareGridTopology(5);
-        MemoryController<Double> mc = new MemoryController<>(5, privateMemory, sgt);
+        MemoryController<Double> mc = new MemoryController<>(5, privateMemory, SquareGridTopology::new);
 
         // ACT
         try {
@@ -55,11 +56,11 @@ class MemoryControllerTest {
     }
 
     @Test
+    @Description("Tests row broadcast communication with broadcastRow and receiveRowBroadcast")
     void broadcastRow1() {
         // SETUP
         Matrix<PrivateMemory<Double>> privateMemory = new Matrix<>(3, () -> new PrivateMemory<>(1));
-        Topology sgt = new SquareGridTopology(3);
-        MemoryController<Double> mc = new MemoryController<>(3, privateMemory, sgt);
+        MemoryController<Double> mc = new MemoryController<>(3, privateMemory, SquareGridTopology::new);
 
         // ACT
         try {
@@ -78,4 +79,32 @@ class MemoryControllerTest {
         assertEquals(privateMemory.get(2, 1).get("A"), 3.14);
         assertEquals(privateMemory.get(2, 2).get("A"), 3.14);
     }
+
+
+    @Test
+    @Description("Tests col broadcast communication with broadcastCol and receiveColBroadcast")
+    void broadcastCol1() {
+        // SETUP
+        Matrix<PrivateMemory<Double>> privateMemory = new Matrix<>(3, () -> new PrivateMemory<>(1));
+        MemoryController<Double> mc = new MemoryController<>(3, privateMemory, SquareGridTopology::new);
+
+        // ACT
+        try {
+            // PE(2,1) broadcasts a column
+            mc.broadcastCol(2, 1, 3.14);
+            for (int i = 0; i < 3; i++) {
+                mc.receiveColBroadcast(i, 1, 0, 0, "A");
+            }
+            mc.flush();
+        } catch (InconsistentMemoryChannelUsageException | CommunicationChannelCongestionException e) {
+            e.printStackTrace();
+        }
+
+        // ASSERT
+        assertEquals(privateMemory.get(0, 1).get("A"), 3.14);
+        assertEquals(privateMemory.get(1, 1).get("A"), 3.14);
+        assertEquals(privateMemory.get(2, 1).get("A"), 3.14);
+    }
+
+    // TODO: add more tests for when things go wrong, and assert correct exception is thrown
 }

@@ -1,37 +1,53 @@
 package memoryModel;
 
 import javafx.util.Pair;
+import jdk.jshell.spi.ExecutionControl;
 import util.Matrix;
 import util.Triple;
 
 import javax.management.MBeanAttributeInfo;
 import java.util.*;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
+/**
+ * TODO: explain how flush etc. works
+ * TODO: explain idea behind synchronized
+ * @param <T>
+ */
 public class MemoryController<T> {
     private int p;
     private Matrix<PrivateMemory<T>> privateMemories;
     private Topology memoryTopology;
 
     // broadcasting
-    private List<Queue<T>> colBroadcastData;
-    private List<Queue<T>> rowBroadcastData;
+    private final List<Queue<T>> colBroadcastData;
+    private final List<Queue<T>> rowBroadcastData;
     // IDs of the PEs using the row- and column broadcast highways
-    private List<Optional<Pair<Integer, Integer>>> colBroadcasterID;
-    private List<Optional<Pair<Integer, Integer>>> rowBroadcasterID;
+    private final List<Optional<Pair<Integer, Integer>>> colBroadcasterID;
+    private final List<Optional<Pair<Integer, Integer>>> rowBroadcasterID;
     private final Matrix<Queue<Triple<Integer, Integer, String>>> rowBroadcastReceiveArguments;
     private final Matrix<Queue<Triple<Integer, Integer, String>>> colBroadcastReceiveArguments;
 
     // point-to-point communications
-    private Matrix<Queue<T>> sentData;
+    private final Matrix<Queue<T>> sentData;
     // item (i, j) gives ID of the sender of the data destined to PE(i, j)
-    private Matrix<Optional<Pair<Integer, Integer>>> senderToRecipientID;
-    private Matrix<Queue<Triple<Integer, Integer, String>>> receiveArguments;
+    private final Matrix<Optional<Pair<Integer, Integer>>> senderToRecipientID;
+    private final Matrix<Queue<Triple<Integer, Integer, String>>> receiveArguments;
 
-    public MemoryController(int p, Matrix<PrivateMemory<T>> privateMemories, Topology memoryTopology) {
-        // TODO: check sizes of topology and see if match p
+    /**
+     * Constructs a MemoryController handling p x p processing elements, each starting with the private memory contents
+     * as contained in the passed privateMemories. A constructor for the memory topology must be provided. Note that
+     * the private memories of each processing elements do not need to be of size 1 x 1.
+     *
+     * @param p a positive integer
+     * @param privateMemories a matrix of private memories of type T
+     * @param memoryTopologySupplier a constructor taking an Integer and returning a Topology
+     */
+    public MemoryController(int p, Matrix<PrivateMemory<T>> privateMemories, Function<Integer, Topology> memoryTopologySupplier) {
         this.p = p;
         this.privateMemories = privateMemories;
-        this.memoryTopology = memoryTopology;
+        this.memoryTopology = memoryTopologySupplier.apply(p);
 
         // broadcasting
         // we will only have p elements at all times
@@ -54,75 +70,168 @@ public class MemoryController<T> {
         this.receiveArguments = new Matrix<>(p, LinkedList::new);
     }
 
-    synchronized void broadcastRow(int i, int j, T value) throws CommunicationChannelCongestionException {
-        int row = i;
-        Pair<Integer, Integer> newID = new Pair<>(i, j);
-        if (this.rowBroadcasterID.get(row).isPresent() && !this.rowBroadcasterID.get(row).get().equals(newID)) {
-            throw new CommunicationChannelCongestionException("The row broadcast highway with id "
-                    + row + " is already in use by PE " + rowBroadcasterID.get(row)
-                    + ", so PE (" + i + ", " + j + ") cannot use it.");
-        } else {
-            this.rowBroadcastData.get(row).add(value);
-            this.rowBroadcasterID.set(row, Optional.of(newID));
+    /**
+     * When {@link #flush()} is invoked, all processing elements in row i will receive data {@code value},
+     * but only if they themself invoke {@link #receiveRowBroadcast}. If another processing element in row i
+     * that is not (i, j) tries to row broadcast in the same communication phase, an exception is thrown.
+     *
+     * @param i non-negative integer index
+     * @param j non-negative integer index
+     * @param value the value to be broadcasted
+     * @throws CommunicationChannelCongestionException if it's not possible to perform all the communications
+     *         scheduled in parallel without queueing.
+     */
+    void broadcastRow(int i, int j, T value) throws CommunicationChannelCongestionException {
+        synchronized (this.rowBroadcastData) {
+            synchronized (this.rowBroadcasterID) {
+                Pair<Integer, Integer> newID = new Pair<>(i, j);
+                Optional<Pair<Integer, Integer>> oldID = this.rowBroadcasterID.get(i);
+                if (oldID.isPresent() && !oldID.get().equals(newID)) {
+                    throw new CommunicationChannelCongestionException("The row broadcast highway with id "
+                            + i + " is already in use by PE " + oldID
+                            + ", so PE (" + i + ", " + j + ") cannot use it.");
+                } else {
+                    this.rowBroadcastData.get(i).add(value);
+                    this.rowBroadcasterID.set(i, Optional.of(newID));
+                }
+            }
         }
     }
 
-    synchronized void broadcastCol(int i, int j, T value) throws CommunicationChannelCongestionException {
-        int col = j;
-        Pair<Integer, Integer> newID = new Pair<>(i, j);
-        Optional<Pair<Integer, Integer>> oldID = this.colBroadcasterID.get(col);
-        if (oldID.isPresent() && !oldID.get().equals(newID)) {
-            // TODO: refactor to be consistent with below style
-            // TODO: refactor to use same fix above
-            throw new CommunicationChannelCongestionException("The column broadcast highway with id "
-                    + col + " is already in use by PE " + oldID
-                    + ", so PE (" + i + ", " + j + ") cannot use it.");
-        } else {
-            this.colBroadcastData.get(col).add(value);
-            this.colBroadcasterID.set(col, Optional.of(newID));
+    /**
+     * When {@link #flush()} is invoked, all processing elements in column j will receive data {@code value},
+     * but only if they themself invoke {@link #receiveColBroadcast}. If another processing element in column j
+     * that is not (i, j) tries to column broadcast in the same communication phase, an exception is thrown.
+     *
+     * @param i non-negative integer index
+     * @param j non-negative integer index
+     * @param value the value to be broadcasted
+     * @throws CommunicationChannelCongestionException if it's not possible to perform all the communications
+     *         scheduled in parallel without queueing.
+     */
+    void broadcastCol(int i, int j, T value) throws CommunicationChannelCongestionException {
+        synchronized (this.colBroadcastData) {
+            synchronized (this.colBroadcasterID) {
+                Pair<Integer, Integer> newID = new Pair<>(i, j);
+                Optional<Pair<Integer, Integer>> oldID = this.colBroadcasterID.get(j);
+                if (oldID.isPresent() && !oldID.get().equals(newID)) {
+                    // TODO: refactor to be consistent with below style
+                    throw new CommunicationChannelCongestionException("The column broadcast highway with id "
+                            + j + " is already in use by PE " + oldID
+                            + ", so PE (" + i + ", " + j + ") cannot use it.");
+                } else {
+                    this.colBroadcastData.get(j).add(value);
+                    this.colBroadcasterID.set(j, Optional.of(newID));
+                }
+            }
         }
     }
 
+    /**
+     * Tells the memory controller that processing element (i, j) wants to receive data from some other processing
+     * element, or from itself, located in row i. The received data should be stored in its private memory by calling
+     * PrivateMemory::set with arguments (mi, mj, label).
+     *
+     * @param i non-negative integer smaller than p
+     * @param j non-negative integer smaller than p
+     * @param mi non-negative integer smaller than the private memory size
+     * @param mj non-negative integer smaller than the private memory size
+     * @param label String label used in private memory access
+     */
     void receiveRowBroadcast(int i, int j, int mi, int mj, String label) {
         synchronized (this.rowBroadcastReceiveArguments) {
             this.rowBroadcastReceiveArguments.get(i, j).add(new Triple<>(mi, mj, label));
         }
     }
 
+    /**
+     * Tells the memory controller that processing element (i, j) wants to receive data from some other processing
+     * element, or from itself, located in column j. The received data should be stored in its private memory by calling
+     * PrivateMemory::set with arguments (mi, mj, label).
+     *
+     * @param i non-negative integer smaller than p
+     * @param j non-negative integer smaller than p
+     * @param mi non-negative integer smaller than the private memory size
+     * @param mj non-negative integer smaller than the private memory size
+     * @param label String label used in private memory access
+     */
     void receiveColBroadcast(int i, int j, int mi, int mj, String label) {
         synchronized (this.colBroadcastReceiveArguments) {
             this.colBroadcastReceiveArguments.get(i, j).add(new Triple<>(mi, mj, label));
         }
     }
 
-    synchronized void sendData(int sendI, int sendJ, int receiveI, int receiveJ, T value) throws CommunicationChannelCongestionException {
+    /**
+     * Tells the memory controller that processing element (sendI, sendJ) sends data {@code value} to processing
+     * element (receiveI, receiveJ) through point-to-point communication. The processing element (receiveI, receiveJ)
+     * should then invoke {@link #receiveData} to tell the memory controller how it wants to store the
+     * received data. If different processing elements send data at the same time to the same node, an exception is
+     * thrown. This is because if all nodes symmetrically ran the same code, we would have a congested communication
+     * channel, so it would not be possible to complete the required communication in one phase.
+     *
+     * @param sendI non-negative integer ID less than p
+     * @param sendJ non-negative integer ID less than p
+     * @param receiveI non-negative integer ID less than p
+     * @param receiveJ non-negative integer ID less than p
+     * @param value the data to be sent
+     * @throws CommunicationChannelCongestionException if different processing elements tries to send data to the same
+     * node in the same communication phase.
+     */
+    void sendData(int sendI, int sendJ, int receiveI, int receiveJ, T value) throws CommunicationChannelCongestionException {
         // TODO: count number of hops before doing below functionality
 
-        Pair<Integer, Integer> newID = new Pair<>(sendI, sendJ);
-        Optional<Pair<Integer, Integer>> oldID = this.senderToRecipientID.get(receiveI, receiveJ);
-        // We are trying to send data to same recipient from multiple PEs, which would cause nondeterministic behaviour
-        if (oldID.isPresent() && !oldID.get().equals(newID)) {
-            throw new CommunicationChannelCongestionException(String.format("The recipient PE(%d, %d) is already "
-                    + "receiving data from PE(%d, %d), so it can't receive data from PE(%d, %d).",
-                    receiveI, receiveJ, oldID.get().getKey(), oldID.get().getValue(), sendI, sendJ));
-        }
-        // New sender or same sender that sent data previously to this PE
-        else {
-            this.sentData.get(receiveI, receiveJ).add(value);
-            this.senderToRecipientID.set(receiveI, receiveJ, Optional.of(newID));
+        synchronized (this.sentData) {
+            synchronized (this.senderToRecipientID) {
+                Pair<Integer, Integer> newID = new Pair<>(sendI, sendJ);
+                Optional<Pair<Integer, Integer>> oldID = this.senderToRecipientID.get(receiveI, receiveJ);
+                // We are trying to send data to same recipient from multiple PEs, which would cause nondeterministic behaviour
+                if (oldID.isPresent() && !oldID.get().equals(newID)) {
+                    throw new CommunicationChannelCongestionException(String.format("The recipient PE(%d, %d) is already "
+                                    + "receiving data from PE(%d, %d), so it can't receive data from PE(%d, %d).",
+                            receiveI, receiveJ, oldID.get().getKey(), oldID.get().getValue(), sendI, sendJ));
+                }
+                // New sender or same sender that sent data previously to this PE
+                else {
+                    this.sentData.get(receiveI, receiveJ).add(value);
+                    this.senderToRecipientID.set(receiveI, receiveJ, Optional.of(newID));
+                }
+            }
         }
     }
 
-    synchronized void receiveData(int i, int j, String label) {
+    void receiveData(int i, int j, String label) {
         this.receiveData(i, j, 0, 0, label);
     }
 
-    synchronized void receiveData(int i, int j, int mi, int mj, String label) {
-        this.receiveArguments.get(i, j).add(new Triple<>(mi, mj, label));
+    /**
+     * Tells the memory controller than processing element (i, j) wants to receive point-to-point communicated data
+     * and store it in its private memory by invoking PrivateMemory::set with arguments (mi, mj, label).
+     *
+     * @param i non-negative integer ID less than p
+     * @param j non-negative integer ID less than p
+     * @param mi non-negative integer ID to private memory
+     * @param mj non-negative integer ID to private memory
+     * @param label String label indicating which memory to store it in
+     */
+    void receiveData(int i, int j, int mi, int mj, String label) {
+        synchronized (this.receiveArguments) {
+            this.receiveArguments.get(i, j).add(new Triple<>(mi, mj, label));
+        }
     }
 
     // doesn't need to be synchronised, but just in  case to demonstrate not run at same time
     // as above methods
+
+    /**
+     * When flush is invoked, the memory controller will attempt to align all the scheduled row broadcasting,
+     * column broadcasting, and point-to-point data sent, with the corresponding specified receive-arguments. If a
+     * mismatch is found, an exception is thrown. Otherwise, the memory controller will go through the pairs of data
+     * and receive-arguments and invoke PrivateMemory::set on the processing elements with the corresponding data and
+     * receive-arguments.
+     *
+     * @throws InconsistentMemoryChannelUsageException if one processing element is scheduled to receive more data than
+     * it has provided receive-arguments more, or vice verse.
+     */
     synchronized public void flush() throws InconsistentMemoryChannelUsageException {
         // we handle the point-to-point communication first
         for (int i = 0; i < this.p; i++) {
@@ -190,4 +299,15 @@ public class MemoryController<T> {
             }
         }
     }
+
+    // TODO: implement
+    public void getPointToPointCommunicationCounts() throws ExecutionControl.NotImplementedException {
+        throw new ExecutionControl.NotImplementedException("This method is not yet implemented");
+    }
+
+    // TODO: implement
+    public void getBroadcastCommunicationCounts() throws ExecutionControl.NotImplementedException {
+        throw new ExecutionControl.NotImplementedException("This method is not yet implemented");
+    }
+
 }
