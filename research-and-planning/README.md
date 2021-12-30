@@ -120,6 +120,7 @@ at as a further optimisation of the algorithm.
   * Latency is a lot lower, but doesn't use network since relatively small chip
 * [NoC multicast support](https://arxiv.org/pdf/1610.00751.pdf)
   * TODO: read this!
+* More reading material on APSP predeccessor matrix: [link](http://theory.stanford.edu/~virgi/cs367/oldlecs/lecture7.pdf)
 
 ## Planning
 

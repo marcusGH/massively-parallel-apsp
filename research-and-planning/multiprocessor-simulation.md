@@ -202,6 +202,8 @@ Design decisions:
   input and output PE is passed to it. This allows doing computation on
   topology to determine shortest number of jumps required for each message
   pass. 
+* Another reason for sperating the communication simulation is our evaluation, communication
+  costs are estimated while only computation costs are actually timed.
 
 Alternative approaches:
 * Could `monitor`ed each PE and when sending something, manipulate it's private memory.
