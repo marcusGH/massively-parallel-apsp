@@ -239,3 +239,5 @@ Some more design decisions:
     the same nodes across the same channels, we have would in real situation have queueing and dependencies
     and ordering-constaints between the individual memory transfers, which would slow down and complicate things.
     In ideal algorithms, this is avoided, so by removing functionality, we shouldn't need it anyways.
+* Worker and MemoryController in the same package because don't want to expose receiveBroadcasts methods etc. because
+  only used by the worker

@@ -12,6 +12,18 @@ public class Matrix<T> {
     // we only have square matrices
     private final int n;
 
+    public Matrix(int n) {
+        this.n = n;
+        this.matrix = new ArrayList<>();
+        for (int i = 0; i < n; i++) {
+            List<T> row = new ArrayList<>();
+            for (int j = 0; j < n; j++) {
+                row.add(null);
+            }
+            this.matrix.add(row);
+        }
+    }
+
     public Matrix(int n, Supplier<T> defaultValueSupplier) {
         this.n = n;
         // fill the matrix with n x n grid of specified fillValue
@@ -47,6 +59,10 @@ public class Matrix<T> {
             }
         }
         return sb.toString();
+    }
+
+    public int size() {
+        return this.n;
     }
 
     public static void main(String[] args) {
