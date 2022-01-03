@@ -8,17 +8,20 @@ import java.util.Map;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 public class Manager<T> {
     // size of input
     private final int n;
     // number of processing elements
     private final int p;
-
-    private final Class<? extends Worker<T>> workerClass;
+    // number of phases of computation in algorithm
+    private final int numComputationPhases;
 
     private final CyclicBarrier cyclicBarrier;
     private final MemoryController<T> memoryController;
+    // used to fetch the results after computation
     private final Matrix<PrivateMemory<T>> privateMemoryMatrix;
     private final Matrix<Worker<T>> workers;
 
@@ -27,47 +30,44 @@ public class Manager<T> {
     private final Lock lock = new ReentrantLock();
 
     // 1x1 version TODO: make general constructor
-    public Manager(int n, Map<String, Matrix<T>> initialMemoryContent, Class<? extends Worker<T>> workerClass) throws WorkerInstantiationException {
+    public Manager(int n, int numComputationPhases, Map<String, Matrix<T>> initialMemoryContent,
+                   Function<Integer, ? extends Topology> memoryTopology,
+                   Constructor<? extends Worker<T>> workerConstructor) throws WorkerInstantiationException {
         this.n = n;
         this.p = n;
-        this.workerClass = workerClass;
+        this.numComputationPhases = numComputationPhases;
 
-        for (String s : initialMemoryContent.keySet()) {
-            assert initialMemoryContent.get(s).size() == this.p;
+        if (null != initialMemoryContent) {
+            for (String s : initialMemoryContent.keySet()) {
+                assert initialMemoryContent.get(s).size() == this.p;
+            }
         }
 
         // initialize the private memory
         this.privateMemoryMatrix = new Matrix<>(this.p, () -> new PrivateMemory<>(1));
-        for (int i = 0; i < this.p; i++) {
-            for (int j = 0; j < this.p; j++) {
-                for (String s : initialMemoryContent.keySet()) {
-                    this.privateMemoryMatrix.get(i, j).set(s, initialMemoryContent.get(s).get(i, j));
+        if (null != initialMemoryContent) {
+            for (int i = 0; i < this.p; i++) {
+                for (int j = 0; j < this.p; j++) {
+                    for (String s : initialMemoryContent.keySet()) {
+                        this.privateMemoryMatrix.get(i, j).set(s, initialMemoryContent.get(s).get(i, j));
+                    }
                 }
             }
         }
 
-        // TODO: topology in constructor
-        this.memoryController = new MemoryController<>(this.p, privateMemoryMatrix, SquareGridTopology::new);
+        this.memoryController = new MemoryController<T>(this.p, this.privateMemoryMatrix, memoryTopology);
 
-        // In case
-
+        // TODO: not make private field, but rather localize to constructor?
         this.cyclicBarrier = new CyclicBarrier(this.p * this.p, () -> {
             try {
                 this.memoryController.flush();
             } catch (InconsistentMemoryChannelUsageException e) {
                 System.err.println(e.getMessage());
                 e.printStackTrace();
+                // TODO: if this doesn't work, the method will have to be static
                 stopWorkers();
             }
         });
-
-        Constructor<? extends Worker<T>> workerConstructor;
-        try {
-            workerConstructor = this.workerClass.getConstructor(Integer.class, Integer.class, Integer.class, PrivateMemory.class, MemoryController.class, CyclicBarrier.class, Runnable.class);
-        } catch (NoSuchMethodException e) {
-            e.printStackTrace();
-            throw new WorkerInstantiationException("Could not fetch relevant Worker constructor of provided implementation.");
-        }
 
         // TODO: work from here jk. Take a step back and rethink my approach on Manager genericism
         // TODO: a factory approach would be better. We shouldn't need all this reflection to handle this,
@@ -79,8 +79,8 @@ public class Manager<T> {
         for (int i = 0; i < this.p; i++) {
             for (int j = 0; j < this.p; j++) {
                 try {
-                    Worker<T> w = workerConstructor.newInstance(i, j, this.n, privateMemoryMatrix.get(i, j),
-                            memoryController, cyclicBarrier, r);
+                    Worker<T> w = workerConstructor.newInstance(i, j, this.p, this.numComputationPhases,
+                            this.privateMemoryMatrix.get(i, j), this.memoryController, this.cyclicBarrier, r);
                     this.workers.set(i, j, w);
                 } catch (IllegalAccessException | InstantiationException | InvocationTargetException e) {
                     e.printStackTrace();

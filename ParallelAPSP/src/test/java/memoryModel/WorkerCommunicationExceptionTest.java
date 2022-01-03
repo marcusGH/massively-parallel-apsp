@@ -3,17 +3,16 @@ package memoryModel;
 import org.junit.jupiter.api.Test;
 import util.Matrix;
 
+import java.lang.reflect.Constructor;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CyclicBarrier;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 class WorkerCommunicationExceptionTest {
 
-    class EmptyWorker<Integer> extends memoryModel.Worker<Integer> {
+    class EmptyWorker<T> extends memoryModel.Worker<T> {
 
-        public EmptyWorker(int i, int j, int n, int numPhases, PrivateMemory<Integer> privateMemory, MemoryController<Integer> memoryController, CyclicBarrier cyclicBarrier, Runnable runExceptionHandler) {
+        public EmptyWorker(int i, int j, int n, int numPhases, PrivateMemory<T> privateMemory, MemoryController<T> memoryController, CyclicBarrier cyclicBarrier, Runnable runExceptionHandler) {
             super(i, j, n, numPhases, privateMemory, memoryController, cyclicBarrier, runExceptionHandler);
         }
 

@@ -8,7 +8,7 @@ import java.util.concurrent.CyclicBarrier;
 public abstract class Worker<T> implements Runnable {
     protected final int i;
     protected final int j;
-    protected final int n;
+    protected final int p;
     private final int numPhases;
     private final PrivateMemory<T> privateMemory;
     private final MemoryController<T> memoryController;
@@ -21,10 +21,11 @@ public abstract class Worker<T> implements Runnable {
 //    }
 
 
-    public Worker(int i, int j, int n, int numPhases, PrivateMemory<T> privateMemory, MemoryController<T> memoryController, CyclicBarrier cyclicBarrier, Runnable runExceptionHandler) {
+    protected Worker(int i, int j, int p, int numPhases, PrivateMemory<T> privateMemory,
+                     MemoryController<T> memoryController, CyclicBarrier cyclicBarrier, Runnable runExceptionHandler) {
         this.i = i;
         this.j = j;
-        this.n = n;
+        this.p = p;
         // number of computation phases to execute
         this.numPhases = numPhases;
 
@@ -34,7 +35,7 @@ public abstract class Worker<T> implements Runnable {
         this.runExceptionHandler = runExceptionHandler;
 
         // The cyclic barrier's number of parties must match the number of workers
-        assert this.cyclicBarrier.getParties() == n * n;
+        assert this.cyclicBarrier.getParties() == p * p;
         // TODO: add method and assert for memory controller
     }
 
@@ -43,6 +44,10 @@ public abstract class Worker<T> implements Runnable {
     abstract void communicationBefore(int l) throws CommunicationChannelCongestionException;
 
     abstract void communicationAfter(int l) throws CommunicationChannelCongestionException;
+
+//    static Worker<T> workerSupplier(int i, int j, int p, int numPhases, PrivateMemory<T> privateMemory,
+//                                      MemoryController<T> memoryController, CyclicBarrier cyclicBarrier,
+//                                      Runnable runExceptionHandler);
 
     protected T read(String label) {
         return this.read(0, 0, label);

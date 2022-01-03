@@ -44,7 +44,7 @@ public class MemoryController<T> {
      * @param privateMemories a matrix of private memories of type T
      * @param memoryTopologySupplier a constructor taking an Integer and returning a Topology
      */
-    public MemoryController(int p, Matrix<PrivateMemory<T>> privateMemories, Function<Integer, Topology> memoryTopologySupplier) {
+    public MemoryController(int p, Matrix<PrivateMemory<T>> privateMemories, Function<Integer, ? extends Topology> memoryTopologySupplier) {
         this.p = p;
         this.privateMemories = privateMemories;
         this.memoryTopology = memoryTopologySupplier.apply(p);
