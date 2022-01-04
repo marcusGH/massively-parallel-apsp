@@ -34,3 +34,11 @@ Research progress:
 - [ ] Worked through formalism on choosing predecessor to use:
   - [ ] Read online resources found on it
   - [ ] Sketch a proof?
+
+
+TODO list:
+* Create Factories
+* Write tests in conjunction with writing docs for all
+* Refactor memoryModel on a package level
+-> After all this, start working through formalism of APSP,
+   then start implementing the APSP stuff

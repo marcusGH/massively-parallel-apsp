@@ -241,3 +241,36 @@ Some more design decisions:
     In ideal algorithms, this is avoided, so by removing functionality, we shouldn't need it anyways.
 * Worker and MemoryController in the same package because don't want to expose receiveBroadcasts methods etc. because
   only used by the worker
+* **PrivateMemory is not generic**: Because of our class hierarchy, the generic
+  type T that would be associated with PrivateMemory would need to ripple
+  upwards to the MemoryController, Manager and Worker because they hold
+  instances of it. This would in turn mean that when subclassing Worker to
+  implement e.g. FoxOtto, we would still be constrained to implementing an
+  algorithm for a generic type T. An appropriate solution is to use `T extends
+  Number` such that our FoxOtto implementation can use numeric operations and
+  we can later decide whether to use Integer or Double precision. I will now
+  compare this solution with hard-coding integers and doubles (for example)
+  into private memory:
+  - The generic typing `T` ripples up in our class hierarchy, causing us to
+    need to specify it for other classes like `Worker` and `MemoryController`
+    as well
+  - When implementing the `FoxOtto` class or similar worker classes, we must
+    use boxed number variables, which is both cumbersome and inefficient. Stack
+    variables would be more efficient and easier to work with.
+  + We are more flexible in the type of variables we use, and don't need to change
+    much code to use different  private memory types. However, to start with the only
+    realistic types to use are `int`s and `double`s, and this is just two different types
+    which is easy to hard-code. An extension may involve doing sparse matrix multiplication
+    later, in which case we would store a list instead of a matrix with each processing
+    element. It would be nice to just do `PrivateMemory<List>` in that case, but we can still
+    remove generic and just subclass `PrivateMemory` to create a version that uses `List`s,
+    we would then refactor `Manager` slightly to use a `Supplier<PrivateMemory>` instead
+    of creating it itself, allowing use the new version easily and still get the benefits
+    above.
+* Factory interface for Worker and need to implement this for e.g. `FoxOtto` and other
+  implementations. Alternative is using reflection to get the super constructor, which
+  might just be possible with the non-generic version because we can't get the
+  `Class` objects for generic classes like `PrivateMemory<T>`...
+
+
+TODO next: Done with refactoring generic-removal, so now get on with making the WorkerFactory and getting the WorkerCommunicationTest done
