@@ -1,6 +1,7 @@
 package memoryModel;
 
 import jdk.jfr.Description;
+import memoryModel.topology.SquareGridTopology;
 import org.junit.jupiter.api.Test;
 import util.Matrix;
 

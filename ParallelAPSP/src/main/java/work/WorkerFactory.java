@@ -1,9 +1,11 @@
-package memoryModel;
+package work;
+
+import memoryModel.MemoryController;
+import memoryModel.PrivateMemory;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.concurrent.CyclicBarrier;
-import java.util.function.Function;
 
 public class WorkerFactory {
 

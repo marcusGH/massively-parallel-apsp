@@ -2,13 +2,12 @@ package memoryModel;
 
 import javafx.util.Pair;
 import jdk.jshell.spi.ExecutionControl;
+import memoryModel.topology.Topology;
 import util.Matrix;
 import util.Triple;
 
-import javax.management.MBeanAttributeInfo;
 import java.util.*;
 import java.util.function.Function;
-import java.util.function.Supplier;
 
 /**
  * TODO: explain how flush etc. works
@@ -80,7 +79,7 @@ public class MemoryController {
      * @throws CommunicationChannelCongestionException if it's not possible to perform all the communications
      *         scheduled in parallel without queueing.
      */
-    void broadcastRow(int i, int j, Number value) throws CommunicationChannelCongestionException {
+    public void broadcastRow(int i, int j, Number value) throws CommunicationChannelCongestionException {
         synchronized (this.rowBroadcastData) {
             synchronized (this.rowBroadcasterID) {
                 Pair<Integer, Integer> newID = new Pair<>(i, j);
@@ -108,7 +107,7 @@ public class MemoryController {
      * @throws CommunicationChannelCongestionException if it's not possible to perform all the communications
      *         scheduled in parallel without queueing.
      */
-    void broadcastCol(int i, int j, Number value) throws CommunicationChannelCongestionException {
+    public void broadcastCol(int i, int j, Number value) throws CommunicationChannelCongestionException {
         synchronized (this.colBroadcastData) {
             synchronized (this.colBroadcasterID) {
                 Pair<Integer, Integer> newID = new Pair<>(i, j);
@@ -137,7 +136,7 @@ public class MemoryController {
      * @param mj non-negative integer smaller than the private memory size
      * @param label String label used in private memory access
      */
-    void receiveRowBroadcast(int i, int j, int mi, int mj, String label) {
+    public void receiveRowBroadcast(int i, int j, int mi, int mj, String label) {
         synchronized (this.rowBroadcastReceiveArguments) {
             this.rowBroadcastReceiveArguments.get(i, j).add(new Triple<>(mi, mj, label));
         }
@@ -154,7 +153,7 @@ public class MemoryController {
      * @param mj non-negative integer smaller than the private memory size
      * @param label String label used in private memory access
      */
-    void receiveColBroadcast(int i, int j, int mi, int mj, String label) {
+    public void receiveColBroadcast(int i, int j, int mi, int mj, String label) {
         synchronized (this.colBroadcastReceiveArguments) {
             this.colBroadcastReceiveArguments.get(i, j).add(new Triple<>(mi, mj, label));
         }
@@ -176,7 +175,7 @@ public class MemoryController {
      * @throws CommunicationChannelCongestionException if different processing elements tries to send data to the same
      * node in the same communication phase.
      */
-    void sendData(int sendI, int sendJ, int receiveI, int receiveJ, Number value) throws CommunicationChannelCongestionException {
+    public void sendData(int sendI, int sendJ, int receiveI, int receiveJ, Number value) throws CommunicationChannelCongestionException {
         // TODO: count number of hops before doing below functionality
 
         synchronized (this.sentData) {
@@ -198,7 +197,7 @@ public class MemoryController {
         }
     }
 
-    void receiveData(int i, int j, String label) {
+    public void receiveData(int i, int j, String label) {
         this.receiveData(i, j, 0, 0, label);
     }
 
@@ -212,7 +211,7 @@ public class MemoryController {
      * @param mj non-negative integer ID to private memory
      * @param label String label indicating which memory to store it in
      */
-    void receiveData(int i, int j, int mi, int mj, String label) {
+    public void receiveData(int i, int j, int mi, int mj, String label) {
         synchronized (this.receiveArguments) {
             this.receiveArguments.get(i, j).add(new Triple<>(mi, mj, label));
         }

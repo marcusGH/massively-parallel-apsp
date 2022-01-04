@@ -1,5 +1,8 @@
-package memoryModel;
+package work;
 
+import memoryModel.CommunicationChannelCongestionException;
+import memoryModel.MemoryController;
+import memoryModel.PrivateMemory;
 import org.junit.platform.commons.util.ExceptionUtils;
 
 import java.util.concurrent.BrokenBarrierException;

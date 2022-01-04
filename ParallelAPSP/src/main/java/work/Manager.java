@@ -1,17 +1,14 @@
-package memoryModel;
+package work;
 
-import com.sun.jdi.IntegerType;
+import memoryModel.*;
+import memoryModel.topology.Topology;
 import util.Matrix;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
-import java.util.concurrent.CompletionException;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Function;
-import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 

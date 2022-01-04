@@ -1,6 +1,7 @@
 package graphReader;
 
 import javafx.util.Pair;
+import util.Triple;
 
 import java.io.*;
 import java.text.ParseException;
@@ -63,17 +64,17 @@ public class GraphReader {
         }
         // perform remapping
         return edges.stream().map(triple ->
-                new Triple<>(idMap.get(triple.x), idMap.get(triple.y), triple.z))
+                new Triple<>(idMap.get(triple.x()), idMap.get(triple.y()), triple.z()))
                 .collect(Collectors.toList());
     }
 
     private Set<Integer> getNodeIDSet(List<Triple<Integer, Integer, Double>> edges) {
         // Create a set of all the distinct node IDs found in the list of edges
         Set<Integer> nodeIds = edges.stream()
-                .mapToInt(triple -> triple.x)
+                .mapToInt(Triple::x)
                 .collect(HashSet::new, HashSet::add, AbstractCollection::addAll);
         nodeIds.addAll(edges.stream()
-                .mapToInt(triple -> triple.y)
+                .mapToInt(Triple::y)
                 .collect(HashSet::new, HashSet::add, AbstractCollection::addAll));
         return nodeIds;
     }
@@ -86,9 +87,9 @@ public class GraphReader {
         }
         // add entries for each edge
         for (Triple<Integer, Integer, Double> triple : edges) {
-            adjList.get(triple.x).add(new Pair<>(triple.y, triple.z));
+            adjList.get(triple.x()).add(new Pair<>(triple.y(), triple.z()));
             if (!isDirected) {
-                adjList.get(triple.y).add(new Pair<>(triple.x, triple.z));
+                adjList.get(triple.y()).add(new Pair<>(triple.x(), triple.z()));
             }
         }
         return adjList;
@@ -97,9 +98,9 @@ public class GraphReader {
     public Matrix<Double> getAdjacencyMatrix(boolean isDirected) {
         Matrix<Double> mat = new Matrix<>(n, () -> Double.POSITIVE_INFINITY);
         for (Triple<Integer, Integer, Double> e : edges) {
-            mat.set(e.x, e.y, e.z);
+            mat.set(e.x(), e.y(), e.z());
             if (!isDirected) {
-                mat.set(e.y, e.x, e.z);
+                mat.set(e.y(), e.x(), e.z());
             }
         }
         return mat;

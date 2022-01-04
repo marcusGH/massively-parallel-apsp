@@ -1,18 +1,15 @@
-package memoryModel;
+package work;
 
 import jdk.jfr.Description;
+import memoryModel.CommunicationChannelCongestionException;
+import memoryModel.MemoryController;
+import memoryModel.PrivateMemory;
+import memoryModel.topology.SquareGridTopology;
 import org.junit.jupiter.api.Test;
 import util.LoggerFormatter;
-import util.Matrix;
 
-import java.lang.reflect.Constructor;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Function;
-import java.util.logging.ConsoleHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 

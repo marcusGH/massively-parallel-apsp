@@ -1,4 +1,4 @@
-package memoryModel;
+package memoryModel.topology;
 
 import java.lang.Math;
 
