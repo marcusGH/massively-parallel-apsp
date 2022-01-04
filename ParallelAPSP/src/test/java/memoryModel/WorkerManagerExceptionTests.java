@@ -19,7 +19,7 @@ import java.util.logging.Logger;
 import static java.lang.Integer.max;
 import static org.junit.jupiter.api.Assertions.*;
 
-class WorkerCommunicationExceptionTest {
+class WorkerManagerExceptionTests {
 
     private static final Logger LOGGER = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
 
