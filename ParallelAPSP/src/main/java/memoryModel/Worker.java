@@ -4,8 +4,12 @@ import org.junit.platform.commons.util.ExceptionUtils;
 
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public abstract class Worker implements Runnable {
+    private static final Logger LOGGER = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
+
     protected final int i;
     protected final int j;
     protected final int p;
@@ -101,31 +105,55 @@ public abstract class Worker implements Runnable {
     public void run() {
         // TODO: add timers
         for (int l = 0; l < this.numPhases; l++) {
+            // Communication before
             try {
+                LOGGER.log(Level.FINER, "Worker({0}, {1}) is starting communicationBefore phase {2}", new Object[]{i, j, l});
                 this.communicationBefore(l);
-                this.cyclicBarrier.await();
-            } catch (CommunicationChannelCongestionException | InterruptedException | BrokenBarrierException e) {
-                System.err.println(String.format("Worker(%d, %d) encountered an error in communicationBefore phase %d: %s. %s",
-                        this.i, this.j, l, e.getMessage(), ExceptionUtils.readStackTrace(e)));
+            } catch (CommunicationChannelCongestionException e) {
+                LOGGER.log(Level.WARNING, "Worker({0}, {1}) encountered an error in communicationBefore phase {2}: {3}",
+                        new Object[]{this.i, this.j, l, ExceptionUtils.readStackTrace(e)});
                 this.runExceptionHandler.run();
             }
 
-            if (Thread.currentThread().isInterrupted()) {
+            // "Communication before"-synchronisation
+            try {
+                // If the thread has its interrupted status set on entry to this method or is interrupted while waiting,
+                // the barrier enters a broken state. This means that all threads already waiting or are arriving at a
+                // later time will throw an Exception, allowing us to gracefully break all running threads out of the
+                // for-loop
+                this.cyclicBarrier.await();
+            } catch (InterruptedException | BrokenBarrierException e) {
+                LOGGER.log(Level.WARNING, "Worker({0}, {1}): Cyclic barrier is broken, so stopping computation.", new Object[]{i, j});
                 break;
-            } else {
+            }
+
+            // Computation
+            LOGGER.log(Level.FINER, "Worker({0}, {1}) is starting computation phase {2}", new Object[]{i, j, l});
+            if (!Thread.currentThread().isInterrupted()) {
                 this.computation(l);
             }
 
+            // Communication after
             try {
+                LOGGER.log(Level.FINER, "Worker({0}, {1}) is starting communicationAfter phase {2}", new Object[]{i, j, l});
                 this.communicationAfter(l);
-                this.cyclicBarrier.await();
-            } catch (CommunicationChannelCongestionException | InterruptedException | BrokenBarrierException e) {
-                System.err.println(String.format("Worker(%d, %d) encountered an error in communicationAfter phase %d: %s. %s",
-                        this.i, this.j, l, e.getMessage(), ExceptionUtils.readStackTrace(e)));
+            } catch (CommunicationChannelCongestionException e) {
+                LOGGER.log(Level.WARNING,"Worker({0}, {1}) encountered an error in communicationAfter phase {2}: {3}",
+                        new Object[]{this.i, this.j, l, ExceptionUtils.readStackTrace(e)});
                 this.runExceptionHandler.run();
             }
 
-            if (Thread.currentThread().isInterrupted()) break;
+            // "Communication after"-synchronisation
+            try {
+                // If the thread has its interrupted status set on entry to this method or is interrupted while waiting,
+                // the barrier enters a broken state. This means that all threads already waiting or are arriving at a
+                // later time will throw an Exception, allowing us to gracefully break all running threads out of the
+                // for-loop
+                this.cyclicBarrier.await();
+            } catch (InterruptedException | BrokenBarrierException e) {
+                LOGGER.log(Level.WARNING, "Worker({0}, {1}): Cyclic barrier is broken, so stopping computation.", new Object[]{i, j});
+                break;
+            }
         }
     }
 
