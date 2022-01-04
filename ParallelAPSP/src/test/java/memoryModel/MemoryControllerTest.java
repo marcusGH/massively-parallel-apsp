@@ -12,8 +12,8 @@ class MemoryControllerTest {
     @Description("Tests point-to-point communication with sendData and receiveData")
     void pointToPoint1() {
         // SETUP
-        Matrix<PrivateMemory<Integer>> privateMemory = new Matrix<>(3, () -> new PrivateMemory<>(1));
-        MemoryController<Integer> mc = new MemoryController<>(3, privateMemory, SquareGridTopology::new);
+        Matrix<PrivateMemory> privateMemory = new Matrix<>(3, () -> new PrivateMemory(1));
+        MemoryController mc = new MemoryController(3, privateMemory, SquareGridTopology::new);
 
         // ACT
         try {
@@ -25,7 +25,7 @@ class MemoryControllerTest {
         }
 
         // ASSERT
-        assertEquals(privateMemory.get(1, 0).get("A"), 42);
+        assertEquals(privateMemory.get(1, 0).getDouble("A"), 42);
     }
 
     @Test
@@ -34,8 +34,8 @@ class MemoryControllerTest {
         // SETUP
 
         // 5 x 5 grid of PEs each with 1 x 1 private memory
-        Matrix<PrivateMemory<Double>> privateMemory = new Matrix<>(5, () -> new PrivateMemory<>(1));
-        MemoryController<Double> mc = new MemoryController<>(5, privateMemory, SquareGridTopology::new);
+        Matrix<PrivateMemory> privateMemory = new Matrix<>(5, () -> new PrivateMemory(1));
+        MemoryController mc = new MemoryController(5, privateMemory, SquareGridTopology::new);
 
         // ACT
         try {
@@ -51,16 +51,16 @@ class MemoryControllerTest {
         }
 
         // ASSERT
-        assertEquals(privateMemory.get(3, 3).get("A"), 3.14);
-        assertEquals(privateMemory.get(2, 1).get("A"), 2.71);
+        assertEquals(privateMemory.get(3, 3).getDouble("A"), 3.14);
+        assertEquals(privateMemory.get(2, 1).getDouble("A"), 2.71);
     }
 
     @Test
     @Description("Tests row broadcast communication with broadcastRow and receiveRowBroadcast")
     void broadcastRow1() {
         // SETUP
-        Matrix<PrivateMemory<Double>> privateMemory = new Matrix<>(3, () -> new PrivateMemory<>(1));
-        MemoryController<Double> mc = new MemoryController<>(3, privateMemory, SquareGridTopology::new);
+        Matrix<PrivateMemory> privateMemory = new Matrix<>(3, () -> new PrivateMemory(1));
+        MemoryController mc = new MemoryController(3, privateMemory, SquareGridTopology::new);
 
         // ACT
         try {
@@ -75,9 +75,9 @@ class MemoryControllerTest {
         }
 
         // ASSERT
-        assertEquals(privateMemory.get(2, 0).get("A"), 3.14);
-        assertEquals(privateMemory.get(2, 1).get("A"), 3.14);
-        assertEquals(privateMemory.get(2, 2).get("A"), 3.14);
+        assertEquals(privateMemory.get(2, 0).getDouble("A"), 3.14);
+        assertEquals(privateMemory.get(2, 1).getDouble("A"), 3.14);
+        assertEquals(privateMemory.get(2, 2).getDouble("A"), 3.14);
     }
 
 
@@ -85,8 +85,8 @@ class MemoryControllerTest {
     @Description("Tests col broadcast communication with broadcastCol and receiveColBroadcast")
     void broadcastCol1() {
         // SETUP
-        Matrix<PrivateMemory<Double>> privateMemory = new Matrix<>(3, () -> new PrivateMemory<>(1));
-        MemoryController<Double> mc = new MemoryController<>(3, privateMemory, SquareGridTopology::new);
+        Matrix<PrivateMemory> privateMemory = new Matrix<>(3, () -> new PrivateMemory(1));
+        MemoryController mc = new MemoryController(3, privateMemory, SquareGridTopology::new);
 
         // ACT
         try {
@@ -101,9 +101,9 @@ class MemoryControllerTest {
         }
 
         // ASSERT
-        assertEquals(privateMemory.get(0, 1).get("A"), 3.14);
-        assertEquals(privateMemory.get(1, 1).get("A"), 3.14);
-        assertEquals(privateMemory.get(2, 1).get("A"), 3.14);
+        assertEquals(privateMemory.get(0, 1).getDouble("A"), 3.14);
+        assertEquals(privateMemory.get(1, 1).getDouble("A"), 3.14);
+        assertEquals(privateMemory.get(2, 1).getDouble("A"), 3.14);
     }
 
     // TODO: add more tests for when things go wrong, and assert correct exception is thrown

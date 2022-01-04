@@ -5,13 +5,13 @@ import org.junit.platform.commons.util.ExceptionUtils;
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
 
-public abstract class Worker<T> implements Runnable {
+public abstract class Worker implements Runnable {
     protected final int i;
     protected final int j;
     protected final int p;
     private final int numPhases;
-    private final PrivateMemory<T> privateMemory;
-    private final MemoryController<T> memoryController;
+    private final PrivateMemory privateMemory;
+    private final MemoryController memoryController;
     private final CyclicBarrier cyclicBarrier;
     private final Runnable runExceptionHandler;
 
@@ -21,8 +21,8 @@ public abstract class Worker<T> implements Runnable {
 //    }
 
 
-    protected Worker(int i, int j, int p, int numPhases, PrivateMemory<T> privateMemory,
-                     MemoryController<T> memoryController, CyclicBarrier cyclicBarrier, Runnable runExceptionHandler) {
+    public Worker(int i, int j, int p, int numPhases, PrivateMemory privateMemory,
+                     MemoryController memoryController, CyclicBarrier cyclicBarrier, Runnable runExceptionHandler) {
         this.i = i;
         this.j = j;
         this.p = p;
@@ -49,15 +49,19 @@ public abstract class Worker<T> implements Runnable {
 //                                      MemoryController<T> memoryController, CyclicBarrier cyclicBarrier,
 //                                      Runnable runExceptionHandler);
 
-    protected T read(String label) {
+    // TODO: when refactoring memoryModel package, would it be possible to only allow PrivateMemory read-methods to
+    //       be accessible publically? If so, it owuld be better to remove all read methods here and give a protected
+    //       privateMemory reference to the programmer instead. That way, we don't need to replicate all the functionality
+    //       here. ~~Additionally, when subclassing privateMemory, we can use new methods as well~~ No, we can't.
+    protected double read(String label) {
         return this.read(0, 0, label);
     }
 
-    protected T read(int mi, int mj, String label) {
-        return this.privateMemory.get(mi, mj, label);
+    protected double read(int mi, int mj, String label) {
+        return this.privateMemory.getDouble(mi, mj, label);
     }
 
-    protected void send(int i, int j, T value) throws CommunicationChannelCongestionException {
+    protected void send(int i, int j, Number value) throws CommunicationChannelCongestionException {
         this.memoryController.sendData(this.i, this.j,  i, j, value);
     }
 
@@ -69,11 +73,11 @@ public abstract class Worker<T> implements Runnable {
         this.memoryController.receiveData(this.i, this.j, mi, mj, label);
     }
 
-    protected void broadcastRow(T value) throws CommunicationChannelCongestionException {
+    protected void broadcastRow(Number value) throws CommunicationChannelCongestionException {
         this.memoryController.broadcastRow(this.i, this.j, value);
     }
 
-    protected void broadcastCol(T value) throws CommunicationChannelCongestionException {
+    protected void broadcastCol(Number value) throws CommunicationChannelCongestionException {
         this.memoryController.broadcastCol(this.i, this.j, value);
     }
 
@@ -125,7 +129,7 @@ public abstract class Worker<T> implements Runnable {
         }
     }
 
-    public PrivateMemory<T> getPrivateMemory() {
+    public PrivateMemory getPrivateMemory() {
         return privateMemory;
     }
 }

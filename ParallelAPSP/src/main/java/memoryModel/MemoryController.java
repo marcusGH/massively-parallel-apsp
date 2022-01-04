@@ -13,16 +13,15 @@ import java.util.function.Supplier;
 /**
  * TODO: explain how flush etc. works
  * TODO: explain idea behind synchronized
- * @param <T>
  */
-public class MemoryController<T> {
+public class MemoryController {
     private int p;
-    private Matrix<PrivateMemory<T>> privateMemories;
+    private Matrix<PrivateMemory> privateMemories;
     private Topology memoryTopology;
 
     // broadcasting
-    private final List<Queue<T>> colBroadcastData;
-    private final List<Queue<T>> rowBroadcastData;
+    private final List<Queue<Number>> colBroadcastData;
+    private final List<Queue<Number>> rowBroadcastData;
     // IDs of the PEs using the row- and column broadcast highways
     private final List<Optional<Pair<Integer, Integer>>> colBroadcasterID;
     private final List<Optional<Pair<Integer, Integer>>> rowBroadcasterID;
@@ -30,7 +29,7 @@ public class MemoryController<T> {
     private final Matrix<Queue<Triple<Integer, Integer, String>>> colBroadcastReceiveArguments;
 
     // point-to-point communications
-    private final Matrix<Queue<T>> sentData;
+    private final Matrix<Queue<Number>> sentData;
     // item (i, j) gives ID of the sender of the data destined to PE(i, j)
     private final Matrix<Optional<Pair<Integer, Integer>>> senderToRecipientID;
     private final Matrix<Queue<Triple<Integer, Integer, String>>> receiveArguments;
@@ -44,7 +43,7 @@ public class MemoryController<T> {
      * @param privateMemories a matrix of private memories of type T
      * @param memoryTopologySupplier a constructor taking an Integer and returning a Topology
      */
-    public MemoryController(int p, Matrix<PrivateMemory<T>> privateMemories, Function<Integer, ? extends Topology> memoryTopologySupplier) {
+    public MemoryController(int p, Matrix<PrivateMemory> privateMemories, Function<Integer, ? extends Topology> memoryTopologySupplier) {
         this.p = p;
         this.privateMemories = privateMemories;
         this.memoryTopology = memoryTopologySupplier.apply(p);
@@ -81,7 +80,7 @@ public class MemoryController<T> {
      * @throws CommunicationChannelCongestionException if it's not possible to perform all the communications
      *         scheduled in parallel without queueing.
      */
-    void broadcastRow(int i, int j, T value) throws CommunicationChannelCongestionException {
+    void broadcastRow(int i, int j, Number value) throws CommunicationChannelCongestionException {
         synchronized (this.rowBroadcastData) {
             synchronized (this.rowBroadcasterID) {
                 Pair<Integer, Integer> newID = new Pair<>(i, j);
@@ -109,7 +108,7 @@ public class MemoryController<T> {
      * @throws CommunicationChannelCongestionException if it's not possible to perform all the communications
      *         scheduled in parallel without queueing.
      */
-    void broadcastCol(int i, int j, T value) throws CommunicationChannelCongestionException {
+    void broadcastCol(int i, int j, Number value) throws CommunicationChannelCongestionException {
         synchronized (this.colBroadcastData) {
             synchronized (this.colBroadcasterID) {
                 Pair<Integer, Integer> newID = new Pair<>(i, j);
@@ -177,7 +176,7 @@ public class MemoryController<T> {
      * @throws CommunicationChannelCongestionException if different processing elements tries to send data to the same
      * node in the same communication phase.
      */
-    void sendData(int sendI, int sendJ, int receiveI, int receiveJ, T value) throws CommunicationChannelCongestionException {
+    void sendData(int sendI, int sendJ, int receiveI, int receiveJ, Number value) throws CommunicationChannelCongestionException {
         // TODO: count number of hops before doing below functionality
 
         synchronized (this.sentData) {
@@ -236,12 +235,12 @@ public class MemoryController<T> {
         // we handle the point-to-point communication first
         for (int i = 0; i < this.p; i++) {
             for (int j = 0; j < this.p; j++) {
-                Queue<T> sentDataQueue = this.sentData.get(i, j);
+                Queue<Number> sentDataQueue = this.sentData.get(i, j);
                 Queue<Triple<Integer, Integer, String>> receiveArgumentsQueue = this.receiveArguments.get(i, j);
 
                 // match up sent data with receive arguments
                 while (!sentDataQueue.isEmpty() && !receiveArgumentsQueue.isEmpty()) {
-                    T datum = sentDataQueue.poll();
+                    Number datum = sentDataQueue.poll();
                     Triple<Integer, Integer, String> args = receiveArgumentsQueue.poll();
                     // we checked if empty in while loop above
                     assert args != null;
@@ -259,9 +258,9 @@ public class MemoryController<T> {
 
         // we now handle row-broadcasting
         for (int i = 0; i < this.p; i++) {
-            Queue<T> rowBroadcastDataQueue = this.rowBroadcastData.get(i);
+            Queue<Number> rowBroadcastDataQueue = this.rowBroadcastData.get(i);;
             while (!rowBroadcastDataQueue.isEmpty()) {
-                T value = rowBroadcastDataQueue.poll();
+                Number value = rowBroadcastDataQueue.poll();
                 for (int j = 0; j < this.p; j++) {
                     Queue<Triple<Integer, Integer, String>> rowReceiveArgumentsQueue = this.rowBroadcastReceiveArguments.get(i, j);
                     Triple<Integer, Integer, String> args = rowReceiveArgumentsQueue.poll();
@@ -280,9 +279,9 @@ public class MemoryController<T> {
 
         // we then handle column-broadcasting
         for (int j = 0; j < this.p; j++) {
-            Queue<T> colBroadcastDataQueue = this.colBroadcastData.get(j);
+            Queue<Number> colBroadcastDataQueue = this.colBroadcastData.get(j);
             while (!colBroadcastDataQueue.isEmpty()) {
-                T value = colBroadcastDataQueue.poll();
+                Number value = colBroadcastDataQueue.poll();
                 for (int i = 0; i < this.p; i++) {
                     Queue<Triple<Integer, Integer, String>> colReceiveArgumentsQueue = this.colBroadcastReceiveArguments.get(i, j);
                     Triple<Integer, Integer, String> args = colReceiveArgumentsQueue.poll();
