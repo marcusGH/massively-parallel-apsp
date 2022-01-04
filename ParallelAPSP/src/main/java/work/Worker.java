@@ -27,8 +27,23 @@ public abstract class Worker implements Runnable {
 //        this(i, j, n, n, privateMemory, memoryController, cyclicBarrier);
 //    }
 
-
-    public Worker(int i, int j, int p, int numPhases, PrivateMemory privateMemory,
+    /**
+     * Constructs a Worker that handles the computation and communication on behalf of processing element (i, j).
+     * The workers should all be given the same memoryController, cyclicBarrier and runExceptionHandler.
+     *
+     * @param i non-negative row ID of worker
+     * @param j non-negative column ID of worker
+     * @param p non-negative integer such that the number of workers == p ^ 2
+     * @param numPhases number of computation phases to be performed during execution
+     * @param privateMemory the worker's own private memory. May already contain values
+     * @param memoryController a reference to a unique memory controller.
+     *                         All workers should use the same memory controller
+     * @param cyclicBarrier a reference to a unique cyclic barrier.
+     *                      All workers should use the same cyclic barrier.
+     * @param runExceptionHandler a Runnable object that is run only once by an arbitrary worker in case any of the
+     *                            workers encounters an error during execution.
+     */
+    protected Worker(int i, int j, int p, int numPhases, PrivateMemory privateMemory,
                      MemoryController memoryController, CyclicBarrier cyclicBarrier, Runnable runExceptionHandler) {
         this.i = i;
         this.j = j;
@@ -46,20 +61,35 @@ public abstract class Worker implements Runnable {
         // TODO: add method and assert for memory controller
     }
 
+    /**
+     * Defines the computation to be done by Worker(i, j) at computation phase l. Only the method
+     * {@link #read} should be used, not any of the communication methods. This is because the workers are
+     * not synchronised between {@code computation} and {@code communicationAfter}, so there is not guarantee
+     * on the communication order. Additionally, {@link CommunicationChannelCongestionException}s are not
+     * handled appropriately if thrown from this method.
+     *
+     * @param l a non-negative integer representing number of computation phases already completed
+     */
     abstract void computation(int l);
 
+    /**
+     * Defines the communication to be done by Worker(i, j) prior to computation phase l.
+     *
+     * @param l a non-negative integer representing the number of execution phases already completed
+     * @throws CommunicationChannelCongestionException if different workers try to send data to the same
+     * worker using the same communication method in the same phase.
+     */
     abstract void communicationBefore(int l) throws CommunicationChannelCongestionException;
 
+    /**
+     * Defines the communication to be done by Worker(i, j) after computation phase l.
+     *
+     * @param l a non-negative integer representing the number of execution phases already completed
+     * @throws CommunicationChannelCongestionException if different workers try to send data to the same
+     * worker using the same communication method in the same phase.
+     */
     abstract void communicationAfter(int l) throws CommunicationChannelCongestionException;
 
-//    static Worker<T> workerSupplier(int i, int j, int p, int numPhases, PrivateMemory<T> privateMemory,
-//                                      MemoryController<T> memoryController, CyclicBarrier cyclicBarrier,
-//                                      Runnable runExceptionHandler);
-
-    // TODO: when refactoring memoryModel package, would it be possible to only allow PrivateMemory read-methods to
-    //       be accessible publically? If so, it owuld be better to remove all read methods here and give a protected
-    //       privateMemory reference to the programmer instead. That way, we don't need to replicate all the functionality
-    //       here. ~~Additionally, when subclassing privateMemory, we can use new methods as well~~ No, we can't.
     protected double read(String label) {
         return this.read(0, 0, label);
     }
