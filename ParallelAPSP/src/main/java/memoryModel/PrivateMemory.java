@@ -81,12 +81,12 @@ public class PrivateMemory {
         throw new RuntimeException(new ExecutionControl.NotImplementedException("This method is not yet implemented"));
     }
 
-    public void set(String label, int value) {
-        throw new RuntimeException(new ExecutionControl.NotImplementedException("This method is not yet implemented"));
-    }
-
-    public void set(int mi, int mj, String label, int value) {
-        throw new RuntimeException(new ExecutionControl.NotImplementedException("This method is not yet implemented"));
-    }
+//    public void set(String label, int value) {
+//        throw new RuntimeException(new ExecutionControl.NotImplementedException("This method is not yet implemented"));
+//    }
+//
+//    public void set(int mi, int mj, String label, int value) {
+//        throw new RuntimeException(new ExecutionControl.NotImplementedException("This method is not yet implemented"));
+//    }
 }
 

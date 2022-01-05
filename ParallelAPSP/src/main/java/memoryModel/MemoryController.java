@@ -85,9 +85,9 @@ public class MemoryController {
                 Pair<Integer, Integer> newID = new Pair<>(i, j);
                 Optional<Pair<Integer, Integer>> oldID = this.rowBroadcasterID.get(i);
                 if (oldID.isPresent() && !oldID.get().equals(newID)) {
-                    throw new CommunicationChannelCongestionException("The row broadcast highway with id "
-                            + i + " is already in use by PE " + oldID
-                            + ", so PE (" + i + ", " + j + ") cannot use it.");
+                    throw new CommunicationChannelCongestionException(String.format("The row broadcast highway with id "
+                            + "%d is already in use by PE(%d, %d), so PE(%d, %d) cannot use it.",
+                            i, oldID.get().getKey(), oldID.get().getValue(), i, j));
                 } else {
                     this.rowBroadcastData.get(i).add(value);
                     this.rowBroadcasterID.set(i, Optional.of(newID));
@@ -114,9 +114,9 @@ public class MemoryController {
                 Optional<Pair<Integer, Integer>> oldID = this.colBroadcasterID.get(j);
                 if (oldID.isPresent() && !oldID.get().equals(newID)) {
                     // TODO: refactor to be consistent with below style
-                    throw new CommunicationChannelCongestionException("The column broadcast highway with id "
-                            + j + " is already in use by PE " + oldID
-                            + ", so PE (" + i + ", " + j + ") cannot use it.");
+                    throw new CommunicationChannelCongestionException(String.format("The column broadcast highway with id "
+                                    + "%d is already in use by PE(%d, %d), so PE(%d, %d) cannot use it.",
+                            j, oldID.get().getKey(), oldID.get().getValue(), i, j));
                 } else {
                     this.colBroadcastData.get(j).add(value);
                     this.colBroadcasterID.set(j, Optional.of(newID));
@@ -177,6 +177,10 @@ public class MemoryController {
      */
     public void sendData(int sendI, int sendJ, int receiveI, int receiveJ, Number value) throws CommunicationChannelCongestionException {
         // TODO: count number of hops before doing below functionality
+
+        // TODO: do input sanitation here and throw check exception in case of failure. Otherwise, programmer errors
+        //       will lead to program not halting because one or more threads terminate on unchecked exception and
+        //       don't reach the cyclic barrier! (See manager test one if you do send to index out of bounds)
 
         synchronized (this.sentData) {
             synchronized (this.senderToRecipientID) {
@@ -295,6 +299,13 @@ public class MemoryController {
                     }
                 }
             }
+        }
+
+        // we then reset all the sender IDs
+        this.senderToRecipientID.setAll(Optional::empty);
+        for (int i = 0; i < this.p; i++) {
+            this.rowBroadcasterID.set(i, Optional.empty());
+            this.colBroadcasterID.set(i, Optional.empty());
         }
     }
 

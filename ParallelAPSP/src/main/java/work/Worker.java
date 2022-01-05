@@ -98,6 +98,14 @@ public abstract class Worker implements Runnable {
         return this.privateMemory.getDouble(mi, mj, label);
     }
 
+    protected void store(String label, Number value) {
+        this.store(0, 0, label, value);
+    }
+
+    protected void store(int mi, int mj, String label, Number value) {
+        this.privateMemory.set(mi, mj, label, value);
+    }
+
     protected void send(int i, int j, Number value) throws CommunicationChannelCongestionException {
         this.memoryController.sendData(this.i, this.j,  i, j, value);
     }

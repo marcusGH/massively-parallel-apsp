@@ -5,9 +5,13 @@ import memoryModel.PrivateMemory;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Arrays;
 import java.util.concurrent.CyclicBarrier;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class WorkerFactory {
+    private static final Logger LOGGER = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
 
     private MemoryController memoryController;
     private CyclicBarrier cyclicBarrier;
@@ -26,11 +30,15 @@ public class WorkerFactory {
      * The subtype class provided must have a constructor taking the same arguments as the Worker
      * constructor. Otherwise, an exception is thrown.
      *
-     * @param workerClass a Class object of a subtype of Worker.
+     * @param workerClass a Class object of a subtype of Worker. The subtype MUST HAVE A PUBLIC CONSTRUCTOR.
      * @throws WorkerInstantiationException if the subclass provided does not have the appropriate constructor
      */
     public WorkerFactory(Class<? extends Worker> workerClass) throws WorkerInstantiationException {
         try {
+            if (workerClass.getConstructors().length == 0) {
+                LOGGER.log(Level.SEVERE, "No constructors were found from reflection of the worker subclass {0}." +
+                        "Try to make its constructor public.", workerClass.getCanonicalName());
+            }
             this.workerConstructor = workerClass.getConstructor(WorkerFactory.workerConstructorParameterTypes);
         } catch (NoSuchMethodException e) {
             e.printStackTrace();

@@ -43,6 +43,29 @@ public class Matrix<T> {
         this.matrix.get(i).set(j, v);
     }
 
+    public void setRow(int i, List<T> values) {
+        assert values.size() == this.n;
+        for (int j = 0; j < this.n; j++) {
+            this.set(i, j, values.get(j));
+        }
+    }
+
+    public void setCol(int j, List<T> values) {
+        assert values.size() == this.n;
+        for (int i = 0; i < this.n; i++) {
+            this.set(i, j, values.get(i));
+        }
+    }
+
+    public void setAll(Supplier<T> valueSupplier) {
+        // fill the matrix with n x n grid of specified fillValue
+        for (int i = 0; i < n; i++) {
+            // invoke supplier n times
+            List<T> row = Stream.generate(valueSupplier).limit(n).collect(Collectors.toList());
+            this.matrix.set(i, row);
+        }
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
@@ -59,6 +82,25 @@ public class Matrix<T> {
             }
         }
         return sb.toString();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (!(obj instanceof Matrix<?>)) {
+            return false;
+        }
+        Matrix<?> other = (Matrix<?>) obj;
+        if (other.n != this.n) {
+            return false;
+        }
+        for (int i = 0; i < this.n; i++) {
+            for (int j = 0; j < this.n; j++) {
+                if (!other.get(i, j).equals(this.get(i, j))) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
     public int size() {
