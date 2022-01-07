@@ -20,6 +20,13 @@
 \usepackage{calc}
 \usepackage{setspace}
 \usepackage{titling}
+% for pseudo code
+\usepackage[linesnumbered,ruled]{algorithm2e} 
+% theorem shortcuts
+\usepackage{amsthm} 
+\usepackage{txfonts} 
+\newtheorem{definition}{Definition}
+
 
 \def\authorname{Marcus Alexander Karmi September\xspace}
 \def\examination{Computer Science Tripos -- Part II}
@@ -69,7 +76,138 @@
 Some text
 \chapter{Preparation}
 
-Some more text
+\section{Some notes about the predecessor matrix}%
+\label{sec:Some notes about the predecessor matrix}
+
+Let $\odot$ represent the $(\min, +)$-matrix product.
+
+Let $A$ be the adjacency matrix for a weighted directed acyclic graph, where all weights
+are positive (cannot be zero).
+
+\begin{definition}
+    A matrix $P$ of size $n \times n$ is a \textit{predecessor matrix} if for
+    every pair $i,j$, we have $d(i,j)=d(i,P(i,j))+w(P(i,j),j)$,
+    where $d(i,j)$ is the distance from $i$ to $j$.
+\end{definition}
+
+This definition gives us a procedure to retrieve a shortest path between any pairs
+of nodes $i$ and $j$, assuming that the two nodes are connected and that the path
+is \textit{simple}, in other words does not revisit any nodes. The procedure works
+as follows: Start with the pair $(i, j)$ and keep replacing $j$ with the predecessor
+$P(i, j)$ until $i = j$, keeping track of the nodes $j$ that are visited.
+
+When computing $A^{(k)}$, we want the product to give us the weight of all paths of
+length $\leq 2^{k}$, not just paths of length equal to $2^k$. To achieve this, it is
+necessary to set $A[i,i]:=0$ for all $i=1\dots n$. This allows paths of length
+$< 2^k$ to be represented by one or more 0-weight cyclic edges. For instance, we could
+have a 3-length path be represented as $a \rightarrow b \rightarrow c \rightarrow c$ in
+$A^{(2)}$. However, this invalidates one of the assumptions behind the 
+procedure to reconstruct paths from the predecessor matrix
+$P$: The paths must be \textit{simple}. We can mitigate this problem by adding another
+constraint to the predecessor matrix $P$: If there is a simple path $i \rightarrow^* j$
+of length $\leq 2^k$ that consists of 1 or more edges, we have $P(i,j)\neq j$.
+I will get to a proof of why this causes our procedure of reconstructing paths
+to always terminate and give a simple path in a moment, if we construct $P$ using
+algorithm $\ref{alg:one}$.
+
+\begin{definition}
+    A witness for $(A \odot B)[i, j]$ is the element $W[i,j]$ of the witness
+    matrix. This witness is the index $k$ that gives
+    $A[i,k] + B[k,j] = (A \odot B)[i,j]$ in other words, it is the argmin of
+    $A[i,k] + B[k,j]$ in the $\odot$-product.
+\end{definition}
+
+With this definition, we can give our algorithm for computing the transitive closure
+of a graph $G$ captured by adjacency matrix $A$ (see algorithm \ref{alg:one}).
+
+\begin{algorithm}
+    \caption{Transitive closure of graph with adjacency matrix A}\label{alg:one}
+    \KwData{$A$}
+    \KwResult{$T,P$}
+    $A^{(0)} \gets A$
+
+    For all $i$, $A^{(0)}[i, i] \gets 0$
+
+    For all $i$ and $j$, $P^{(0)} \gets j$ if $A^{(0)}[i,j] = \infty, i$ otherwise
+
+
+    \For{$k=1,\dots,\log n$}{
+        $A^{(k)} \gets (A^{(k-1)})^2$
+
+        $W^{(k)} \gets $ witness matrix for the product above
+
+        \For{all pairs $i$ and $j$}{
+            \eIf{$W^{(k)}[i,j]=j$}{
+                $P^{(k)}[i,j] \gets P^{(k-1)}[i,j]$
+            }{
+                $P^{(k)}[i,j] \gets P^{(k-1)}[W^{(k)}[i,j],\;j]$
+            }
+        }
+    }
+    $T \gets A^{(\log n)}$
+
+    $P \gets P^{(\log n)}$
+
+    \Return{$(T, P)$}
+\end{algorithm}
+
+We now argue for why the returned predecessor matrix is correct, where \textit{correct}
+means that it will cause the above-described procedure for reconstructing paths to
+halt at $i=j$ for any pair $i\neq j$ if there is a simple path of non-zero length from $i$
+to $j$.  We do so by induction on the $k$.
+
+After iteration $k$, we claim $P^{(k)}$ is a correct predecessor matrix for all paths
+$i \rightarrow^* j$ of length $\leq 2^k$. The base case $k=0$ follows from line 3
+in our algorithm. When $k > 0$, assume there is a path of length $\leq 2^k$ from $i$
+to $j$. If we let $w = W^{(k)}[i,j]$, we get by induction that there are paths
+$i \rightsquigarrow w$ and $w \rightsquigarrow j$ (which are simple if $i\neq w$
+and $w\neq j$, respectively) which are each of length $\leq 2^{k-1}$. Consider the
+case $w=j$: This triggers the if-condition on line 8, so we use the same predecessor
+as previously, which must be correct by induction. Now consider $w\neq j$: The
+predecessor of path $i \rightsquigarrow j$ is the same as predecessor of path
+$w \rightsquigarrow j$, which we assign on line 11.
+
+I have written the above code for ease of reading and to make the proof simpler.
+When implementing this, it is possible to perform both the matrix multiplication,
+the witness matrix computation and compute the predecessor matrix, all in one go,
+allowing everything to be computed in parallel. This can be done as follows:
+
+\begin{algorithm}
+    \caption{Computation done by $PE(i,j)$}\label{alg:two}
+    \KwData{$i,j,n,A,W,P$}
+
+    $a \gets \infty$
+
+    $W[i, j] \gets j$
+
+    \For{$w=1,\dots,n$}{
+        \tcc{Prior to this, $PE(i, j)$ has received $P[w,j]$, $A[w, j]$ and $A[i,w]$ from
+        the appropriate processing elements.}
+
+        \If{$A[i,w] + A[w,j] < a$}{
+            $a \gets A[i,w] + A[w,j]$
+
+            $W[i, j] \gets w$ \tcp{The matrix $W$ is not needed here,
+            but given here for completeness}
+
+            \eIf{$w = j$}{
+                $P[i, j] \gets P[i,j]$
+            }{
+                $P[i, j] \gets P[w, j]$
+            }
+        }
+    }
+
+
+
+\end{algorithm}
+
+
+
+
+
+
+
 \chapter{Implementation}
 Even more text
 \chapter{Evaluation}

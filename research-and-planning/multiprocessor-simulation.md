@@ -271,6 +271,7 @@ Some more design decisions:
   implementations. Alternative is using reflection to get the super constructor, which
   might just be possible with the non-generic version because we can't get the
   `Class` objects for generic classes like `PrivateMemory<T>`...
+* Adapter pattern for timing analysis. Make a class TimingWorker where constructor takes a Worker object :))
 
 
 TODO next: Done with refactoring generic-removal, so now get on with making the WorkerFactory and getting the WorkerCommunicationTest done
