@@ -122,6 +122,9 @@ at as a further optimisation of the algorithm.
   * TODO: read this!
 * More reading material on APSP predeccessor matrix: [link](http://theory.stanford.edu/~virgi/cs367/oldlecs/lecture7.pdf)
 
+* [Zwick's algorithm](https://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=743464)
+  * This does approximation to calculate product of matrices, witness notation from here
+
 ## Planning
 
 [Multiprocessor simulation](multiprocessor-simulation.md)

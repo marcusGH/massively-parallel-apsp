@@ -272,6 +272,21 @@ Some more design decisions:
   might just be possible with the non-generic version because we can't get the
   `Class` objects for generic classes like `PrivateMemory<T>`...
 * Adapter pattern for timing analysis. Make a class TimingWorker where constructor takes a Worker object :))
+* **ExecutorService vs. creating Threads manually**:
+  * One latter, we have:
+    * CycliBarrier, manual thread creation, Runnable run between synchronisations
+    + Worker implements Runnable and nice run that only needs to be executed once
+    - Cumbersome exception handling in case any worker fails and want to stop them all
+    - Must synchronise with CyclicBarrier and somewhat nasty Runnable that does flush, and
+      can't properly catch exceptions
+    - Exception handling done by all workers holding onto same Runnable, and need to acquire
+      lock htrough manual concurrent programming so that only one thread runs it
+  * With former, we have:
+    * Everything contained in Manager, but must have seperate runnables that the Worker must provide
+    + Everything can be managed within the Manager class
+    + Synchronisation happens implicitly in that they will only do one phase at a time
+    + Easy to handle exception through Callable, and return back to user
+    - Worker needs to have methods giving Runnables, not be Runnable itself
 
 
 TODO next: Done with refactoring generic-removal, so now get on with making the WorkerFactory and getting the WorkerCommunicationTest done
