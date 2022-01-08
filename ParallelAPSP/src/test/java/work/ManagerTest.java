@@ -1,18 +1,30 @@
 package work;
 
 import memoryModel.CommunicationChannelCongestionException;
+import memoryModel.CommunicationChannelException;
 import memoryModel.MemoryController;
 import memoryModel.PrivateMemory;
 import memoryModel.topology.SquareGridTopology;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import util.LoggerFormatter;
 import util.Matrix;
 
 import java.util.*;
-import java.util.concurrent.CyclicBarrier;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class ManagerTest {
+
+    private static final Logger LOGGER = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
+
+    @BeforeAll
+    static void setupLogger() {
+        LoggerFormatter.setupLogger(LOGGER, Level.ALL);
+    }
+
     @Test
     void simpleComputationWithCommunicationGivesCorrectValue() {
         // SETUP
@@ -51,7 +63,7 @@ class ManagerTest {
         try {
             m.doWork();
             result = m.getResult("C");
-        } catch (InterruptedException e) {
+        } catch (CommunicationChannelException e) {
             fail("Manager failed to complete work due to interruption");
             return;
         } catch (WorkersFailedToCompleteException e) {
@@ -104,13 +116,10 @@ class ManagerTest {
 
         // ACT
         Matrix<Number> result;
-            try {
+        try {
             m.doWork();
             result = m.getResult("C");
-        } catch (InterruptedException e) {
-            fail("Manager failed to complete work due to interruption");
-            return;
-        } catch (WorkersFailedToCompleteException e) {
+        } catch (WorkersFailedToCompleteException | CommunicationChannelException e) {
             fail("The workers encountered an error during execution");
             return;
         }
@@ -131,6 +140,46 @@ class ManagerTest {
     }
 
     // TODO: another test where the same PE receives data from **different** nodes at each phase
+
+    @Test
+    void managerCanCreateALotOfWorkers() {
+        // SETUP
+        final int n = 50;
+        WorkerFactory wf;
+        Manager m;
+        try {
+            wf = new WorkerFactory(EmptyWorker.class);
+        } catch (WorkerInstantiationException e) {
+            e.printStackTrace();
+            fail("The worker factory could not be instantiated");
+            return;
+        }
+        try {
+            m = new Manager(n, n, null, SquareGridTopology::new, wf);
+        } catch (WorkerInstantiationException e) {
+            e.printStackTrace();
+            fail("The manager could not be created");
+            return;
+        } catch (OutOfMemoryError e) {
+            e.printStackTrace();
+            fail("The manager could not create the specified number of threads");
+            return;
+        }
+
+        // ACT
+        try {
+            LoggerFormatter.setupLogger(LOGGER, Level.INFO);
+            m.doWork();
+            m.getResult(null);
+            LoggerFormatter.setupLogger(LOGGER, Level.ALL);
+        } catch (CommunicationChannelException | WorkersFailedToCompleteException e) {
+            e.printStackTrace();
+            fail("The workers did not complete computation successfully");
+        }
+
+        // ASSERT
+        assertTrue(true, "The workers completed their empty tasks successfully");
+    }
 }
 
 /**
@@ -139,9 +188,8 @@ class ManagerTest {
  */
 class SimpleCommunicatingWorker extends Worker {
 
-    public SimpleCommunicatingWorker(int i, int j, int p, int numPhases, PrivateMemory privateMemory,
-                                        MemoryController memoryController, CyclicBarrier cyclicBarrier, Runnable runExceptionHandler) {
-        super(i, j, p, numPhases, privateMemory, memoryController, cyclicBarrier, runExceptionHandler);
+    public SimpleCommunicatingWorker(int i, int j, int p, int n, int numPhases, PrivateMemory privateMemory, MemoryController memoryController) {
+        super(i, j, p, n, numPhases, privateMemory, memoryController);
     }
 
     @Override
@@ -172,8 +220,8 @@ class SimpleCommunicatingWorker extends Worker {
  */
 class BroadcastingWorker extends Worker {
 
-    public BroadcastingWorker(int i, int j, int p, int numPhases, PrivateMemory privateMemory, MemoryController memoryController, CyclicBarrier cyclicBarrier, Runnable runExceptionHandler) {
-        super(i, j, p, numPhases, privateMemory, memoryController, cyclicBarrier, runExceptionHandler);
+    public BroadcastingWorker(int i, int j, int p, int n, int numPhases, PrivateMemory privateMemory, MemoryController memoryController) {
+        super(i, j, p, n, numPhases, privateMemory, memoryController);
     }
 
     @Override

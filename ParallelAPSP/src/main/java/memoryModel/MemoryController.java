@@ -231,10 +231,10 @@ public class MemoryController {
      * and receive-arguments and invoke PrivateMemory::set on the processing elements with the corresponding data and
      * receive-arguments.
      *
-     * @throws InconsistentMemoryChannelUsageException if one processing element is scheduled to receive more data than
+     * @throws InconsistentCommunicationChannelUsageException if one processing element is scheduled to receive more data than
      * it has provided receive-arguments more, or vice verse.
      */
-    synchronized public void flush() throws InconsistentMemoryChannelUsageException {
+    synchronized public void flush() throws InconsistentCommunicationChannelUsageException {
         // we handle the point-to-point communication first
         for (int i = 0; i < this.p; i++) {
             for (int j = 0; j < this.p; j++) {
@@ -253,7 +253,7 @@ public class MemoryController {
 
                 // both queues should be empty now
                 if (!sentDataQueue.isEmpty() || !receiveArgumentsQueue.isEmpty()) {
-                    throw new InconsistentMemoryChannelUsageException("Processing element PE(" + i + ", " + j
+                    throw new InconsistentCommunicationChannelUsageException("Processing element PE(" + i + ", " + j
                             + ") did not receive as many data items as it specified it would receive");
                 }
             }
@@ -271,7 +271,7 @@ public class MemoryController {
                     if (value == null && args == null) continue;
                     // look for inconsistencies
                     if (value == null || args == null) {
-                        throw new InconsistentMemoryChannelUsageException("Processing element PE(" + i + ", " + j
+                        throw new InconsistentCommunicationChannelUsageException("Processing element PE(" + i + ", " + j
                                 + ") did not receive as many data items as it specified it would receive through row broadcast");
                     } else {
                         this.privateMemories.get(i, j).set(args.getFirst(), args.getSecond(), args.getThird(), value);
@@ -292,7 +292,7 @@ public class MemoryController {
                     if (value == null && args == null) continue;
                     // look for inconsistencies
                     if (value == null || args == null) {
-                        throw new InconsistentMemoryChannelUsageException("Processing element PE(" + i + ", " + j
+                        throw new InconsistentCommunicationChannelUsageException("Processing element PE(" + i + ", " + j
                                 + ") did not receive as many data items as it specified it would receive through column broadcast");
                     } else {
                         this.privateMemories.get(i, j).set(args.getFirst(), args.getSecond(), args.getThird(), value);

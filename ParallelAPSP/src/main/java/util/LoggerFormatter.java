@@ -1,6 +1,8 @@
 package util;
 
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.*;
 
 public class LoggerFormatter extends Formatter {
@@ -9,6 +11,8 @@ public class LoggerFormatter extends Formatter {
     public static final String ANSI_RED = "\u001B[31m";
     public static final String ANSI_YELLOW = "\u001B[33m";
     public static final String ANSI_CYAN = "\u001B[36m";
+
+    private static Map<String, ConsoleHandler> consoleHandlers = new HashMap<>();
 
     @Override
     public String format(LogRecord logRecord) {
@@ -33,14 +37,21 @@ public class LoggerFormatter extends Formatter {
     }
 
     public static void setupLogger(Logger logger, Level loggerLevel) {
-        logger.setUseParentHandlers(false);
+        // The logger has not been configured yet, but only do it once
+        if (!LoggerFormatter.consoleHandlers.containsKey(logger.getName())) {
+            logger.setUseParentHandlers(false);
 
-        // make the logger print to console
-        ConsoleHandler ch = new ConsoleHandler();
-        ch.setFormatter(new LoggerFormatter());
-        ch.setLevel(loggerLevel);
-        logger.addHandler(ch);
+            // make the logger print to console
+            ConsoleHandler ch = new ConsoleHandler();
+            ch.setFormatter(new LoggerFormatter());
+
+            // We only add the handler once per logger
+            LoggerFormatter.consoleHandlers.put(logger.getName(), ch);
+            logger.addHandler(ch);
+        }
 
         logger.setLevel(loggerLevel);
+        ConsoleHandler ch = LoggerFormatter.consoleHandlers.get(logger.getName());
+        ch.setLevel(loggerLevel);
     }
 }

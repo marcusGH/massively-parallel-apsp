@@ -21,7 +21,7 @@ class MemoryControllerTest {
             mc.sendData(0, 1, 1, 0, 42);
             mc.receiveData(1, 0, 0, 0, "A");
             mc.flush();
-        } catch (CommunicationChannelCongestionException | InconsistentMemoryChannelUsageException e) {
+        } catch (CommunicationChannelCongestionException | InconsistentCommunicationChannelUsageException e) {
             e.printStackTrace();
         }
 
@@ -47,7 +47,7 @@ class MemoryControllerTest {
             mc.sendData(4, 3, 2, 1, 2.71);
             mc.receiveData(2, 1, "A");
             mc.flush();
-        } catch (CommunicationChannelCongestionException | InconsistentMemoryChannelUsageException e) {
+        } catch (CommunicationChannelCongestionException | InconsistentCommunicationChannelUsageException e) {
             e.printStackTrace();
         }
 
@@ -71,7 +71,7 @@ class MemoryControllerTest {
                 mc.receiveRowBroadcast(2, j, 0, 0, "A");
             }
             mc.flush();
-        } catch (CommunicationChannelCongestionException | InconsistentMemoryChannelUsageException e) {
+        } catch (CommunicationChannelCongestionException | InconsistentCommunicationChannelUsageException e) {
             e.printStackTrace();
         }
 
@@ -97,7 +97,7 @@ class MemoryControllerTest {
                 mc.receiveColBroadcast(i, 1, 0, 0, "A");
             }
             mc.flush();
-        } catch (InconsistentMemoryChannelUsageException | CommunicationChannelCongestionException e) {
+        } catch (InconsistentCommunicationChannelUsageException | CommunicationChannelCongestionException e) {
             e.printStackTrace();
         }
 

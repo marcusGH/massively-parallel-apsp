@@ -2,13 +2,14 @@ package work;
 
 import jdk.jfr.Description;
 import memoryModel.CommunicationChannelCongestionException;
+import memoryModel.CommunicationChannelException;
 import memoryModel.MemoryController;
 import memoryModel.PrivateMemory;
 import memoryModel.topology.SquareGridTopology;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import util.LoggerFormatter;
 
-import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -20,10 +21,14 @@ class WorkerManagerExceptionTests {
 
     private static final Logger LOGGER = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
 
+    @BeforeAll
+    static void setupLogger() {
+        LoggerFormatter.setupLogger(LOGGER, Level.ALL);
+    }
+
     @Test
     void workersCompleteWhenNoWorkToBeDone() {
         // SETUP
-        LoggerFormatter.setupLogger(LOGGER, Level.ALL);
         Class<? extends Worker> workerClass = EmptyWorker.class;
 
         Manager m;
@@ -39,7 +44,7 @@ class WorkerManagerExceptionTests {
         // ACT
         try {
             m.doWork();
-        } catch (InterruptedException e) {
+        } catch (CommunicationChannelException | WorkersFailedToCompleteException e) {
             e.printStackTrace();
             fail("Work failed to complete.");
         }
@@ -58,7 +63,6 @@ class WorkerManagerExceptionTests {
             " checks if all the thread exit within 5 second if one of the thread encounters a communication error.")
     void workersFailGracefullyOnCommunicationException() {
         // SETUP
-        LoggerFormatter.setupLogger(LOGGER, Level.ALL);
         Class<? extends Worker> workerClass = FailingWorker.class;
 
         Manager m;
@@ -77,7 +81,7 @@ class WorkerManagerExceptionTests {
         // seconds
         Thread t = new Thread(() -> {
             try {
-                Thread.sleep(5000);
+                Thread.sleep(10000);
             } catch (InterruptedException ignored) { }
             if (!workIsFinished.get()) {
                 workFinishedOnTime.set(false);
@@ -90,10 +94,16 @@ class WorkerManagerExceptionTests {
         try {
             t.start();
             m.doWork();
-            workIsFinished.set(true);
-            t.join();
-        } catch (InterruptedException e) {
+        } catch (CommunicationChannelException | WorkersFailedToCompleteException e) {
             e.printStackTrace();
+        }
+
+        workIsFinished.set(true);
+
+        try {
+            t.join();
+        } catch (InterruptedException ignored) {
+            fail("Thread was unexpectedly interrupted");
         }
 
         // ASSERT
@@ -103,7 +113,6 @@ class WorkerManagerExceptionTests {
     @Test
     void workersExitGracefullyOnInconsistentMemoryChannelUsage() {
         // SETUP
-        LoggerFormatter.setupLogger(LOGGER, Level.ALL);
         Class<? extends Worker> workerClass = InconsistentWorker.class;
 
         Manager m;
@@ -119,9 +128,8 @@ class WorkerManagerExceptionTests {
         // ACT
         try {
             m.doWork();
-        } catch (InterruptedException e) {
+        } catch (CommunicationChannelException | WorkersFailedToCompleteException e) {
             e.printStackTrace();
-            fail("Manager was interrupted");
         }
 
         // ASSERT
@@ -130,11 +138,13 @@ class WorkerManagerExceptionTests {
     }
 }
 
+/**
+ * This worker does nothing, but is just used for stress testing
+ */
 class EmptyWorker extends Worker {
 
-    public EmptyWorker(int i, int j, int n, int numPhases, PrivateMemory privateMemory,
-                       MemoryController memoryController, CyclicBarrier cyclicBarrier, Runnable runExceptionHandler) {
-        super(i, j, n, numPhases, privateMemory, memoryController, cyclicBarrier, runExceptionHandler);
+    public EmptyWorker(int i, int j, int p, int n, int numPhases, PrivateMemory privateMemory, MemoryController memoryController) {
+        super(i, j, p, n, numPhases, privateMemory, memoryController);
     }
 
     @Override
@@ -150,9 +160,8 @@ class EmptyWorker extends Worker {
 class FailingWorker extends Worker {
     public static int highestPhase = 0;
 
-    public FailingWorker(int i, int j, int p, int numPhases, PrivateMemory privateMemory,
-                         MemoryController memoryController, CyclicBarrier cyclicBarrier, Runnable runExceptionHandler) {
-        super(i, j, p, numPhases, privateMemory, memoryController, cyclicBarrier, runExceptionHandler);
+    public FailingWorker(int i, int j, int p, int n, int numPhases, PrivateMemory privateMemory, MemoryController memoryController) {
+        super(i, j, p, n, numPhases, privateMemory, memoryController);
     }
 
     @Override
@@ -183,9 +192,8 @@ class FailingWorker extends Worker {
 class InconsistentWorker extends Worker {
     public static int highestPhase = 0;
 
-    public InconsistentWorker(int i, int j, int p, int numPhases, PrivateMemory privateMemory,
-                              MemoryController memoryController, CyclicBarrier cyclicBarrier, Runnable runExceptionHandler) {
-        super(i, j, p, numPhases, privateMemory, memoryController, cyclicBarrier, runExceptionHandler);
+    public InconsistentWorker(int i, int j, int p, int n, int numPhases, PrivateMemory privateMemory, MemoryController memoryController) {
+        super(i, j, p, n, numPhases, privateMemory, memoryController);
     }
 
     @Override

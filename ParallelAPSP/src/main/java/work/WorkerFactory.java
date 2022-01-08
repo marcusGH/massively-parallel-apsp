@@ -5,8 +5,6 @@ import memoryModel.PrivateMemory;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.util.Arrays;
-import java.util.concurrent.CyclicBarrier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -14,16 +12,7 @@ public class WorkerFactory {
     private static final Logger LOGGER = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
 
     private MemoryController memoryController;
-    private CyclicBarrier cyclicBarrier;
-    private Runnable runExceptionHandler;
-
     private final Constructor<?> workerConstructor;
-
-    // The list of arguments to the abstract Worker class constructor
-    private static final Class[] workerConstructorParameterTypes = {
-        Integer.TYPE, Integer.TYPE, Integer.TYPE, Integer.TYPE, PrivateMemory.class,
-        MemoryController.class, CyclicBarrier.class, Runnable.class
-    };
 
     /**
      * Creates a WorkerFactory that can produce object of subtypes of Workers on demand.
@@ -39,7 +28,7 @@ public class WorkerFactory {
                 LOGGER.log(Level.SEVERE, "No constructors were found from reflection of the worker subclass {0}." +
                         "Try to make its constructor public.", workerClass.getCanonicalName());
             }
-            this.workerConstructor = workerClass.getConstructor(WorkerFactory.workerConstructorParameterTypes);
+            this.workerConstructor = workerClass.getConstructor(Worker.workerConstructorParameterTypes);
         } catch (NoSuchMethodException e) {
             e.printStackTrace();
             throw new WorkerInstantiationException("Could not find appropriate constructor in provided Worker class.");
@@ -51,18 +40,12 @@ public class WorkerFactory {
      * and must be executed before {@link #createWorker} is called.
      *
      * @param memoryController the memory controller
-     * @param cyclicBarrier the cyclic barrier used for synchronisation
-     * @param runExceptionHandler the runnable to be executed on worker execution error
      */
-    void init(MemoryController memoryController, CyclicBarrier cyclicBarrier, Runnable runExceptionHandler) {
-        if (null == memoryController || null == cyclicBarrier || null == runExceptionHandler) {
-            throw new IllegalArgumentException("All the provided references to init must be non-null");
-        } else if (null != this.memoryController || null != this.cyclicBarrier || null != this.runExceptionHandler) {
-            throw new IllegalStateException("The init method should only be invoked once");
+    void init(MemoryController memoryController) {
+        if (null == memoryController) {
+            throw new IllegalArgumentException("A memory controller reference must be provided");
         } else {
             this.memoryController = memoryController;
-            this.cyclicBarrier = cyclicBarrier;
-            this.runExceptionHandler = runExceptionHandler;
         }
     }
 
@@ -77,9 +60,9 @@ public class WorkerFactory {
      * @return a new worker
      * @throws WorkerInstantiationException if the constructor fails
      */
-    Worker createWorker(int i, int j, int p, int numPhases, PrivateMemory privateMemory) throws WorkerInstantiationException {
+    Worker createWorker(int i, int j, int p, int n, int numPhases, PrivateMemory privateMemory) throws WorkerInstantiationException {
         try {
-            return (Worker) this.workerConstructor.newInstance(i, j, p, numPhases, privateMemory, this.memoryController, this.cyclicBarrier, this.runExceptionHandler);
+            return (Worker) this.workerConstructor.newInstance(i, j, p, n, numPhases, privateMemory, this.memoryController);
         } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
             e.printStackTrace();
             throw new WorkerInstantiationException(String.format("Failed to instantiate Worker(%d, %d).", i, j));

@@ -5,27 +5,34 @@ import memoryModel.MemoryController;
 import memoryModel.PrivateMemory;
 import org.junit.platform.commons.util.ExceptionUtils;
 
-import java.util.concurrent.BrokenBarrierException;
+import java.util.concurrent.Callable;
 import java.util.concurrent.CyclicBarrier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public abstract class Worker implements Runnable {
+    enum WorkerPhases {
+        COMMUNICATION_BEFORE,
+        COMPUTATION,
+        COMMUNICATION_AFTER
+    }
+
     private static final Logger LOGGER = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
+
+    // The list of arguments to the abstract Worker class constructor
+    static final Class[] workerConstructorParameterTypes = {
+            Integer.TYPE, Integer.TYPE, Integer.TYPE, Integer.TYPE, Integer.TYPE,
+            PrivateMemory.class,  MemoryController.class
+    };
 
     protected final int i;
     protected final int j;
     protected final int p;
-    private final int numPhases;
+    protected final int n;
+    protected final int numPhases;
+
     private final PrivateMemory privateMemory;
     private final MemoryController memoryController;
-    private final CyclicBarrier cyclicBarrier;
-    private final Runnable runExceptionHandler;
-
-//    public Worker(int i, int j, int n, PrivateMemory<T> privateMemory, MemoryController<T> memoryController, CyclicBarrier cyclicBarrier) {
-//        // if the number of phases is not specified, we default to n, the number of rows and columns
-//        this(i, j, n, n, privateMemory, memoryController, cyclicBarrier);
-//    }
 
     /**
      * Constructs a Worker that handles the computation and communication on behalf of processing element (i, j).
@@ -43,22 +50,17 @@ public abstract class Worker implements Runnable {
      * @param runExceptionHandler a Runnable object that is run only once by an arbitrary worker in case any of the
      *                            workers encounters an error during execution.
      */
-    protected Worker(int i, int j, int p, int numPhases, PrivateMemory privateMemory,
-                     MemoryController memoryController, CyclicBarrier cyclicBarrier, Runnable runExceptionHandler) {
+    protected Worker(int i, int j, int p, int n, int numPhases, PrivateMemory privateMemory, MemoryController memoryController) {
         this.i = i;
         this.j = j;
         this.p = p;
-        // number of computation phases to execute
+        this.n = n;
         this.numPhases = numPhases;
 
         this.privateMemory = privateMemory;
         this.memoryController = memoryController;
-        this.cyclicBarrier = cyclicBarrier;
-        this.runExceptionHandler = runExceptionHandler;
 
-        // The cyclic barrier's number of parties must match the number of workers
-        assert this.cyclicBarrier.getParties() == p * p;
-        // TODO: add method and assert for memory controller
+        // TODO: add method and assert for memory controller on size match
     }
 
     /**
@@ -142,58 +144,56 @@ public abstract class Worker implements Runnable {
         this.memoryController.receiveColBroadcast(this.i, this.j, mi, mj, label);
     }
 
+    Callable<Object> getComputationCallable(int l) {
+        // TODO: add timers
+        return () -> {
+            LOGGER.log(Level.FINER, "Worker({0}, {1}) is starting computation phase {2}", new Object[]{i, j, l});
+            computation(l);
+            return null;
+        };
+    }
+
+    Callable<Object> getCommunicationBeforeCallable(int l) {
+        return () -> {
+            LOGGER.log(Level.FINER, "Worker({0}, {1}) is starting communicationBefore phase {2}", new Object[]{i, j, l});
+            communicationBefore(l);
+            return null;
+        };
+    }
+
+    Callable<Object> getCommunicationAfterCallable(int l) {
+        return () -> {
+            LOGGER.log(Level.FINER, "Worker({0}, {1}) is starting communicationAfter phase {2}", new Object[]{i, j, l});
+            communicationAfter(l);
+            return null;
+        };
+    }
+
     @Override
     public void run() {
-        // TODO: add timers
+        LOGGER.warning("Using a worker as Runnable should only be used when testing a single worker."
+            + " To run synchronised workers in parallel, the getCallable methods with a ExecutorService should be used instead.");
+
         for (int l = 0; l < this.numPhases; l++) {
             // Communication before
             try {
-                LOGGER.log(Level.FINER, "Worker({0}, {1}) is starting communicationBefore phase {2}", new Object[]{i, j, l});
                 this.communicationBefore(l);
             } catch (CommunicationChannelCongestionException e) {
                 LOGGER.log(Level.WARNING, "Worker({0}, {1}) encountered an error in communicationBefore phase {2}: {3}",
                         new Object[]{this.i, this.j, l, ExceptionUtils.readStackTrace(e)});
-                this.runExceptionHandler.run();
-            }
-
-            // "Communication before"-synchronisation
-            try {
-                // If the thread has its interrupted status set on entry to this method or is interrupted while waiting,
-                // the barrier enters a broken state. This means that all threads already waiting or are arriving at a
-                // later time will throw an Exception, allowing us to gracefully break all running threads out of the
-                // for-loop
-                this.cyclicBarrier.await();
-            } catch (InterruptedException | BrokenBarrierException e) {
-                LOGGER.log(Level.WARNING, "Worker({0}, {1}): Cyclic barrier is broken, so stopping computation.", new Object[]{i, j});
-                break;
+                return;
             }
 
             // Computation
-            LOGGER.log(Level.FINER, "Worker({0}, {1}) is starting computation phase {2}", new Object[]{i, j, l});
-            if (!Thread.currentThread().isInterrupted()) {
-                this.computation(l);
-            }
+            this.computation(l);
 
             // Communication after
             try {
-                LOGGER.log(Level.FINER, "Worker({0}, {1}) is starting communicationAfter phase {2}", new Object[]{i, j, l});
                 this.communicationAfter(l);
             } catch (CommunicationChannelCongestionException e) {
                 LOGGER.log(Level.WARNING,"Worker({0}, {1}) encountered an error in communicationAfter phase {2}: {3}",
                         new Object[]{this.i, this.j, l, ExceptionUtils.readStackTrace(e)});
-                this.runExceptionHandler.run();
-            }
-
-            // "Communication after"-synchronisation
-            try {
-                // If the thread has its interrupted status set on entry to this method or is interrupted while waiting,
-                // the barrier enters a broken state. This means that all threads already waiting or are arriving at a
-                // later time will throw an Exception, allowing us to gracefully break all running threads out of the
-                // for-loop
-                this.cyclicBarrier.await();
-            } catch (InterruptedException | BrokenBarrierException e) {
-                LOGGER.log(Level.WARNING, "Worker({0}, {1}): Cyclic barrier is broken, so stopping computation.", new Object[]{i, j});
-                break;
+                return;
             }
         }
     }

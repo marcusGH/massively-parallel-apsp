@@ -16,14 +16,10 @@ class WorkerTest {
     @Test
     void workerCompletesWithoutFailure() {
         // SETUP
-        final AtomicInteger barrierCount = new AtomicInteger(0);
-        final AtomicBoolean computationFailed = new AtomicBoolean(false);
         final AtomicInteger comulativeSum = new AtomicInteger(0);
 
-        CyclicBarrier cb = new CyclicBarrier(1, barrierCount::incrementAndGet);
-        Runnable runExceptionHandler = () -> { computationFailed.set(true); };
-        Worker w = new ComputationOnlyWorker(0, 0, 1, 10, new PrivateMemory(1),
-                null, cb, runExceptionHandler, () -> {
+        Worker w = new ComputationOnlyWorker(0, 0, 1, 1, 10, new PrivateMemory(1),
+                null, () -> {
             int a = 5;
             int b = a * 3;
             comulativeSum.addAndGet(b);
@@ -33,15 +29,12 @@ class WorkerTest {
         w.run();
 
         // ASSERT
-        assertEquals(barrierCount.get(), 20, "The worker synchronised 20 times when doing 10 phases.");
         assertEquals(comulativeSum.get(), 15 * 10, "The worker did 10 computation phases and produced correct value");
-        assertFalse(computationFailed.get(), "The worker completed computation without exception");
     }
 
     @Test
     void workerCanReadPrivateMemory() {
         // SETUP
-        final AtomicBoolean computationFailed = new AtomicBoolean(false);
         final PrivateMemory pm = new PrivateMemory(6);
         pm.set(0, 0, "A", 0.01);
         pm.set(0, 1, "A", 0.1);
@@ -50,18 +43,14 @@ class WorkerTest {
         pm.set(0, 4, "A", 0.4);
         pm.set(0, 5, "A", 0.5); // sum is 1.51
 
-        CyclicBarrier cb = new CyclicBarrier(1);
-        Runnable runExceptionHandler = () -> { computationFailed.set(true); };
-
-        Worker w = new SimpleComputationWorker(0, 0, 1, 6, pm,
-                null, cb, runExceptionHandler);
+        Worker w = new SimpleComputationWorker(0, 0, 1, 1, 6, pm,
+                null);
 
         // ACT
         w.run();
         double result = w.getPrivateMemory().getDouble("C");
 
         // ASSERT
-        assertFalse(computationFailed.get(), "The worker completed computation without exception");
         assertEquals(result, 1.51, "The worker produced the correct sum");
     }
 }
@@ -69,8 +58,8 @@ class WorkerTest {
 class ComputationOnlyWorker extends Worker {
     private final Runnable computation;
 
-    protected ComputationOnlyWorker(int i, int j, int p, int numPhases, PrivateMemory privateMemory, MemoryController memoryController, CyclicBarrier cyclicBarrier, Runnable runExceptionHandler, Runnable computation) {
-        super(i, j, p, numPhases, privateMemory, memoryController, cyclicBarrier, runExceptionHandler);
+    public ComputationOnlyWorker(int i, int j, int p, int n, int numPhases, PrivateMemory privateMemory, MemoryController memoryController, Runnable computation) {
+        super(i, j, p, n, numPhases, privateMemory, memoryController);
         this.computation = computation;
     }
 
@@ -88,9 +77,8 @@ class ComputationOnlyWorker extends Worker {
 
 class SimpleComputationWorker extends Worker {
 
-    protected SimpleComputationWorker(int i, int j, int p, int numPhases, PrivateMemory privateMemory,
-                                      MemoryController memoryController, CyclicBarrier cyclicBarrier, Runnable runExceptionHandler) {
-        super(i, j, p, numPhases, privateMemory, memoryController, cyclicBarrier, runExceptionHandler);
+    public SimpleComputationWorker(int i, int j, int p, int n, int numPhases, PrivateMemory privateMemory, MemoryController memoryController) {
+        super(i, j, p, n, numPhases, privateMemory, memoryController);
     }
 
     /**
