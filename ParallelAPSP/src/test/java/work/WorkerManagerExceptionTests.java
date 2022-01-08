@@ -50,12 +50,8 @@ class WorkerManagerExceptionTests {
         }
 
         // ASSERT
-        try {
-            m.getResult(null);
-        } catch (WorkersFailedToCompleteException e) {
-            e.printStackTrace();
-            fail("Workers were  not able to complete execution");
-        }
+        m.getResult(null);
+        assertTrue(true, "Workers completed successfully");
     }
 
     @Test
@@ -148,13 +144,13 @@ class EmptyWorker extends Worker {
     }
 
     @Override
-    void computation(int l) { }
+    public void computation(int l) { }
 
     @Override
-    void communicationBefore(int l) throws CommunicationChannelCongestionException { }
+    public void communicationBefore(int l) throws CommunicationChannelCongestionException { }
 
     @Override
-    void communicationAfter(int l) throws CommunicationChannelCongestionException { }
+    public void communicationAfter(int l) throws CommunicationChannelCongestionException { }
 }
 
 class FailingWorker extends Worker {
@@ -165,7 +161,7 @@ class FailingWorker extends Worker {
     }
 
     @Override
-    void computation(int l) {
+    public void computation(int l) {
         try {
             Thread.sleep(2000 * this.i + 1000 * this.j);
         } catch (InterruptedException e) {
@@ -175,14 +171,14 @@ class FailingWorker extends Worker {
     }
 
     @Override
-    void communicationBefore(int l) throws CommunicationChannelCongestionException {
+    public void communicationBefore(int l) throws CommunicationChannelCongestionException {
         synchronized (this) {
             highestPhase = max(highestPhase, l);
         }
     }
 
     @Override
-    void communicationAfter(int l) throws CommunicationChannelCongestionException {
+    public void communicationAfter(int l) throws CommunicationChannelCongestionException {
         if (i == 1 && j == 1) {
             throw new CommunicationChannelCongestionException("Communication failure");
         }
@@ -197,17 +193,17 @@ class InconsistentWorker extends Worker {
     }
 
     @Override
-    void computation(int l) {
+    public void computation(int l) {
         this.receive("A");
     }
 
     @Override
-    void communicationBefore(int l) throws CommunicationChannelCongestionException {
+    public void communicationBefore(int l) throws CommunicationChannelCongestionException {
         synchronized (this) {
             highestPhase = max(highestPhase, l);
         }
     }
 
     @Override
-    void communicationAfter(int l) throws CommunicationChannelCongestionException { }
+    public void communicationAfter(int l) throws CommunicationChannelCongestionException { }
 }

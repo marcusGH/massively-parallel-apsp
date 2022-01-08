@@ -50,7 +50,7 @@ public abstract class Worker implements Runnable {
      * @param runExceptionHandler a Runnable object that is run only once by an arbitrary worker in case any of the
      *                            workers encounters an error during execution.
      */
-    protected Worker(int i, int j, int p, int n, int numPhases, PrivateMemory privateMemory, MemoryController memoryController) {
+    public Worker(int i, int j, int p, int n, int numPhases, PrivateMemory privateMemory, MemoryController memoryController) {
         this.i = i;
         this.j = j;
         this.p = p;
@@ -72,7 +72,7 @@ public abstract class Worker implements Runnable {
      *
      * @param l a non-negative integer representing number of computation phases already completed
      */
-    abstract void computation(int l);
+    abstract protected void computation(int l);
 
     /**
      * Defines the communication to be done by Worker(i, j) prior to computation phase l.
@@ -81,7 +81,7 @@ public abstract class Worker implements Runnable {
      * @throws CommunicationChannelCongestionException if different workers try to send data to the same
      * worker using the same communication method in the same phase.
      */
-    abstract void communicationBefore(int l) throws CommunicationChannelCongestionException;
+    abstract protected void communicationBefore(int l) throws CommunicationChannelCongestionException;
 
     /**
      * Defines the communication to be done by Worker(i, j) after computation phase l.
@@ -90,7 +90,7 @@ public abstract class Worker implements Runnable {
      * @throws CommunicationChannelCongestionException if different workers try to send data to the same
      * worker using the same communication method in the same phase.
      */
-    abstract void communicationAfter(int l) throws CommunicationChannelCongestionException;
+    abstract protected void communicationAfter(int l) throws CommunicationChannelCongestionException;
 
     protected double read(String label) {
         return this.read(0, 0, label);

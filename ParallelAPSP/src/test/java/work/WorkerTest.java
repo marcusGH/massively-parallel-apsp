@@ -64,15 +64,15 @@ class ComputationOnlyWorker extends Worker {
     }
 
     @Override
-    void computation(int l) {
+    public void computation(int l) {
         this.computation.run();
     }
 
     @Override
-    void communicationBefore(int l) throws CommunicationChannelCongestionException { }
+    public void communicationBefore(int l) throws CommunicationChannelCongestionException { }
 
     @Override
-    void communicationAfter(int l) throws CommunicationChannelCongestionException { }
+    public void communicationAfter(int l) throws CommunicationChannelCongestionException { }
 }
 
 class SimpleComputationWorker extends Worker {
@@ -86,7 +86,7 @@ class SimpleComputationWorker extends Worker {
      * @param l a non-negative integer representing number of computation phases already completed
      */
     @Override
-    void computation(int l) {
+    public void computation(int l) {
         if (l == 0) {
             // try shorthand reading
             store("C", read("A"));
@@ -96,12 +96,12 @@ class SimpleComputationWorker extends Worker {
     }
 
     @Override
-    void communicationBefore(int l) throws CommunicationChannelCongestionException {
+    public void communicationBefore(int l) throws CommunicationChannelCongestionException {
 
     }
 
     @Override
-    void communicationAfter(int l) throws CommunicationChannelCongestionException {
+    public void communicationAfter(int l) throws CommunicationChannelCongestionException {
 
     }
 }

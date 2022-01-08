@@ -27,11 +27,11 @@ public class Manager {
     private final int numComputationPhases;
 
     private final MemoryController memoryController;
+    private final Matrix<PrivateMemory> privateMemoryMatrix;
     private final Matrix<Worker> workers;
 
     private final ExecutorService executorService;
     // only one of the workers should execute stopWorkers, so this lock is used for exclusion
-    private boolean workersHaveBeenStopped = false;
     private boolean workHasBeenDone = false;
 
     // 1x1 version TODO: make general constructor
@@ -75,6 +75,7 @@ public class Manager {
             }
         }
 
+        this.privateMemoryMatrix = privateMemoryMatrix;
         this.memoryController = new MemoryController(this.p, privateMemoryMatrix, memoryTopology);
 
         workerFactory.init(memoryController);
@@ -91,6 +92,21 @@ public class Manager {
         this.executorService = Executors.newFixedThreadPool(MAX_CONCURRENT_THREADS);
     }
 
+    public void resetMemory(Map<String, Matrix<Number>> memoryContent) {
+        assert memoryContent != null;
+        // TODO: modify when generalizing everything
+        for (String s : memoryContent.keySet()) {
+            assert memoryContent.get(s).size() == this.p;
+        }
+
+        for (int i = 0; i < this.p; i++) {
+            for (int j = 0; j < this.p; j++) {
+                for (String s : memoryContent.keySet()) {
+                    this.privateMemoryMatrix.get(i, j).set(s, memoryContent.get(s).get(i, j));
+                }
+            }
+        }
+    }
 
     /**
      * We want to return a list of features so that we can look at exceptions thrown during execution by workers
@@ -162,9 +178,10 @@ public class Manager {
      * them to be joined
      */
     public void doWork() throws CommunicationChannelException, WorkersFailedToCompleteException {
-        if (this.workHasBeenDone || this.workersHaveBeenStopped) {
-            throw new IllegalStateException("Work cannot be performed twice or started when execution has previously failed");
-        }
+        // TODO: find better wya of handling repeated work
+//        if (this.workHasBeenDone) {
+//            throw new IllegalStateException("Work cannot be performed twice or started when execution has previously failed");
+//        }
 
         LOGGER.log(Level.INFO, "Manager is starting {0} phases of work with {1} workers.", new Object[]{this.numComputationPhases, this.p * this.p});
 
@@ -201,11 +218,9 @@ public class Manager {
      * @return
      * @throws WorkersFailedToCompleteException
      */
-    public Matrix<Number> getResult(String label) throws WorkersFailedToCompleteException {
+    public Matrix<Number> getResult(String label)  {
         if (!this.workHasBeenDone) {
-            throw new WorkersFailedToCompleteException("The workers were not started, so result cannot be fetched");
-        } else if (this.workersHaveBeenStopped) {
-            throw new WorkersFailedToCompleteException("An error was encountered during execution of workers");
+            throw new IllegalStateException("The workers were not started, so result cannot be fetched");
         } else if (null == label) {
             return new Matrix<>(this.p);
         } else {

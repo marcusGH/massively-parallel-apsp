@@ -1,6 +1,7 @@
 package util;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Supplier;
@@ -32,6 +33,17 @@ public class Matrix<T> {
             // invoke supplier n times
             List<T> row = Stream.generate(defaultValueSupplier).limit(n).collect(Collectors.toList());
             this.matrix.add(row);
+        }
+    }
+
+    public Matrix(int n, T[][] startValues) {
+        assert startValues.length == n;
+        assert startValues[0].length == n;
+
+        this.n = n;
+        this.matrix = new ArrayList<>();
+        for (int i = 0; i < this.n; i++) {
+            this.matrix.add(Arrays.asList(startValues[i]));
         }
     }
 

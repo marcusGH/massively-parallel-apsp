@@ -193,7 +193,7 @@ class SimpleCommunicatingWorker extends Worker {
     }
 
     @Override
-    void computation(int l) {
+    public void computation(int l) {
         if (l == 0) {
             store("C", read("A"));
         } else {
@@ -202,10 +202,10 @@ class SimpleCommunicatingWorker extends Worker {
     }
 
     @Override
-    void communicationBefore(int l) throws CommunicationChannelCongestionException { }
+    public void communicationBefore(int l) throws CommunicationChannelCongestionException { }
 
     @Override
-    void communicationAfter(int l) throws CommunicationChannelCongestionException {
+    public void communicationAfter(int l) throws CommunicationChannelCongestionException {
         // send to right, wrapping around if necessary
         send(i, (j + 1) % p, read("A"));
         // then receive data from the left
@@ -225,7 +225,7 @@ class BroadcastingWorker extends Worker {
     }
 
     @Override
-    void computation(int l) {
+    public void computation(int l) {
         if (l == 0) {
             store("C", 0);
         }
@@ -234,7 +234,7 @@ class BroadcastingWorker extends Worker {
     }
 
     @Override
-    void communicationBefore(int l) throws CommunicationChannelCongestionException {
+    public void communicationBefore(int l) throws CommunicationChannelCongestionException {
         if (i == l) {
             broadcastCol(read("A"));
         }
@@ -246,5 +246,5 @@ class BroadcastingWorker extends Worker {
     }
 
     @Override
-    void communicationAfter(int l) throws CommunicationChannelCongestionException { }
+    public void communicationAfter(int l) throws CommunicationChannelCongestionException { }
 }
