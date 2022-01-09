@@ -18,7 +18,7 @@ class MemoryControllerTest {
 
         // ACT
         try {
-            mc.sendData(0, 1, 1, 0, 42);
+            mc.sendData(0, 1, 1, 0, 42.);
             mc.receiveData(1, 0, 0, 0, "A");
             mc.flush();
         } catch (CommunicationChannelCongestionException | InconsistentCommunicationChannelUsageException e) {

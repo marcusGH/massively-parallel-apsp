@@ -96,6 +96,8 @@ public abstract class Worker implements Runnable {
         return this.read(0, 0, label);
     }
 
+    // TODO: add try catch and send Exception from computation if e.g. get NullPointerException when reading
+    //       label that does not exist in the PrivateMemory
     protected double read(int mi, int mj, String label) {
         return this.privateMemory.getDouble(mi, mj, label);
     }
