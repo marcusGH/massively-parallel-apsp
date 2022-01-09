@@ -43,7 +43,7 @@ public class RepeatedMatrixSquaring extends ParallelAPSP {
         Matrix<Number> squaredMatrix = this.adjacencyMatrix;
 
 
-        int numIterations = (int) Math.ceil(Math.log(this.n));
+        int numIterations = (int) Math.ceil(Math.log(this.n) / Math.log(2));
         for (int i = 0; i < numIterations; i++) {
             System.out.println(squaredMatrix); // debug
 

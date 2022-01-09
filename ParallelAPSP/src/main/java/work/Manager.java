@@ -30,7 +30,7 @@ public class Manager {
     private final Matrix<PrivateMemory> privateMemoryMatrix;
     private final Matrix<Worker> workers;
 
-    private final ExecutorService executorService;
+    private ExecutorService executorService;
     // only one of the workers should execute stopWorkers, so this lock is used for exclusion
     private boolean workHasBeenDone = false;
 
@@ -89,9 +89,14 @@ public class Manager {
             }
         }
 
-        this.executorService = Executors.newFixedThreadPool(MAX_CONCURRENT_THREADS);
     }
 
+    // TODO: resetMemory() which wipes everything
+
+    /**
+     * Does not delete existing memory content, just overrides what is provided.
+     * @param memoryContent
+     */
     public void resetMemory(Map<String, Matrix<Number>> memoryContent) {
         assert memoryContent != null;
         // TODO: modify when generalizing everything
@@ -185,6 +190,9 @@ public class Manager {
 
         LOGGER.log(Level.INFO, "Manager is starting {0} phases of work with {1} workers.", new Object[]{this.numComputationPhases, this.p * this.p});
 
+        // create the executor service which will manage the worker computation
+        this.executorService = Executors.newFixedThreadPool(MAX_CONCURRENT_THREADS);
+
         List<Future<?>> workerFutures;
         for (int l = 0; l < this.numComputationPhases; l++) {
             // COMMUNICATION_BEFORE phase
@@ -205,6 +213,7 @@ public class Manager {
         }
 
         LOGGER.log(Level.INFO, "Manager has completed {0} phases of work.", this.numComputationPhases);
+        this.executorService.shutdown();
 
         this.workHasBeenDone = true;
     }
