@@ -16,21 +16,26 @@ public class BroadcastMatrixMultiplication extends Worker {
     }
 
     @Override
+    protected void initialise() {
+
+    }
+
+    @Override
     protected void computation(int l) {
         if (l == 0) {
-            store("C", Double.POSITIVE_INFINITY);
+            store("C", 0);
         }
-        double value = Math.min(read("rowA") + read("colB"), read("C"));
+        double value = readDouble("rowA") * readDouble("colB") + readDouble("C");
         store("C", value);
     }
 
     @Override
     protected void communicationBefore(int l) throws CommunicationChannelCongestionException {
         if (i == l) {
-            broadcastCol(read("B"));
+            broadcastCol(readDouble("B"));
         }
         if (j == l) {
-            broadcastRow(read("A"));
+            broadcastRow(readDouble("A"));
         }
         receiveColBroadcast("colB");
         receiveRowBroadcast("rowA");

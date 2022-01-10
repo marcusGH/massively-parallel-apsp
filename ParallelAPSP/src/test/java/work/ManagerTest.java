@@ -84,6 +84,70 @@ class ManagerTest {
     }
 
     @Test
+    void noRaceConditionsInSimpleWorker() {
+        // SETUP
+
+        // create the initial memory to be:
+        // 1 2 3 4
+        // 2 4 6 8
+        // 1 1 1 1
+        // 5 10 15 20
+        Map<String, Matrix<Number>> initialMemory = new HashMap<>();
+        Matrix<Number> matrix = new Matrix<>(4);
+        matrix.setRow(0, Arrays.asList(1.0, 2.0, 3.0, 4.0));
+        matrix.setRow(1, Arrays.asList(2.0, 4.0, 6.0, 8.0));
+        matrix.setRow(2, Arrays.asList(1.0, 1.0, 1.0, 1.0));
+        matrix.setRow(3, Arrays.asList(5.0, 10.0, 15.0, 20.0));
+        initialMemory.put("A", matrix);
+
+        // create the manager
+        WorkerFactory wf;
+        Manager m;
+        try {
+            wf = new WorkerFactory(SimpleCommunicatingWorker.class);
+        } catch (WorkerInstantiationException e) {
+            fail("The worker factory could not be instantiated");
+            return;
+        }
+        try {
+            m = new Manager(4, 4, initialMemory, SquareGridTopology::new, wf);
+        } catch (WorkerInstantiationException e) {
+            fail("The manager could not create all the workers");
+            return;
+        }
+
+        // ACT and ASSERT many times
+
+        // expected result
+        Matrix<Double> expected = new Matrix<>(4);
+        expected.setRow(0, Collections.nCopies(4, 10.0));
+        expected.setRow(1, Collections.nCopies(4, 20.0));
+        expected.setRow(2, Collections.nCopies(4, 4.0));
+        expected.setRow(3, Collections.nCopies(4, 50.0));
+
+        for (int i = 0; i < 1000; i++) {
+            // reset the memory first
+            if (i != 0) {
+                m.resetMemory(initialMemory);
+            }
+            // then compute
+            Matrix<Number> result;
+            try {
+                m.doWork();
+                result = m.getResult("C");
+            } catch (CommunicationChannelException e) {
+                fail("Manager failed to complete work due to interruption");
+                return;
+            } catch (WorkersFailedToCompleteException e) {
+                fail("The workers encountered an error during execution");
+                return;
+            }
+
+            assertEquals(expected, result, "The results are as expected on iteration " + i);
+        }
+    }
+
+    @Test
     void broadcastingWorkerProducesCorrectResult() {
         // SETUP
 
@@ -193,12 +257,16 @@ class SimpleCommunicatingWorker extends Worker {
     }
 
     @Override
+    protected void initialise() { }
+
+    @Override
     public void computation(int l) {
         if (l == 0) {
-            store("C", read("A"));
+            store("C", readDouble("A"));
         } else {
-            store("C", read("A") + read("C"));
+            store("C", readDouble("A") + readDouble("C"));
         }
+        System.out.println(String.format("W(%d, %d) reads A=%f", i, j, readDouble("A")));
     }
 
     @Override
@@ -207,7 +275,7 @@ class SimpleCommunicatingWorker extends Worker {
     @Override
     public void communicationAfter(int l) throws CommunicationChannelCongestionException {
         // send to right, wrapping around if necessary
-        send(i, (j + 1) % p, read("A"));
+        send(i, (j + 1) % p, readDouble("A"));
         // then receive data from the left
         receive("A");
     }
@@ -225,21 +293,24 @@ class BroadcastingWorker extends Worker {
     }
 
     @Override
+    protected void initialise() { }
+
+    @Override
     public void computation(int l) {
         if (l == 0) {
             store("C", 0);
         }
-        double value = read("rowA") * read("colA") + read("C");
+        double value = readDouble("rowA") * readDouble("colA") + readDouble("C");
         store("C", value);
     }
 
     @Override
     public void communicationBefore(int l) throws CommunicationChannelCongestionException {
         if (i == l) {
-            broadcastCol(read("A"));
+            broadcastCol(readDouble("A"));
         }
         if (j == l) {
-            broadcastRow(read("A"));
+            broadcastRow(readDouble("A"));
         }
         receiveRowBroadcast("rowA");
         receiveColBroadcast("colA");

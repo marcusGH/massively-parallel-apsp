@@ -144,6 +144,9 @@ class EmptyWorker extends Worker {
     }
 
     @Override
+    protected void initialise() { }
+
+    @Override
     public void computation(int l) { }
 
     @Override
@@ -159,6 +162,9 @@ class FailingWorker extends Worker {
     public FailingWorker(int i, int j, int p, int n, int numPhases, PrivateMemory privateMemory, MemoryController memoryController) {
         super(i, j, p, n, numPhases, privateMemory, memoryController);
     }
+
+    @Override
+    protected void initialise() { }
 
     @Override
     public void computation(int l) {
@@ -191,6 +197,9 @@ class InconsistentWorker extends Worker {
     public InconsistentWorker(int i, int j, int p, int n, int numPhases, PrivateMemory privateMemory, MemoryController memoryController) {
         super(i, j, p, n, numPhases, privateMemory, memoryController);
     }
+
+    @Override
+    protected void initialise() { }
 
     @Override
     public void computation(int l) {

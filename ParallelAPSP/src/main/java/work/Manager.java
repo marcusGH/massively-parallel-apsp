@@ -2,7 +2,6 @@ package work;
 
 import memoryModel.*;
 import memoryModel.topology.Topology;
-import org.junit.platform.commons.util.ExceptionUtils;
 import util.Matrix;
 
 import java.util.ArrayList;
@@ -127,6 +126,9 @@ public class Manager {
             for (int j = 0; j < this.p; j++) {
                 Callable<Object> workerTask;
                 switch (phaseType) {
+                    case INITIALISATION:
+                        workerTask = this.workers.get(i, j).getInitialisationCallable();
+                        break;
                     case COMMUNICATION_BEFORE:
                         workerTask = this.workers.get(i, j).getCommunicationBeforeCallable(phaseNumber);
                         break;
@@ -194,6 +196,12 @@ public class Manager {
         this.executorService = Executors.newFixedThreadPool(MAX_CONCURRENT_THREADS);
 
         List<Future<?>> workerFutures;
+
+        // run the initialisation phase first of each worker
+        LOGGER.log(Level.FINE, "Manager is running initialisation phase.");
+        workerFutures = startWorkerExecution(-1, Worker.WorkerPhases.INITIALISATION);
+        checkForWorkerFailure(workerFutures);
+
         for (int l = 0; l < this.numComputationPhases; l++) {
             // COMMUNICATION_BEFORE phase
             LOGGER.log(Level.FINE, "Manager is starting communicationBefore phase {0}", l);
@@ -203,7 +211,12 @@ public class Manager {
 
             // COMPUTATION phase (no exception can be thrown here)
             LOGGER.log(Level.FINE, "Manager is starting computation phase {0}", l);
-            startWorkerExecution(l, Worker.WorkerPhases.COMPUTATION);
+            // Why do we need to synchronise workers between computation and communication_after?:
+            //   If we don't synchronise, we may get concurrent access to the workers' PrivateMemory through
+            //   reading in both computation and communication. PrivateMemory does not guarantee thread-safe
+            //   behaviour, so we must synchronise to avoid this.
+            workerFutures = startWorkerExecution(l, Worker.WorkerPhases.COMPUTATION);
+            checkForWorkerFailure(workerFutures);
 
             // COMMUNICATION_AFTER phase
             LOGGER.log(Level.FINE, "Manager is starting communicationAfter phase {0}", l);
@@ -218,6 +231,10 @@ public class Manager {
         this.workHasBeenDone = true;
     }
 
+    public Matrix<Number> getResult(String label) {
+        return this.getResult(label, false);
+    }
+
     /**
      * Returns the result of computation. A String label matching the memory location the workers store their result
      * in should be provided. This method creates a matrix of the Numbers found within each Worker's private memory
@@ -227,7 +244,7 @@ public class Manager {
      * @return
      * @throws WorkersFailedToCompleteException
      */
-    public Matrix<Number> getResult(String label)  {
+    public Matrix<Number> getResult(String label, boolean asInt)  {
         if (!this.workHasBeenDone) {
             throw new IllegalStateException("The workers were not started, so result cannot be fetched");
         } else if (null == label) {
@@ -238,7 +255,11 @@ public class Manager {
             assert this.p == this.n;
             for (int i = 0; i < this.p; i++) {
                 for (int j = 0; j < this.p; j++) {
-                    resultMatrix.set(i, j, this.workers.get(i,j).read(label));
+                    if (asInt) {
+                        resultMatrix.set(i, j, this.workers.get(i, j).readInt(label));
+                    } else {
+                        resultMatrix.set(i, j, this.workers.get(i, j).readDouble(label));
+                    }
                 }
             }
             return resultMatrix;

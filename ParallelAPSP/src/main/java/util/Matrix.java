@@ -89,7 +89,18 @@ public class Matrix<T> {
                 if (j > 0) {
                     sb.append(" ");
                 }
-                String s = this.matrix.get(i).get(j).toString();
+                String s;
+                T element = this.matrix.get(i).get(j);
+                // special case for numbers because might be infinite
+                if (element instanceof Number && (
+                        (element instanceof Double && ((Double) element).isInfinite()) ||
+                         element instanceof Integer && (Integer) element == Integer.MAX_VALUE ||
+                         element instanceof Double && (Math.abs((Double) element - Integer.MAX_VALUE) < 1E-5))) {
+                    s = "INF";
+                } else {
+                    s = element.toString();
+                }
+                // abbreviate if it  looks like it's infinite
                 sb.append(s).append(" ".repeat(Math.max(0, 8 - s.length())));
             }
         }

@@ -68,22 +68,7 @@ public class PrivateMemory {
 
     }
 
-    public double getDouble(int mi, int mj, String label) {
-        assert 0 <= mi && mi < this.k;
-        assert 0 <= mj && mj < this.k;
-
-        if (this.k == 1) {
-            if (!this.singleMemory.containsKey(label)) {
-                throw new IllegalStateException(String.format("singleMemory does not contain label %s, "
-                    + "only labels %s.", label, this.singleMemory.keySet()));
-            }
-            return this.singleMemory.get(label).doubleValue();
-        } else {
-            return this.matrixMemory.get(mi, mj).get(label).doubleValue();
-        }
-    }
-
-    public int getInt(int mi, int mj, String label) {
+    public Number get(int mi, int mj, String label) {
         assert 0 <= mi && mi < this.k;
         assert 0 <= mj && mj < this.k;
 
@@ -92,10 +77,18 @@ public class PrivateMemory {
                 throw new IllegalStateException(String.format("singleMemory does not contain label %s, "
                         + "only labels %s.", label, this.singleMemory.keySet()));
             }
-            return this.singleMemory.get(label).intValue();
+            return this.singleMemory.get(label);
         } else {
-            return this.matrixMemory.get(mi, mj).get(label).intValue();
+            return this.matrixMemory.get(mi, mj).get(label);
         }
+    }
+
+    public double getDouble(int mi, int mj, String label) {
+        return this.get(mi, mj, label).doubleValue();
+    }
+
+    public int getInt(int mi, int mj, String label) {
+        return this.get(mi, mj, label).intValue();
     }
 }
 

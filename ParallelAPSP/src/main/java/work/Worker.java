@@ -6,12 +6,13 @@ import memoryModel.PrivateMemory;
 import org.junit.platform.commons.util.ExceptionUtils;
 
 import java.util.concurrent.Callable;
-import java.util.concurrent.CyclicBarrier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public abstract class Worker implements Runnable {
+
     enum WorkerPhases {
+        INITIALISATION,
         COMMUNICATION_BEFORE,
         COMPUTATION,
         COMMUNICATION_AFTER
@@ -45,10 +46,6 @@ public abstract class Worker implements Runnable {
      * @param privateMemory the worker's own private memory. May already contain values
      * @param memoryController a reference to a unique memory controller.
      *                         All workers should use the same memory controller
-     * @param cyclicBarrier a reference to a unique cyclic barrier.
-     *                      All workers should use the same cyclic barrier.
-     * @param runExceptionHandler a Runnable object that is run only once by an arbitrary worker in case any of the
-     *                            workers encounters an error during execution.
      */
     public Worker(int i, int j, int p, int n, int numPhases, PrivateMemory privateMemory, MemoryController memoryController) {
         this.i = i;
@@ -63,9 +60,11 @@ public abstract class Worker implements Runnable {
         // TODO: add method and assert for memory controller on size match
     }
 
+    abstract protected void initialise();
+
     /**
      * Defines the computation to be done by Worker(i, j) at computation phase l. Only the method
-     * {@link #read} should be used, not any of the communication methods. This is because the workers are
+     * {@link #readDouble} should be used, not any of the communication methods. This is because the workers are
      * not synchronised between {@code computation} and {@code communicationAfter}, so there is not guarantee
      * on the communication order. Additionally, {@link CommunicationChannelCongestionException}s are not
      * handled appropriately if thrown from this method.
@@ -92,14 +91,30 @@ public abstract class Worker implements Runnable {
      */
     abstract protected void communicationAfter(int l) throws CommunicationChannelCongestionException;
 
-    protected double read(String label) {
-        return this.read(0, 0, label);
+    protected Number read(String label) {
+        return this.readDouble(0, 0, label);
+    }
+
+    protected int readInt(String label) {
+        return this.readInt(0, 0, label);
+    }
+
+    protected double readDouble(String label) {
+        return this.readDouble(0, 0, label);
     }
 
     // TODO: add try catch and send Exception from computation if e.g. get NullPointerException when reading
     //       label that does not exist in the PrivateMemory
-    protected double read(int mi, int mj, String label) {
-        return this.privateMemory.getDouble(mi, mj, label);
+    protected Number read(int mi, int mj, String label) {
+        return this.privateMemory.get(mi, mj, label);
+    }
+
+    protected int readInt(int mi, int mj, String label) {
+        return this.read(mi, mj, label).intValue();
+    }
+
+    protected double readDouble(int mi, int mj, String label) {
+        return this.read(mi, mj, label).doubleValue();
     }
 
     protected void store(String label, Number value) {
@@ -144,6 +159,14 @@ public abstract class Worker implements Runnable {
 
     protected void receiveColBroadcast(int mi, int mj, String label) {
         this.memoryController.receiveColBroadcast(this.i, this.j, mi, mj, label);
+    }
+
+    Callable<Object> getInitialisationCallable() {
+        return () -> {
+            LOGGER.log(Level.FINER, "Worker({0}, {1}) is starting initialisation phase.", new Object[]{i, j});
+            initialise();
+            return null;
+        };
     }
 
     Callable<Object> getComputationCallable(int l) {

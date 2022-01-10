@@ -11,7 +11,21 @@ public class FoxOttoMinPlus extends Worker {
         super(i, j, p, n, numPhases, privateMemory, memoryController);
     }
 
-    // TODO: add method to Worker, which handles initial condition, e.g. setting c to +\infty
+    /**
+     * Before starting work, the Worker(i, j) assumes the following memory content:
+     * "A" -> element A[i, j] of left matrix of product
+     * "B" -> element B[i, j] of right matrix of product
+     * "P" -> element P[i, j] of predecessor matrix
+     */
+    @Override
+    protected void initialise() {
+        // running total of least distance found so far
+        store("dist", Double.POSITIVE_INFINITY); // represents C[i, j]
+        // the "A" entry is never shifted, only broadcasted, so make a copy of it to prevent overwrite
+        store("A_CONST", read("A"));
+        // keep a default pred value in case we don't find any
+        store("pred", read("P")); // TODO: this.j or "P"? Does it make a difference?
+    }
 
     /**
      * Before computation, the worker (i, j) assumes the following content in memory at iteration l:
@@ -26,46 +40,31 @@ public class FoxOttoMinPlus extends Worker {
      */
     @Override
     protected void computation(int l) {
-        if (l == 0) {
-            store("C", Double.POSITIVE_INFINITY);
-        }
         // In this iteration, we're computing A[i,k] + B[k, j]
         int k = (i + l) % n;
 
         // running minimum distance
-        double curDist = read("C");
-        double otherDist = read("a") + read("b");
+        double curDist = readDouble("dist");
+        double otherDist = readDouble("A") + readDouble("B");
         // we found a better path
         if (otherDist < curDist) {
-            store("C", otherDist);
-            if (k == j) {
-                store("P", read("P"));
+            store("dist", otherDist);
+            // only update predecessor if it doesn't cause loops
+            if (k == j) { // or is it readInt("P")???
+                store("pred", readInt("pred"));
             } else {
-                store("P", read("p"));
+                store("pred", readInt("P"));
             }
-
-            // TODO: we need a method to store and read integers, otherwise we can't do our predecessor ID thing
         }
-
-
-        // TODO: also make method for what to do after all the computation. This would be nice, because then we could
-        //       keep running totals as a field in the class (e.g. p and c), and then store in memory at the end
-
     }
 
     @Override
     protected void communicationBefore(int l) throws CommunicationChannelCongestionException {
-        // TODO: have as initial compute
-        if (l == 0) {
-            store("b", read("B"));
-            store("p", read("P"));
-        }
-
         // one PE in each row uses the highway to broadcast it's A
         if (j == (i + l) % n) {
-            broadcastRow(read("A"));
+            broadcastRow(readDouble("A_CONST"));
         }
-        receiveRowBroadcast("a");
+        receiveRowBroadcast("A");
 
     }
 
@@ -73,13 +72,13 @@ public class FoxOttoMinPlus extends Worker {
     protected void communicationAfter(int l) throws CommunicationChannelCongestionException {
         // we shift B and P upwards, wrapping around if necessary
         if (i == 0) {
-            send(n - 1, j, read("b"));
-            send(n - 1, j, read("P"));
+            send(n - 1, j, readDouble("B"));
+            send(n - 1, j, readDouble("P"));
         } else {
-            send(i - 1, j, read("b"));
-            send(i - 1, j, read("P"));
+            send(i - 1, j, readDouble("B"));
+            send(i - 1, j, readDouble("P"));
         }
-        receive("b");
-        receive("p");
+        receive("B");
+        receive("P");
     }
 }

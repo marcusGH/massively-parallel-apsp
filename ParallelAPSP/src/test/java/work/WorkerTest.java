@@ -5,8 +5,6 @@ import memoryModel.MemoryController;
 import memoryModel.PrivateMemory;
 import org.junit.jupiter.api.Test;
 
-import java.util.concurrent.CyclicBarrier;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -64,6 +62,9 @@ class ComputationOnlyWorker extends Worker {
     }
 
     @Override
+    protected void initialise() { }
+
+    @Override
     public void computation(int l) {
         this.computation.run();
     }
@@ -81,6 +82,9 @@ class SimpleComputationWorker extends Worker {
         super(i, j, p, n, numPhases, privateMemory, memoryController);
     }
 
+    @Override
+    protected void initialise() { }
+
     /**
      * Stores in C the sum of all the values in private memory location (0, l) for all l
      * @param l a non-negative integer representing number of computation phases already completed
@@ -89,9 +93,9 @@ class SimpleComputationWorker extends Worker {
     public void computation(int l) {
         if (l == 0) {
             // try shorthand reading
-            store("C", read("A"));
+            store("C", readDouble("A"));
         } else {
-            store("C", read(0, l, "A") + read("C"));
+            store("C", readDouble(0, l, "A") + readDouble("C"));
         }
     }
 
