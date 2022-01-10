@@ -1,6 +1,5 @@
 package memoryModel;
 
-import jdk.jshell.spi.ExecutionControl;
 import util.Matrix;
 
 import java.util.HashMap;
@@ -8,8 +7,7 @@ import java.util.Map;
 
 public class PrivateMemory {
     // used in case we have a 1 x 1 private memory layout
-    private Map<String, Double> singleMemoryDouble;
-    private Map<String, Integer> singleMemoryInteger;
+    private Map<String, Number> singleMemory;
     // fast access to "A", "B", and "C" because used often
     // TODO: implement
     // used in case we have a 1 x n private memory layout
@@ -17,8 +15,7 @@ public class PrivateMemory {
     // used in case we have a n x 1 private memory layout
     // TODO: implement
     // used in the general case
-    private Matrix<Map<String, Double>> matrixMemoryDouble;
-    private Matrix<Map<String, Integer>> matrixMemoryInteger;
+    private Matrix<Map<String, Number>> matrixMemory;
 
     private final int k;
 
@@ -26,11 +23,9 @@ public class PrivateMemory {
         this.k = k;
 
         if (k == 1) {
-            this.singleMemoryDouble = new HashMap<>();
-            this.singleMemoryInteger = new HashMap<>();
+            this.singleMemory = new HashMap<>();
         } else {
-            this.matrixMemoryDouble = new Matrix<>(k, HashMap::new);
-            this.matrixMemoryInteger = new Matrix<>(k, HashMap::new);
+            this.matrixMemory = new Matrix<>(k, HashMap::new);
         }
     }
 
@@ -38,22 +33,6 @@ public class PrivateMemory {
 
     public void set(String label, Number n) {
         set(0, 0, label, n);
-    }
-
-    public void set(String label, int n) {
-        set(0, 0, label, n);
-    }
-
-    public void set(String label, double n) {
-        this.set(0, 0, label, n);
-    }
-
-    public void setInt(String label, int n) {
-        this.setInt(0, 0, label, n);
-    }
-
-    public void setDouble(String label, double n) {
-        this.setDouble(0, 0, label, n);
     }
 
     public int getInt(String label) {
@@ -66,42 +45,27 @@ public class PrivateMemory {
 
 
     /**
-     * If no type is specified, it will be inferred
+     * We store everything as Numbers, and we fetch the values, they are casted depending
+     * on whether we want a double or an int. The values are auto-boxed upon setting.
      * @param mi
      * @param mj
      * @param label
      * @param n
      */
     public void set(int mi, int  mj, String label, Number n) {
-        if (n instanceof Double) {
-            setDouble(mi, mj, label, n.doubleValue());
-        } else if (n instanceof Integer) {
-            setInt(mi, mj, label, n.intValue());
-        } else {
-            throw new RuntimeException("The type of Number n is not yet supported!");
-        }
-    }
-
-    public void setDouble(int mi, int mj, String label, double n) {
         assert 0 <= mi && mi < this.k;
         assert 0 <= mj && mj < this.k;
 
-        if (this.k == 1) {
-            this.singleMemoryDouble.put(label, n);
-        } else {
-            this.matrixMemoryDouble.get(mi, mj).put(label, n);
+        if (!(n instanceof Double || n instanceof Integer)) {
+            throw new RuntimeException("The type of Number n is not supported: " + n.getClass().getCanonicalName());
         }
-    }
-
-    public void setInt(int mi, int mj, String label, int n) {
-        assert 0 <= mi && mi < this.k;
-        assert 0 <= mj && mj < this.k;
 
         if (this.k == 1) {
-            this.singleMemoryInteger.put(label, n);
+            this.singleMemory.put(label, n);
         } else {
-            this.matrixMemoryInteger.get(mi, mj).put(label, n);
+            this.matrixMemory.get(mi, mj).put(label, n);
         }
+
     }
 
     public double getDouble(int mi, int mj, String label) {
@@ -109,14 +73,13 @@ public class PrivateMemory {
         assert 0 <= mj && mj < this.k;
 
         if (this.k == 1) {
-            if (!this.singleMemoryDouble.containsKey(label)) {
-                throw new IllegalStateException(String.format("singleMemoryDouble does not contain label %s, "
-                    + "only labels %s. Additionally, singleMemoryInteger has elements %s.",
-                        label, this.singleMemoryDouble.keySet(), this.singleMemoryInteger.keySet()));
+            if (!this.singleMemory.containsKey(label)) {
+                throw new IllegalStateException(String.format("singleMemory does not contain label %s, "
+                    + "only labels %s.", label, this.singleMemory.keySet()));
             }
-            return this.singleMemoryDouble.get(label);
+            return this.singleMemory.get(label).doubleValue();
         } else {
-            return this.matrixMemoryDouble.get(mi, mj).get(label);
+            return this.matrixMemory.get(mi, mj).get(label).doubleValue();
         }
     }
 
@@ -125,14 +88,13 @@ public class PrivateMemory {
         assert 0 <= mj && mj < this.k;
 
         if (this.k == 1) {
-            if (!this.singleMemoryInteger.containsKey(label)) {
-                throw new IllegalStateException(String.format("singleMemoryInteger does not contain label %s, "
-                                + "only labels %s. Additionally, singleMemoryDouble has elements %s.",
-                        label, this.singleMemoryInteger.keySet(), this.singleMemoryDouble.keySet()));
+            if (!this.singleMemory.containsKey(label)) {
+                throw new IllegalStateException(String.format("singleMemory does not contain label %s, "
+                        + "only labels %s.", label, this.singleMemory.keySet()));
             }
-            return this.singleMemoryInteger.get(label);
+            return this.singleMemory.get(label).intValue();
         } else {
-            return this.matrixMemoryInteger.get(mi, mj).get(label);
+            return this.matrixMemory.get(mi, mj).get(label).intValue();
         }
     }
 }

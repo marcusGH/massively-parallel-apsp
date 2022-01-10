@@ -124,6 +124,10 @@ at as a further optimisation of the algorithm.
 
 * [Zwick's algorithm](https://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=743464)
   * This does approximation to calculate product of matrices, witness notation from here
+* Planar graphs, allows other methods very efficient, and some in later paper are parallelizable :
+  * https://arxiv.org/pdf/2111.07360.pdf
+  * https://www.sciencedirect.com/science/article/pii/S0022000097914938
+  * https://dl.acm.org/doi/10.1145/165231.165240
 
 ## Planning
 
