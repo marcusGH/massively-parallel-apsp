@@ -1,4 +1,4 @@
-package parallelAPSP;
+package APSPSolver;
 
 import graphReader.GraphReader;
 import matrixMultiplication.BroadcastMatrixMultiplication;
@@ -17,7 +17,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class RepeatedMatrixSquaring extends ParallelAPSP {
+public class RepeatedMatrixSquaring extends APSPSolver {
 
     private static final Logger LOGGER = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
 
@@ -79,7 +79,7 @@ public class RepeatedMatrixSquaring extends ParallelAPSP {
             return;
         }
 
-        ParallelAPSP solver = new RepeatedMatrixSquaring(adjacencyMatrix);
+        APSPSolver solver = new RepeatedMatrixSquaring(adjacencyMatrix);
         solver.solve();
     }
 }

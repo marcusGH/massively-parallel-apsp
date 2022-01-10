@@ -1,12 +1,10 @@
-package parallelAPSP;
+package APSPSolver;
 
-import graphReader.GraphReader;
 import util.Matrix;
 
-import java.text.ParseException;
 import java.util.List;
 
-public abstract class ParallelAPSP {
+public abstract class APSPSolver {
     private final boolean graphIsDirected;
 
     protected final int n;
@@ -15,7 +13,7 @@ public abstract class ParallelAPSP {
     protected final Matrix<Integer> predecessorMatrix;
     protected final Matrix<Number> weightMatrix;
 
-    private ParallelAPSP(int n) {
+    private APSPSolver(int n) {
         // TODO: add paramter
         this.n = n;
         this.graphIsDirected = true;
@@ -24,7 +22,7 @@ public abstract class ParallelAPSP {
         this.weightMatrix = new Matrix<>(n);
     }
 
-    public ParallelAPSP(Matrix<? extends Number> adjacencyMatrix) {
+    public APSPSolver(Matrix<? extends Number> adjacencyMatrix) {
         this(adjacencyMatrix.size());
         // cast everything to Numbers
         for (int i = 0; i < adjacencyMatrix.size(); i++) {

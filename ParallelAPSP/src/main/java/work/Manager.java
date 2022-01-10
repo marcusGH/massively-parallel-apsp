@@ -27,7 +27,7 @@ public class Manager {
 
     private final MemoryController memoryController;
     private final Matrix<PrivateMemory> privateMemoryMatrix;
-    private final Matrix<Worker> workers;
+    private final Matrix<Algorithm> workers;
 
     private ExecutorService executorService;
     // only one of the workers should execute stopWorkers, so this lock is used for exclusion
@@ -83,7 +83,7 @@ public class Manager {
         this.workers = new Matrix<>(this.p);
         for (int i = 0; i < this.p; i++) {
             for (int j = 0; j < this.p; j++) {
-                Worker w = workerFactory.createWorker(i, j, this.p, this.n, numComputationPhases, privateMemoryMatrix.get(i, j));
+                Algorithm w = workerFactory.createWorker(i, j, this.p, this.n, numComputationPhases, privateMemoryMatrix.get(i, j));
                 this.workers.set(i, j, w);
             }
         }
@@ -120,7 +120,7 @@ public class Manager {
      * @param phaseType a enum of the possible worker phases
      * @return a list of futures produced by the ExecutorService
      */
-    private List<Future<?>> startWorkerExecution(int phaseNumber, Worker.WorkerPhases phaseType) {
+    private List<Future<?>> startWorkerExecution(int phaseNumber, Algorithm.WorkerPhases phaseType) {
         List<Future<?>> workerFutures = new ArrayList<>(this.p * this.p);
         for (int i = 0; i < this.p; i++) {
             for (int j = 0; j < this.p; j++) {
@@ -199,13 +199,13 @@ public class Manager {
 
         // run the initialisation phase first of each worker
         LOGGER.log(Level.FINE, "Manager is running initialisation phase.");
-        workerFutures = startWorkerExecution(-1, Worker.WorkerPhases.INITIALISATION);
+        workerFutures = startWorkerExecution(-1, Algorithm.WorkerPhases.INITIALISATION);
         checkForWorkerFailure(workerFutures);
 
         for (int l = 0; l < this.numComputationPhases; l++) {
             // COMMUNICATION_BEFORE phase
             LOGGER.log(Level.FINE, "Manager is starting communicationBefore phase {0}", l);
-            workerFutures = startWorkerExecution(l, Worker.WorkerPhases.COMMUNICATION_BEFORE);
+            workerFutures = startWorkerExecution(l, Algorithm.WorkerPhases.COMMUNICATION_BEFORE);
             checkForWorkerFailure(workerFutures);
             this.memoryController.flush();
 
@@ -215,12 +215,12 @@ public class Manager {
             //   If we don't synchronise, we may get concurrent access to the workers' PrivateMemory through
             //   reading in both computation and communication. PrivateMemory does not guarantee thread-safe
             //   behaviour, so we must synchronise to avoid this.
-            workerFutures = startWorkerExecution(l, Worker.WorkerPhases.COMPUTATION);
+            workerFutures = startWorkerExecution(l, Algorithm.WorkerPhases.COMPUTATION);
             checkForWorkerFailure(workerFutures);
 
             // COMMUNICATION_AFTER phase
             LOGGER.log(Level.FINE, "Manager is starting communicationAfter phase {0}", l);
-            workerFutures = startWorkerExecution(l, Worker.WorkerPhases.COMMUNICATION_AFTER);
+            workerFutures = startWorkerExecution(l, Algorithm.WorkerPhases.COMMUNICATION_AFTER);
             checkForWorkerFailure(workerFutures);
             this.memoryController.flush();
         }

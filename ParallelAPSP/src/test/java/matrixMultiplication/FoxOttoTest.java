@@ -11,7 +11,6 @@ import work.WorkerFactory;
 import work.WorkerInstantiationException;
 import work.WorkersFailedToCompleteException;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
@@ -19,7 +18,7 @@ import java.util.logging.Logger;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class FoxOttoMinPlusTest {
+class FoxOttoTest {
 
     private static final Logger LOGGER = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
 
@@ -67,7 +66,7 @@ class FoxOttoMinPlusTest {
         WorkerFactory wf;
         Manager m;
         try {
-            wf = new WorkerFactory(FoxOttoMinPlus.class);
+            wf = new WorkerFactory(FoxOtto.class);
             m = new Manager(7, 7, initialMemory, SquareGridTopology::new, wf);
         } catch (WorkerInstantiationException e) {
             e.printStackTrace();

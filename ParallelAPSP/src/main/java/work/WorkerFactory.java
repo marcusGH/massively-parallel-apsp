@@ -22,13 +22,13 @@ public class WorkerFactory {
      * @param workerClass a Class object of a subtype of Worker. The subtype MUST HAVE A PUBLIC CONSTRUCTOR.
      * @throws WorkerInstantiationException if the subclass provided does not have the appropriate constructor
      */
-    public WorkerFactory(Class<? extends Worker> workerClass) throws WorkerInstantiationException {
+    public WorkerFactory(Class<? extends Algorithm> workerClass) throws WorkerInstantiationException {
         try {
             if (workerClass.getConstructors().length == 0) {
                 LOGGER.log(Level.SEVERE, "No constructors were found from reflection of the worker subclass {0}." +
                         "Try to make its constructor public.", workerClass.getCanonicalName());
             }
-            this.workerConstructor = workerClass.getConstructor(Worker.workerConstructorParameterTypes);
+            this.workerConstructor = workerClass.getConstructor(Algorithm.workerConstructorParameterTypes);
         } catch (NoSuchMethodException e) {
             e.printStackTrace();
             throw new WorkerInstantiationException("Could not find appropriate constructor in provided Worker class.");
@@ -60,9 +60,9 @@ public class WorkerFactory {
      * @return a new worker
      * @throws WorkerInstantiationException if the constructor fails
      */
-    Worker createWorker(int i, int j, int p, int n, int numPhases, PrivateMemory privateMemory) throws WorkerInstantiationException {
+    Algorithm createWorker(int i, int j, int p, int n, int numPhases, PrivateMemory privateMemory) throws WorkerInstantiationException {
         try {
-            return (Worker) this.workerConstructor.newInstance(i, j, p, n, numPhases, privateMemory, this.memoryController);
+            return (Algorithm) this.workerConstructor.newInstance(i, j, p, n, numPhases, privateMemory, this.memoryController);
         } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
             e.printStackTrace();
             throw new WorkerInstantiationException(String.format("Failed to instantiate Worker(%d, %d).", i, j));

@@ -17,7 +17,7 @@ import java.util.logging.Logger;
 import static java.lang.Integer.max;
 import static org.junit.jupiter.api.Assertions.*;
 
-class WorkerManagerExceptionTests {
+class AlgorithmManagerExceptionTests {
 
     private static final Logger LOGGER = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
 
@@ -29,7 +29,7 @@ class WorkerManagerExceptionTests {
     @Test
     void workersCompleteWhenNoWorkToBeDone() {
         // SETUP
-        Class<? extends Worker> workerClass = EmptyWorker.class;
+        Class<? extends Algorithm> workerClass = EmptyAlgorithm.class;
 
         Manager m;
         try {
@@ -59,7 +59,7 @@ class WorkerManagerExceptionTests {
             " checks if all the thread exit within 5 second if one of the thread encounters a communication error.")
     void workersFailGracefullyOnCommunicationException() {
         // SETUP
-        Class<? extends Worker> workerClass = FailingWorker.class;
+        Class<? extends Algorithm> workerClass = FailingAlgorithm.class;
 
         Manager m;
         try {
@@ -109,7 +109,7 @@ class WorkerManagerExceptionTests {
     @Test
     void workersExitGracefullyOnInconsistentMemoryChannelUsage() {
         // SETUP
-        Class<? extends Worker> workerClass = InconsistentWorker.class;
+        Class<? extends Algorithm> workerClass = InconsistentAlgorithm.class;
 
         Manager m;
         try {
@@ -130,16 +130,16 @@ class WorkerManagerExceptionTests {
 
         // ASSERT
         // the workers should be stopped before they reach phase 2
-        assertTrue(InconsistentWorker.highestPhase <= 1);
+        assertTrue(InconsistentAlgorithm.highestPhase <= 1);
     }
 }
 
 /**
  * This worker does nothing, but is just used for stress testing
  */
-class EmptyWorker extends Worker {
+class EmptyAlgorithm extends Algorithm {
 
-    public EmptyWorker(int i, int j, int p, int n, int numPhases, PrivateMemory privateMemory, MemoryController memoryController) {
+    public EmptyAlgorithm(int i, int j, int p, int n, int numPhases, PrivateMemory privateMemory, MemoryController memoryController) {
         super(i, j, p, n, numPhases, privateMemory, memoryController);
     }
 
@@ -156,10 +156,10 @@ class EmptyWorker extends Worker {
     public void communicationAfter(int l) throws CommunicationChannelCongestionException { }
 }
 
-class FailingWorker extends Worker {
+class FailingAlgorithm extends Algorithm {
     public static int highestPhase = 0;
 
-    public FailingWorker(int i, int j, int p, int n, int numPhases, PrivateMemory privateMemory, MemoryController memoryController) {
+    public FailingAlgorithm(int i, int j, int p, int n, int numPhases, PrivateMemory privateMemory, MemoryController memoryController) {
         super(i, j, p, n, numPhases, privateMemory, memoryController);
     }
 
@@ -191,10 +191,10 @@ class FailingWorker extends Worker {
     }
 }
 
-class InconsistentWorker extends Worker {
+class InconsistentAlgorithm extends Algorithm {
     public static int highestPhase = 0;
 
-    public InconsistentWorker(int i, int j, int p, int n, int numPhases, PrivateMemory privateMemory, MemoryController memoryController) {
+    public InconsistentAlgorithm(int i, int j, int p, int n, int numPhases, PrivateMemory privateMemory, MemoryController memoryController) {
         super(i, j, p, n, numPhases, privateMemory, memoryController);
     }
 

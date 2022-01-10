@@ -3,11 +3,10 @@ package matrixMultiplication;
 import memoryModel.CommunicationChannelCongestionException;
 import memoryModel.MemoryController;
 import memoryModel.PrivateMemory;
-import work.Worker;
 
-public class FoxOttoMinPlus extends Worker {
+public class FoxOtto extends MinPlusProduct {
 
-    public FoxOttoMinPlus(int i, int j, int p, int n, int numPhases, PrivateMemory privateMemory, MemoryController memoryController) {
+    public FoxOtto(int i, int j, int p, int n, int numPhases, PrivateMemory privateMemory, MemoryController memoryController) {
         super(i, j, p, n, numPhases, privateMemory, memoryController);
     }
 

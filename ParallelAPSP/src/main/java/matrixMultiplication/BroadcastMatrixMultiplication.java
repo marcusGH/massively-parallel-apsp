@@ -3,13 +3,13 @@ package matrixMultiplication;
 import memoryModel.CommunicationChannelCongestionException;
 import memoryModel.MemoryController;
 import memoryModel.PrivateMemory;
-import work.Worker;
+import work.Algorithm;
 
 /**
  * This worker assumes two input matrices, stored in location "A" and "B", respectively.
  * The worker will then together multiply the matrices and store the result in "C".
  */
-public class BroadcastMatrixMultiplication extends Worker {
+public class BroadcastMatrixMultiplication extends Algorithm {
 
     public BroadcastMatrixMultiplication(int i, int j, int p, int n, int numPhases, PrivateMemory privateMemory, MemoryController memoryController) {
         super(i, j, p, n, numPhases, privateMemory, memoryController);

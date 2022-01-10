@@ -46,7 +46,7 @@ class ManagerTest {
         WorkerFactory wf;
         Manager m;
         try {
-            wf = new WorkerFactory(SimpleCommunicatingWorker.class);
+            wf = new WorkerFactory(SimpleCommunicatingAlgorithm.class);
         } catch (WorkerInstantiationException e) {
             fail("The worker factory could not be instantiated");
             return;
@@ -104,7 +104,7 @@ class ManagerTest {
         WorkerFactory wf;
         Manager m;
         try {
-            wf = new WorkerFactory(SimpleCommunicatingWorker.class);
+            wf = new WorkerFactory(SimpleCommunicatingAlgorithm.class);
         } catch (WorkerInstantiationException e) {
             fail("The worker factory could not be instantiated");
             return;
@@ -166,7 +166,7 @@ class ManagerTest {
         WorkerFactory wf;
         Manager m;
             try {
-            wf = new WorkerFactory(BroadcastingWorker.class);
+            wf = new WorkerFactory(BroadcastingAlgorithm.class);
         } catch (WorkerInstantiationException e) {
             fail("The worker factory could not be instantiated");
             return;
@@ -212,7 +212,7 @@ class ManagerTest {
         WorkerFactory wf;
         Manager m;
         try {
-            wf = new WorkerFactory(EmptyWorker.class);
+            wf = new WorkerFactory(EmptyAlgorithm.class);
         } catch (WorkerInstantiationException e) {
             e.printStackTrace();
             fail("The worker factory could not be instantiated");
@@ -250,9 +250,9 @@ class ManagerTest {
  * All the workers pass their own held value to the right neighbour after each computation, then
  * they compute the cumulative sums of whatever value they're given.
  */
-class SimpleCommunicatingWorker extends Worker {
+class SimpleCommunicatingAlgorithm extends Algorithm {
 
-    public SimpleCommunicatingWorker(int i, int j, int p, int n, int numPhases, PrivateMemory privateMemory, MemoryController memoryController) {
+    public SimpleCommunicatingAlgorithm(int i, int j, int p, int n, int numPhases, PrivateMemory privateMemory, MemoryController memoryController) {
         super(i, j, p, n, numPhases, privateMemory, memoryController);
     }
 
@@ -286,9 +286,9 @@ class SimpleCommunicatingWorker extends Worker {
  * and column-highways to a cumulative sum, stored in "C". At each communication phase l, the rows highways
  * will be used by (*, l) and the column highways by (l, *)
  */
-class BroadcastingWorker extends Worker {
+class BroadcastingAlgorithm extends Algorithm {
 
-    public BroadcastingWorker(int i, int j, int p, int n, int numPhases, PrivateMemory privateMemory, MemoryController memoryController) {
+    public BroadcastingAlgorithm(int i, int j, int p, int n, int numPhases, PrivateMemory privateMemory, MemoryController memoryController) {
         super(i, j, p, n, numPhases, privateMemory, memoryController);
     }
 
