@@ -13,6 +13,7 @@ import util.Matrix;
 
 public class GraphReader {
     private final List<Triple<Integer, Integer, Double>> edges;
+    private final Set<Pair<Integer, Integer>> edgeSet;
     private final Set<Integer> nodeIDs;
     private final int n;
 
@@ -54,6 +55,8 @@ public class GraphReader {
         this.n = this.nodeIDs.size();
         // save the read data
         this.edges = reIndexEdges(edges);
+        // create set for quick edge queries
+        this.edgeSet = this.edges.stream().map(t -> new Pair<>(t.getFirst(), t.getSecond())).collect(Collectors.toSet());
     }
 
     private List<Triple<Integer, Integer, Double>> reIndexEdges(List<Triple<Integer, Integer, Double>> edges) {
@@ -77,6 +80,10 @@ public class GraphReader {
                 .mapToInt(Triple::y)
                 .collect(HashSet::new, HashSet::add, AbstractCollection::addAll));
         return nodeIds;
+    }
+
+    public boolean hasEdge(int i, int j) {
+        return this.edgeSet.contains(new Pair<>(i, j));
     }
 
     public List<List<Pair<Integer, Double>>> getAdjacencyList(boolean isDirected) {

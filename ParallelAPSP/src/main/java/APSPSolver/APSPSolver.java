@@ -3,6 +3,7 @@ package APSPSolver;
 import util.Matrix;
 
 import java.util.List;
+import java.util.Optional;
 
 public abstract class APSPSolver {
     private final boolean graphIsDirected;
@@ -36,7 +37,7 @@ public abstract class APSPSolver {
         }
     }
 
-    public List<Integer> getShortestPath(int i, int j) {
+    public Optional<List<Integer>> getShortestPath(int i, int j) {
         throw new RuntimeException("Not implemented yet");
     }
 
