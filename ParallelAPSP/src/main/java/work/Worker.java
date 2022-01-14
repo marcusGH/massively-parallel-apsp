@@ -104,7 +104,8 @@ public abstract class Worker implements Runnable {
     }
 
     // TODO: add try catch and send Exception from computation if e.g. get NullPointerException when reading
-    //       label that does not exist in the PrivateMemory
+    //       label that does not exist in the PrivateMemory. No longer necessary because unchecked thrown in PrivateMemory
+    //       and caught and reported in Manager!
     protected Number read(int mi, int mj, String label) {
         return this.privateMemory.get(mi, mj, label);
     }

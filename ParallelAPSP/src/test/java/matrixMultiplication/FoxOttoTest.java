@@ -63,11 +63,9 @@ class FoxOttoTest {
         initialMemory.put("P", predMatrix);
 
         // create the manager
-        WorkerFactory wf;
         Manager m;
         try {
-            wf = new WorkerFactory(FoxOtto.class);
-            m = new Manager(7, 7, initialMemory, SquareGridTopology::new, wf);
+            m = new Manager(7, 7, initialMemory, SquareGridTopology::new, FoxOtto.class);
         } catch (WorkerInstantiationException e) {
             e.printStackTrace();
             fail("The manager or worker factory could not be created");

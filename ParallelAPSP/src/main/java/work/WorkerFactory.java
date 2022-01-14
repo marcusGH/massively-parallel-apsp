@@ -22,7 +22,7 @@ public class WorkerFactory {
      * @param workerClass a Class object of a subtype of Worker. The subtype MUST HAVE A PUBLIC CONSTRUCTOR.
      * @throws WorkerInstantiationException if the subclass provided does not have the appropriate constructor
      */
-    public WorkerFactory(Class<? extends Worker> workerClass) throws WorkerInstantiationException {
+    WorkerFactory(Class<? extends Worker> workerClass) throws WorkerInstantiationException {
         try {
             if (workerClass.getConstructors().length == 0) {
                 LOGGER.log(Level.SEVERE, "No constructors were found from reflection of the worker subclass {0}." +

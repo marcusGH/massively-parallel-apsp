@@ -33,8 +33,7 @@ class WorkerManagerExceptionTests {
 
         Manager m;
         try {
-            WorkerFactory wf = new WorkerFactory(workerClass);
-            m = new Manager(3, 5, null, SquareGridTopology::new, wf);
+            m = new Manager(3, 5, null, SquareGridTopology::new, EmptyWorker.class);
         } catch (WorkerInstantiationException e) {
             e.printStackTrace();
             fail("Failed to construct manager.");
@@ -63,8 +62,7 @@ class WorkerManagerExceptionTests {
 
         Manager m;
         try {
-            WorkerFactory wf = new WorkerFactory(workerClass);
-            m = new Manager(3, 20, null, SquareGridTopology::new, wf);
+            m = new Manager(3, 20, null, SquareGridTopology::new, workerClass);
         } catch (WorkerInstantiationException e) {
             e.printStackTrace();
             fail("Failed to construct manager.");
@@ -113,8 +111,7 @@ class WorkerManagerExceptionTests {
 
         Manager m;
         try {
-            WorkerFactory wf = new WorkerFactory(workerClass);
-            m = new Manager(5, 20, null, SquareGridTopology::new, wf);
+            m = new Manager(5, 20, null, SquareGridTopology::new, workerClass);
         } catch (WorkerInstantiationException e) {
             e.printStackTrace();
             fail("Failed to construct manager.");

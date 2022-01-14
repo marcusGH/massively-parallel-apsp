@@ -100,12 +100,8 @@ class SimpleComputationWorker extends Worker {
     }
 
     @Override
-    public void communicationBefore(int l) throws CommunicationChannelCongestionException {
-
-    }
+    public void communicationBefore(int l) throws CommunicationChannelCongestionException { }
 
     @Override
-    public void communicationAfter(int l) throws CommunicationChannelCongestionException {
-
-    }
+    public void communicationAfter(int l) throws CommunicationChannelCongestionException { }
 }

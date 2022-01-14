@@ -18,11 +18,10 @@ public class Manager {
 
     private static final int MAX_CONCURRENT_THREADS = 16;
 
-    // size of input
+    // number of rows and columns in input
     private final int n;
     // number of processing elements
     private final int p;
-
     private final int numComputationPhases;
 
     private final MemoryController memoryController;
@@ -30,7 +29,6 @@ public class Manager {
     private final Matrix<Worker> workers;
 
     private ExecutorService executorService;
-    // only one of the workers should execute stopWorkers, so this lock is used for exclusion
     private boolean workHasBeenDone = false;
 
     // 1x1 version TODO: make general constructor
@@ -39,18 +37,18 @@ public class Manager {
      * Creates a Manager. Upon construction, the manager will creates a MemoryController, and a matrix of n x n workers.
      * The workers will start their execution when {@link #doWork} is called, which will block until all workers have
      * finished. If any error occurs during execution, such as {@link CommunicationChannelCongestionException}
-     * or {@link InconsistentCommunicationChannelUsageException}, an exception will be thrown when {@link #getResult} is
-     * called.
+     * or {@link InconsistentCommunicationChannelUsageException}, an exception will be thrown.
      *
      * @param n a matrix of n x n workers are created
      * @param numComputationPhases the number of computation phases each worker should perform
-     * @param initialMemoryContent a map from private memory access labels to the content stored in each worker's memory
+     * @param initialMemoryContent a map from private memory access labels to the content stored in each worker's memory.
+     *                             This parameter may be null, in which case all workers start with empty memory.
      * @param memoryTopology a constructor taking a non-negative integer and giving an object that subtypes Topology
-     * @param workerFactory a WorkerFactory that has not yet been initialised.
+     * @param workerClass a subtype of Worker, specifying that computation and communication each individual worker should do
      * @throws WorkerInstantiationException if any of the workers are not able to be constructed
      */
     public Manager(int n, int numComputationPhases, Map<String, Matrix<Number>> initialMemoryContent,
-                   Function<Integer, ? extends Topology> memoryTopology, WorkerFactory workerFactory) throws WorkerInstantiationException {
+                   Function<Integer, ? extends Topology> memoryTopology, Class<? extends Worker> workerClass) throws WorkerInstantiationException {
         this.n = n;
         this.p = n;
         this.numComputationPhases = numComputationPhases;
@@ -62,7 +60,6 @@ public class Manager {
         }
 
         // initialize the private memory
-        // used to fetch the results after computation
         Matrix<PrivateMemory> privateMemoryMatrix = new Matrix<>(this.p, () -> new PrivateMemory(1));
         if (null != initialMemoryContent) {
             for (int i = 0; i < this.p; i++) {
@@ -74,9 +71,12 @@ public class Manager {
             }
         }
 
+        // the private memory is used to fetch the results after computation, so save a reference to it
         this.privateMemoryMatrix = privateMemoryMatrix;
         this.memoryController = new MemoryController(this.p, privateMemoryMatrix, memoryTopology);
 
+        // set up the worker factory
+        WorkerFactory workerFactory = new WorkerFactory(workerClass);
         workerFactory.init(memoryController);
 
         // and create all the workers
@@ -87,14 +87,13 @@ public class Manager {
                 this.workers.set(i, j, w);
             }
         }
-
     }
 
     // TODO: resetMemory() which wipes everything
 
     /**
      * Does not delete existing memory content, just overrides what is provided.
-     * @param memoryContent
+     * @param memoryContent a map from string labels to numbers to distribute to each processing element
      */
     public void resetMemory(Map<String, Matrix<Number>> memoryContent) {
         assert memoryContent != null;
@@ -106,6 +105,7 @@ public class Manager {
         for (int i = 0; i < this.p; i++) {
             for (int j = 0; j < this.p; j++) {
                 for (String s : memoryContent.keySet()) {
+                    // private memory of PE(i, j) has label "s" assigned to memoryContent[i, j] associated with "s"
                     this.privateMemoryMatrix.get(i, j).set(s, memoryContent.get(s).get(i, j));
                 }
             }
@@ -173,23 +173,27 @@ public class Manager {
         }
     }
     /**
-     * Starts all and blocks on the workers to finish in 3 phases:
-     * * All the worker threads are created
-     * * All the worker threads are started
-     * * All the worker threads are joined
+     * Runs all the worker's work using an ExecutorService, blocking until all work has been completed. An exception
+     * is thrown is any of the workers encounter a failure during execution.
      *
-     * TODO: merge memory exceptions
-     * TODO: redo docs
+     * The work is done in the following order:
+     * * All workers execute their INITIALISATION phase  in non-deterministic order
+     * * All the workers are synchronised (we block until all workers has finished the above)
+     * * Then the following is done once for each of the specified number of computation phases:
+     *   * All the workers do their COMMUNICATION_BEFORE phase in non-deterministic order
+     *   * All the workers are synchronised
+     *   * All the worker do their COMPUTATION phase in non-deterministic order
+     *   * All the workers are synchronised
+     *   * All the workers do their COMMUNICATION_BEFORE phase in non-deterministic order
+     *   * All the workers are synchronised
      *
-     * @throws InterruptedException In case any worker thread gets interrupted while we are waiting for
-     * them to be joined
+     * @throws CommunicationChannelException if any of the workers attempt to use an already used communication channel
+     *   during one of their communication phases
+     * @throws WorkersFailedToCompleteException if any of the workers throw an exception during their computation phase.
+     *   This exception is wrapped in a {@code WorkersFailedToCompleteException} and re-thrown. Examples include exceptions
+     *   from from PrivateMemory in case access is attempted with a label that does not exist.
      */
     public void doWork() throws CommunicationChannelException, WorkersFailedToCompleteException {
-        // TODO: find better wya of handling repeated work
-//        if (this.workHasBeenDone) {
-//            throw new IllegalStateException("Work cannot be performed twice or started when execution has previously failed");
-//        }
-
         LOGGER.log(Level.INFO, "Manager is starting {0} phases of work with {1} workers.", new Object[]{this.numComputationPhases, this.p * this.p});
 
         // create the executor service which will manage the worker computation
@@ -241,8 +245,7 @@ public class Manager {
      * when accessed with the label {@code label}.
      *
      * @param label the string label. May be null, in which case an empty matrix is returned.
-     * @return
-     * @throws WorkersFailedToCompleteException
+     * @return a Matrix of numbers
      */
     public Matrix<Number> getResult(String label, boolean asInt)  {
         if (!this.workHasBeenDone) {

@@ -43,16 +43,9 @@ class ManagerTest {
         initialMemory.put("A", matrix);
 
         // create the manager
-        WorkerFactory wf;
         Manager m;
         try {
-            wf = new WorkerFactory(SimpleCommunicatingWorker.class);
-        } catch (WorkerInstantiationException e) {
-            fail("The worker factory could not be instantiated");
-            return;
-        }
-        try {
-            m = new Manager(4, 4, initialMemory, SquareGridTopology::new, wf);
+            m = new Manager(4, 4, initialMemory, SquareGridTopology::new, SimpleCommunicatingWorker.class);
         } catch (WorkerInstantiationException e) {
             fail("The manager could not create all the workers");
             return;
@@ -67,6 +60,7 @@ class ManagerTest {
             fail("Manager failed to complete work due to interruption");
             return;
         } catch (WorkersFailedToCompleteException e) {
+            e.printStackTrace();
             fail("The workers encountered an error during execution");
             return;
         }
@@ -101,16 +95,9 @@ class ManagerTest {
         initialMemory.put("A", matrix);
 
         // create the manager
-        WorkerFactory wf;
         Manager m;
         try {
-            wf = new WorkerFactory(SimpleCommunicatingWorker.class);
-        } catch (WorkerInstantiationException e) {
-            fail("The worker factory could not be instantiated");
-            return;
-        }
-        try {
-            m = new Manager(4, 4, initialMemory, SquareGridTopology::new, wf);
+            m = new Manager(4, 4, initialMemory, SquareGridTopology::new, SimpleCommunicatingWorker.class);
         } catch (WorkerInstantiationException e) {
             fail("The manager could not create all the workers");
             return;
@@ -163,16 +150,9 @@ class ManagerTest {
         initialMemory.put("A", matrix);
 
         // create the manager
-        WorkerFactory wf;
         Manager m;
-            try {
-            wf = new WorkerFactory(BroadcastingWorker.class);
-        } catch (WorkerInstantiationException e) {
-            fail("The worker factory could not be instantiated");
-            return;
-        }
-            try {
-            m = new Manager(3, 3, initialMemory, SquareGridTopology::new, wf);
+        try {
+            m = new Manager(3, 3, initialMemory, SquareGridTopology::new, BroadcastingWorker.class);
         } catch (WorkerInstantiationException e) {
             fail("The manager could not create all the workers");
             return;
@@ -209,17 +189,9 @@ class ManagerTest {
     void managerCanCreateALotOfWorkers() {
         // SETUP
         final int n = 50;
-        WorkerFactory wf;
         Manager m;
         try {
-            wf = new WorkerFactory(EmptyWorker.class);
-        } catch (WorkerInstantiationException e) {
-            e.printStackTrace();
-            fail("The worker factory could not be instantiated");
-            return;
-        }
-        try {
-            m = new Manager(n, n, null, SquareGridTopology::new, wf);
+            m = new Manager(n, n, null, SquareGridTopology::new, EmptyWorker.class);
         } catch (WorkerInstantiationException e) {
             e.printStackTrace();
             fail("The manager could not be created");
