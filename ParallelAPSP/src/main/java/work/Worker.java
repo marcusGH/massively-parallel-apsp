@@ -9,7 +9,7 @@ import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public abstract class Algorithm implements Runnable {
+public abstract class Worker implements Runnable {
 
     enum WorkerPhases {
         INITIALISATION,
@@ -47,7 +47,7 @@ public abstract class Algorithm implements Runnable {
      * @param memoryController a reference to a unique memory controller.
      *                         All workers should use the same memory controller
      */
-    public Algorithm(int i, int j, int p, int n, int numPhases, PrivateMemory privateMemory, MemoryController memoryController) {
+    public Worker(int i, int j, int p, int n, int numPhases, PrivateMemory privateMemory, MemoryController memoryController) {
         this.i = i;
         this.j = j;
         this.p = p;
@@ -195,6 +195,7 @@ public abstract class Algorithm implements Runnable {
     }
 
     @Override
+    @Deprecated
     public void run() {
         LOGGER.warning("Using a worker as Runnable should only be used when testing a single worker."
             + " To run synchronised workers in parallel, the getCallable methods with a ExecutorService should be used instead.");

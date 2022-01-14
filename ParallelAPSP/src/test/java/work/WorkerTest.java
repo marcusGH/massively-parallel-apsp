@@ -9,14 +9,14 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class AlgorithmTest {
+class WorkerTest {
 
     @Test
     void workerCompletesWithoutFailure() {
         // SETUP
         final AtomicInteger comulativeSum = new AtomicInteger(0);
 
-        Algorithm w = new ComputationOnlyAlgorithm(0, 0, 1, 1, 10, new PrivateMemory(1),
+        Worker w = new ComputationOnlyWorker(0, 0, 1, 1, 10, new PrivateMemory(1),
                 null, () -> {
             int a = 5;
             int b = a * 3;
@@ -41,7 +41,7 @@ class AlgorithmTest {
         pm.set(0, 4, "A", 0.4);
         pm.set(0, 5, "A", 0.5); // sum is 1.51
 
-        Algorithm w = new SimpleComputationAlgorithm(0, 0, 1, 1, 6, pm,
+        Worker w = new SimpleComputationWorker(0, 0, 1, 1, 6, pm,
                 null);
 
         // ACT
@@ -53,10 +53,10 @@ class AlgorithmTest {
     }
 }
 
-class ComputationOnlyAlgorithm extends Algorithm {
+class ComputationOnlyWorker extends Worker {
     private final Runnable computation;
 
-    public ComputationOnlyAlgorithm(int i, int j, int p, int n, int numPhases, PrivateMemory privateMemory, MemoryController memoryController, Runnable computation) {
+    public ComputationOnlyWorker(int i, int j, int p, int n, int numPhases, PrivateMemory privateMemory, MemoryController memoryController, Runnable computation) {
         super(i, j, p, n, numPhases, privateMemory, memoryController);
         this.computation = computation;
     }
@@ -76,9 +76,9 @@ class ComputationOnlyAlgorithm extends Algorithm {
     public void communicationAfter(int l) throws CommunicationChannelCongestionException { }
 }
 
-class SimpleComputationAlgorithm extends Algorithm {
+class SimpleComputationWorker extends Worker {
 
-    public SimpleComputationAlgorithm(int i, int j, int p, int n, int numPhases, PrivateMemory privateMemory, MemoryController memoryController) {
+    public SimpleComputationWorker(int i, int j, int p, int n, int numPhases, PrivateMemory privateMemory, MemoryController memoryController) {
         super(i, j, p, n, numPhases, privateMemory, memoryController);
     }
 
