@@ -13,6 +13,12 @@ public class Matrix<T> {
     // we only have square matrices
     private final int n;
 
+    /**
+     * Creates an empty matrix of size n x n. Any call to getters on an empty matrix will
+     * produce a NullPointerException because all entries are set to {@code null}.
+     *
+     * @param n size of the square matrix
+     */
     public Matrix(int n) {
         this.n = n;
         this.matrix = new ArrayList<>();
@@ -96,11 +102,11 @@ public class Matrix<T> {
                         (element instanceof Double && ((Double) element).isInfinite()) ||
                          element instanceof Integer && (Integer) element == Integer.MAX_VALUE ||
                          element instanceof Double && (Math.abs((Double) element - Integer.MAX_VALUE) < 1E-5))) {
+                    // abbreviate if it  looks like it's infinite
                     s = "INF";
                 } else {
                     s = element.toString();
                 }
-                // abbreviate if it  looks like it's infinite
                 sb.append(s).append(" ".repeat(Math.max(0, 8 - s.length())));
             }
         }

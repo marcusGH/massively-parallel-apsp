@@ -16,12 +16,6 @@ public class LoggerFormatter extends Formatter {
 
     @Override
     public String format(LogRecord logRecord) {
-        String source = logRecord.getLoggerName();
-        // If we for instance use a class-bound logger
-        if (null != logRecord.getSourceClassName()) {
-            source = logRecord.getSourceClassName();
-        }
-
         String messageString = formatMessage(logRecord);
         String format = "%s %s: %s\n";
         // use different colours depending on logging level

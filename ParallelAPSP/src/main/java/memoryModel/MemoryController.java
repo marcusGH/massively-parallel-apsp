@@ -9,9 +9,38 @@ import util.Triple;
 import java.util.*;
 import java.util.function.Function;
 
+// TODO: switch from synchronised to thread-safe queues etc.
+
 /**
- * TODO: explain how flush etc. works
- * TODO: explain idea behind synchronized
+ * <p>A MemoryController instance can be used as a "fine-grained monitor" for simulating the point-to-point and
+ * broadcasting communication happening in a multiprocessor where the processing elements are arranged in a square
+ * grid and interconnected through some topology specified in the constructor. Only one instance of this class should
+ * be made per simulated multiprocessor, and since this class' method are all thread-safe, all the processing elements
+ * can invoke methods on the MemoryController object concurrently in a safe manner.</p>
+ *
+ * <p>The relevant point-to-point communication methods are:
+ * <ul>
+ *     <li> sendData </li>
+ *     <li> receiveData </li>
+ * </ul>
+ * The relevant broadcast communication methods are:
+ * <ul>
+ *     <li> broadcastRow </li>
+ *     <li> broadcastCol </li>
+ *     <li> receiveRowBroadcast </li>
+ *     <li> receiveColBroadcast </li>
+ * </ul>
+ * When calling any of the receive methods, a triplet "receive-argument" on the form (mi, mj, label) must be specified.
+ * These three values are used when accessing the setter method of the PrivateMemory that should receive the number
+ * {@link PrivateMemory#set(int, int, String, Number)}.
+ * </p>
+ *
+ * <p> When any of the above methods are called, no changes will be made to the {@code privateMemories} supplied in the
+ * constructor. The values to be sent and the receive-arguments are just stored in a queue and the actual changes to
+ * {@code privateMemories} happen when {@link #flush()} is called. Additionally, all communication must happen in two
+ * parts: The sender must tell the memoryController that it wants to send something, and the receiver must tell the
+ * memoryController that it wants to receive some data, and how this received data should be stored.
+ * </p>
  */
 public class MemoryController {
     private int p;
@@ -176,8 +205,6 @@ public class MemoryController {
      * node in the same communication phase.
      */
     public void sendData(int sendI, int sendJ, int receiveI, int receiveJ, Number value) throws CommunicationChannelCongestionException {
-        // TODO: count number of hops before doing below functionality
-
         // TODO: do input sanitation here and throw check exception in case of failure. Otherwise, programmer errors
         //       will lead to program not halting because one or more threads terminate on unchecked exception and
         //       don't reach the cyclic barrier! (See manager test one if you do send to index out of bounds)
@@ -229,7 +256,9 @@ public class MemoryController {
      * column broadcasting, and point-to-point data sent, with the corresponding specified receive-arguments. If a
      * mismatch is found, an exception is thrown. Otherwise, the memory controller will go through the pairs of data
      * and receive-arguments and invoke PrivateMemory::set on the processing elements with the corresponding data and
-     * receive-arguments.
+     * receive-arguments. When flush has finished, the {@code privateMemories} passed in the constructor will have been
+     * modified, according to all the sendData, broadcastRow/Col, receiveData and receiveRow/ColBroadcast methods that
+     * have been executed since the last flush.
      *
      * @throws InconsistentCommunicationChannelUsageException if one processing element is scheduled to receive more data than
      * it has provided receive-arguments more, or vice verse.

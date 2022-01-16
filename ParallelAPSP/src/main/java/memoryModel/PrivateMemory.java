@@ -19,6 +19,14 @@ public class PrivateMemory {
 
     private final int k;
 
+    /**
+     * Constructs a matrix of size k x k that acts as a private memory. When accessing the memory, a triplet
+     * (mi, mj, label) is used, which uniquely identifies a Number at position (mi, mj) in the square matrix, labeled
+     * with {@code label} to distinguish multiple numbers stored in the same location. Initializing the PrivateMemory
+     * with k > 1 is suitable when a processing element should handle more than one cell of the input matrix.
+     *
+     * @param k size of the square matrix
+     */
     public PrivateMemory(int k) {
         this.k = k;
 
@@ -45,12 +53,14 @@ public class PrivateMemory {
 
 
     /**
-     * We store everything as Numbers, and we fetch the values, they are casted depending
-     * on whether we want a double or an int. The values are auto-boxed upon setting.
-     * @param mi
-     * @param mj
-     * @param label
-     * @param n
+     * Every value is stored in a boxed Number, regardless of its type. When getters are used, the value is casted
+     * according to the getter used, or inferred if the default getter is used.
+     *
+     * @param mi an integer ID
+     * @param mj an integer ID
+     * @param label a string label
+     * @param n any instance of Number, subtype of it, or simply a primitive value like 3.13, in which case
+     *          the value is automatically boxed.
      */
     public void set(int mi, int  mj, String label, Number n) {
         assert 0 <= mi && mi < this.k;
