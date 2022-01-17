@@ -113,6 +113,17 @@ public class GraphReader {
         return mat;
     }
 
+    public Matrix<Number> getAdjacencyMatrix2(boolean isDirected) {
+        Matrix<Number> mat = new Matrix<>(n, () -> Double.POSITIVE_INFINITY);
+        for (Triple<Integer, Integer, Double> e : edges) {
+            mat.set(e.x(), e.y(), e.z());
+            if (!isDirected) {
+                mat.set(e.y(), e.x(), e.z());
+            }
+        }
+        return mat;
+    }
+
     public void printSummary() {
 
         System.out.println("Number of edges: " + this.edges.size());

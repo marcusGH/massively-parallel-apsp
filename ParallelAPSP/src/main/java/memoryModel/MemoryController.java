@@ -45,6 +45,9 @@ import java.util.function.Function;
 public class MemoryController {
     private int p;
     private Matrix<PrivateMemory> privateMemories;
+    // TODO: refactor this out of the constructor and make new class: CountingMemoryController,
+    //       which wraps this one and implements functionality to count memory transfers, their cost
+    //       and can return a list of these ...
     private Topology memoryTopology;
 
     // broadcasting

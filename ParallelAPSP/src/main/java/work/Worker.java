@@ -60,6 +60,12 @@ public abstract class Worker implements Runnable {
         // TODO: add method and assert for memory controller on size match
     }
 
+    /**
+     * Defines the work to be done by worker(i, j) prior to the first communication phase. In this method, calls to
+     * memory writes such as {@link #store} are most suitable as this allows these labels to be references in all
+     * iterations of the later communication and computation phases. No communication methods should be invoked from
+     * this method, as this could give undefined behaviour.
+     */
     abstract protected void initialise();
 
     /**
@@ -227,5 +233,29 @@ public abstract class Worker implements Runnable {
 
     public PrivateMemory getPrivateMemory() {
         return privateMemory;
+    }
+
+    public int getRowID() {
+        return i;
+    }
+
+    public int getColID() {
+        return j;
+    }
+
+    protected int getP() {
+        return p;
+    }
+
+    protected int getN() {
+        return n;
+    }
+
+    protected int getNumPhases() {
+        return numPhases;
+    }
+
+    protected MemoryController getMemoryController() {
+        return memoryController;
     }
 }

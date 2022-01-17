@@ -14,24 +14,39 @@ import java.util.logging.Logger;
 
 public class Manager {
 
-    private static final Logger LOGGER = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
+    protected static final Logger LOGGER = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
 
     private static final int MAX_CONCURRENT_THREADS = 16;
 
     // number of rows and columns in input
-    private final int n;
+    protected final int n;
     // number of processing elements
-    private final int p;
-    private final int numComputationPhases;
+    protected final int p;
+    protected final int numComputationPhases;
 
-    private final MemoryController memoryController;
-    private final Matrix<PrivateMemory> privateMemoryMatrix;
-    private final Matrix<Worker> workers;
+    protected final MemoryController memoryController;
+    protected final Matrix<PrivateMemory> privateMemoryMatrix;
+    protected final Matrix<Worker> workers;
 
     private ExecutorService executorService;
     private boolean workHasBeenDone = false;
 
-    // 1x1 version TODO: make general constructor
+    /**
+     * This constructed does not make a deep-copy of the passed manager, but re-uses all of its state. It is to be
+     * used by children of Manager that wants to decorate the manager functionality someway.
+     *
+     * @param manager an instantiated manager
+     */
+    protected Manager(Manager manager) {
+        // copy all the references
+        this.n = manager.n;
+        this.p = manager.p;
+        this.numComputationPhases = manager.numComputationPhases;
+        this.memoryController = manager.memoryController;
+        this.privateMemoryMatrix = manager.privateMemoryMatrix;
+        this.executorService = manager.executorService;
+        this.workers = manager.workers;
+    }
 
     /**
      * Creates a Manager. Upon construction, the manager will creates a MemoryController, and a matrix of n x n workers.
@@ -268,4 +283,6 @@ public class Manager {
             return resultMatrix;
         }
     }
+
+
 }
