@@ -9,6 +9,16 @@ What TODO now:
 * Go through all of code so far, execute refactor TODOs and refactor complete Worker -> Algorithm, and write some more **class documentation**
 * Write new implementation progress list, and the next items to add are: Add timing wrapper for Algorithm and Manager, Add SSSP Dijkstra (that finds all paths) and can be used for testing
 
+Documentation/refactoring cleanup:
+- [ ] Do more clean-up on APSPSolver and graphReader and matrixMultiplication. Mostlyu done in memoryModel, util and work.
+
+Implemention TODOs:
+* Write CountingMemoryController adapter, and new constructor taking a MemoryController
+* Fix up Worker adapter by creating new constructor instead of all the getters
+* Investigate if possible to nicely move all timing functionality to a different package
+* Refactor memoryTopology passing out of memorycontroller base class
+* Write a _test for correctness_ on timing manager which works the same as the FoxOtto test (just copy the expected matrices and check if they're reproduced after running algo twice using the same manger).
+
 Implementation progress:
 - [o] memoryModel
   - [X] Written all methods
