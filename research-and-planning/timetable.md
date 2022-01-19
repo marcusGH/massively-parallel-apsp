@@ -13,34 +13,40 @@ Documentation/refactoring cleanup:
 - [ ] Do more clean-up on APSPSolver and graphReader and matrixMultiplication. Mostlyu done in memoryModel, util and work.
 
 Implemention TODOs:
-* Write CountingMemoryController adapter, and new constructor taking a MemoryController
-* Fix up Worker adapter by creating new constructor instead of all the getters
-* Investigate if possible to nicely move all timing functionality to a different package
-* Refactor memoryTopology passing out of memorycontroller base class
-* Write a _test for correctness_ on timing manager which works the same as the FoxOtto test (just copy the expected matrices and check if they're reproduced after running algo twice using the same manger).
+* Done: Write CountingMemoryController adapter, and new constructor taking a MemoryController
+* Done: Fix up Worker adapter by creating new constructor instead of all the getters
+* Done: Investigate if possible to nicely move all timing functionality to a different package
+* Done?: Refactor memoryTopology passing out of memorycontroller base class
+* Done: Write a _test for correctness_ on timing manager which works the same as the FoxOtto test (just copy the expected matrices and check if they're reproduced after running algo twice using the same manger).
+* TODO next: Clean up driver code, refactor out topology in manager constructor (do this in different branch :))
 
 Implementation progress:
-- [o] memoryModel
+- [X] memoryModel
   - [X] Written all methods
   - [X] Written some documentation for them
-  - [o] Written unit tests for them
-- [ ] graphReader:
-  - [ ] Written all methods
+  - [X] Written unit tests for them
+- [o] graphReader:
+  - [X] Written all methods
   - [ ] Written some docs
-  - [ ] Tested the code
-- [ ] driver:
-  - [ ] Planned methods
-  - [ ] Written methods
+  - [X] Tested the code
+  - [ ] Clean up code, and execute TODOs
+- [o] driver:
+  - [X] Planned methods
+  - [X] Written methods
   - [ ] Written docs
-  - [ ] Tested code
-- [ ] parallelMatrixMultiplication:
-  - [ ] Written Fox-Otto
+  - [X] Tested code
+  - [ ] Clean up code
+- [o] parallelMatrixMultiplication:
+  - [X] Written Fox-Otto
   - [ ] Docs
-  - [ ] Tested code
-- [ ] evaluation (rename):
-  - [ ] Planned and written evaluation package
-  - [ ] ...
-- [ ] generalised algorithm
+  - [X] Tested code
+- [.] evaluation (rename):
+  - [X] Planned and written evaluation package
+  - [ ] Write test for timingAnalysis package
+- [ ] Correctness test
+  - [ ] Written Dijkstra package that can be used to test for correctness on the driver, on many
+        graphs, including really big ones
+- [ ] **generalised algorithm!**
 - [ ] graphCompression:
   - [ ] ...
 
@@ -48,7 +54,6 @@ Research progress:
 - [X] Worked through formalism on choosing predecessor to use:
   - [X] Read online resources found on it
   - [X] Sketch a proof?
-
 
 TODO list:
 * Create Factories

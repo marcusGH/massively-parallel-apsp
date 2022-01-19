@@ -45,6 +45,11 @@ public class TimedManager extends Manager {
         }
     }
 
+    /**
+     * Returns a list with one entry for each computation phase. Every entry is a matrix where entry (i, j) is the
+     * time in nanoseconds processing element PE(i, j) took to complete its computation.
+     * @return a list of matrix containing times
+     */
     public List<Matrix<Long>> getComputationTimes() {
         List<Matrix<Long>> computationTimes = new ArrayList<>();
         // TODO: wrap doWork and count number of phases, so can do better limit

@@ -80,6 +80,8 @@ class FoxOttoTest {
             m.doWork();
             distResult = m.getResult("dist", true);
             predResult = m.getResult("pred", true);
+            System.out.println(distResult);
+            System.out.println(predResult);
 
             // compute W3 and P3
             m.resetMemory(Map.of("A", distResult, "B", distResult, "P", predResult));
