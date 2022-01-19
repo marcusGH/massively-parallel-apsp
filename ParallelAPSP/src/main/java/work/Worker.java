@@ -77,7 +77,7 @@ public abstract class Worker implements Runnable {
      * iterations of the later communication and computation phases. No communication methods should be invoked from
      * this method, as this could give undefined behaviour.
      */
-    abstract protected void initialise();
+    abstract public void initialise();
 
     /**
      * Defines the computation to be done by Worker(i, j) at computation phase l. Only the method
@@ -88,7 +88,7 @@ public abstract class Worker implements Runnable {
      *
      * @param l a non-negative integer representing number of computation phases already completed
      */
-    abstract protected void computation(int l);
+    abstract public void computation(int l);
 
     /**
      * Defines the communication to be done by Worker(i, j) prior to computation phase l.
@@ -97,7 +97,7 @@ public abstract class Worker implements Runnable {
      * @throws CommunicationChannelCongestionException if different workers try to send data to the same
      * worker using the same communication method in the same phase.
      */
-    abstract protected void communicationBefore(int l) throws CommunicationChannelCongestionException;
+    abstract public void communicationBefore(int l) throws CommunicationChannelCongestionException;
 
     /**
      * Defines the communication to be done by Worker(i, j) after computation phase l.
@@ -106,7 +106,7 @@ public abstract class Worker implements Runnable {
      * @throws CommunicationChannelCongestionException if different workers try to send data to the same
      * worker using the same communication method in the same phase.
      */
-    abstract protected void communicationAfter(int l) throws CommunicationChannelCongestionException;
+    abstract public void communicationAfter(int l) throws CommunicationChannelCongestionException;
 
     protected Number read(String label) {
         return this.readDouble(0, 0, label);
@@ -187,7 +187,7 @@ public abstract class Worker implements Runnable {
         };
     }
 
-    Callable<Object> getComputationCallable(int l) {
+    protected Callable<Object> getComputationCallable(int l) {
         // TODO: add timers
         return () -> {
             LOGGER.log(Level.FINER, "Worker({0}, {1}) is starting computation phase {2}", new Object[]{i, j, l});

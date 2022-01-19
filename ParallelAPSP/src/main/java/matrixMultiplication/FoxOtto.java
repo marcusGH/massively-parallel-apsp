@@ -17,7 +17,7 @@ public class FoxOtto extends MinPlusProduct {
      * "P" -> element P[i, j] of predecessor matrix
      */
     @Override
-    protected void initialise() {
+    public void initialise() {
         // running total of least distance found so far
         store("dist", Double.POSITIVE_INFINITY); // represents C[i, j]
         // the "A" entry is never shifted, only broadcasted, so make a copy of it to prevent overwrite
@@ -38,7 +38,7 @@ public class FoxOtto extends MinPlusProduct {
      * @param l a non-negative integer representing number of computation phases already completed
      */
     @Override
-    protected void computation(int l) {
+    public void computation(int l) {
         // In this iteration, we're computing A[i,k] + B[k, j]
         int k = (i + l) % n;
 
@@ -58,7 +58,7 @@ public class FoxOtto extends MinPlusProduct {
     }
 
     @Override
-    protected void communicationBefore(int l) throws CommunicationChannelCongestionException {
+    public void communicationBefore(int l) throws CommunicationChannelCongestionException {
         // one PE in each row uses the highway to broadcast it's A
         if (j == (i + l) % n) {
             broadcastRow(readDouble("A_CONST"));
@@ -68,7 +68,7 @@ public class FoxOtto extends MinPlusProduct {
     }
 
     @Override
-    protected void communicationAfter(int l) throws CommunicationChannelCongestionException {
+    public void communicationAfter(int l) throws CommunicationChannelCongestionException {
         // we shift B and P upwards, wrapping around if necessary
         if (i == 0) {
             send(n - 1, j, readDouble("B"));

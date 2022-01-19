@@ -141,7 +141,7 @@ class EmptyWorker extends Worker {
     }
 
     @Override
-    protected void initialise() { }
+    public void initialise() { }
 
     @Override
     public void computation(int l) { }
@@ -161,7 +161,7 @@ class FailingWorker extends Worker {
     }
 
     @Override
-    protected void initialise() { }
+    public void initialise() { }
 
     @Override
     public void computation(int l) {
@@ -196,7 +196,7 @@ class InconsistentWorker extends Worker {
     }
 
     @Override
-    protected void initialise() { }
+    public void initialise() { }
 
     @Override
     public void computation(int l) {

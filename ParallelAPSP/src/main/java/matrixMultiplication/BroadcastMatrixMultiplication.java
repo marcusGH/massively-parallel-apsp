@@ -16,12 +16,12 @@ public class BroadcastMatrixMultiplication extends Worker {
     }
 
     @Override
-    protected void initialise() {
+    public void initialise() {
 
     }
 
     @Override
-    protected void computation(int l) {
+    public void computation(int l) {
         if (l == 0) {
             store("C", 0);
         }
@@ -30,7 +30,7 @@ public class BroadcastMatrixMultiplication extends Worker {
     }
 
     @Override
-    protected void communicationBefore(int l) throws CommunicationChannelCongestionException {
+    public void communicationBefore(int l) throws CommunicationChannelCongestionException {
         if (i == l) {
             broadcastCol(readDouble("B"));
         }
@@ -42,5 +42,5 @@ public class BroadcastMatrixMultiplication extends Worker {
     }
 
     @Override
-    protected void communicationAfter(int l) throws CommunicationChannelCongestionException { }
+    public void communicationAfter(int l) throws CommunicationChannelCongestionException { }
 }

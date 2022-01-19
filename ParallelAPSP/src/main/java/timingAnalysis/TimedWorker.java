@@ -1,6 +1,7 @@
-package work;
+package timingAnalysis;
 
 import memoryModel.CommunicationChannelCongestionException;
+import work.Worker;
 
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadMXBean;
@@ -10,7 +11,7 @@ import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-class TimedWorker extends Worker {
+public class TimedWorker extends Worker {
 
     private static final Logger LOGGER = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
 
@@ -31,27 +32,28 @@ class TimedWorker extends Worker {
     }
 
     @Override
-    protected void initialise() {
+    public void initialise() {
         worker.initialise();
     }
 
     @Override
-    protected void computation(int l) {
+    public void computation(int l) {
         worker.computation(l);
     }
 
     @Override
-    protected void communicationBefore(int l) throws CommunicationChannelCongestionException {
+    public void communicationBefore(int l) throws CommunicationChannelCongestionException {
         worker.communicationBefore(l);
     }
 
     @Override
-    protected void communicationAfter(int l) throws CommunicationChannelCongestionException {
+    public void communicationAfter(int l) throws CommunicationChannelCongestionException {
         worker.communicationAfter(l);
     }
 
+
     @Override
-    Callable<Object> getComputationCallable(int l) {
+    protected Callable<Object> getComputationCallable(int l) {
         return () -> {
             LOGGER.log(Level.FINER, "Timed worker({0}, {1}) is starting computation phase {2}", new Object[]{i, j, l});
             // time the computation

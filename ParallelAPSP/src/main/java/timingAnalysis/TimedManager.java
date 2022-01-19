@@ -1,12 +1,14 @@
-package work;
+package timingAnalysis;
 
 import graphReader.GraphReader;
 import matrixMultiplication.FoxOtto;
 import memoryModel.CommunicationChannelException;
 import memoryModel.topology.SquareGridTopology;
 import memoryModel.topology.Topology;
-import timingAnalysis.CountingMemoryController;
 import util.Matrix;
+import work.Manager;
+import work.WorkerInstantiationException;
+import work.WorkersFailedToCompleteException;
 
 import java.text.ParseException;
 import java.util.ArrayList;

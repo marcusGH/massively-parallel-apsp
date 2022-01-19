@@ -62,7 +62,7 @@ class ComputationOnlyWorker extends Worker {
     }
 
     @Override
-    protected void initialise() { }
+    public void initialise() { }
 
     @Override
     public void computation(int l) {
@@ -83,7 +83,7 @@ class SimpleComputationWorker extends Worker {
     }
 
     @Override
-    protected void initialise() { }
+    public void initialise() { }
 
     /**
      * Stores in C the sum of all the values in private memory location (0, l) for all l

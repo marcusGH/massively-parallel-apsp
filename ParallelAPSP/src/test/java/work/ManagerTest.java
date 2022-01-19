@@ -229,7 +229,7 @@ class SimpleCommunicatingWorker extends Worker {
     }
 
     @Override
-    protected void initialise() { }
+    public void initialise() { }
 
     @Override
     public void computation(int l) {
@@ -265,7 +265,7 @@ class BroadcastingWorker extends Worker {
     }
 
     @Override
-    protected void initialise() { }
+    public void initialise() { }
 
     @Override
     public void computation(int l) {
