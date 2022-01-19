@@ -30,17 +30,6 @@ public class TimedManager extends Manager {
         this.countingMemoryController = new CountingMemoryController(manager.getMemoryController(), topology);
         this.setMemoryController(this.countingMemoryController);
 
-        // TODO: Awright, in the Worker class, we are using lambdas to return Callables, so all the variables there,
-        //       inclduing the memoryController **must be effictively final** because Java compiler makes a copy of them,
-        //       so if a setter is used, this new reference won't actually be used in the computation and communication :O
-        //       As a result, the only way to get around this is to recreate the workers with the adapted MemoryController
-        //       using a WorkerFactory here in the TimedManager. Another problem was the Manager not having the same reference,
-        //       but this is fixed by calling this.Set... and not manager.set...
-        // TODO: in order:
-        //       * Think about whether to different package this class,then use workerFactory properly with e.g. getters
-        //       * Clean up the code here more proper
-        //       * Refactor packages as suitable, then cleanup the code in affected files a bit ...
-
         // decorate all the workers
         this.timedWorkers = new Matrix<>(this.p);
         for (int i = 0; i < this.p; i++) {
@@ -69,15 +58,23 @@ public class TimedManager extends Manager {
         return computationTimes;
     }
 
+    /**
+     * Note that every even-numbered item in the returned list will be statistics from the COMMUNICATION_BEFORE
+     * phase and every odd-numbered item will be statistics from the COMMUNICATION_AFTER phase.
+     * @return a list with 2*n elements, where n is the number of work phases
+     */
     public List<Matrix<Integer>> getPointToPointCommunicationTimes() {
+        assert this.countingMemoryController.getPointToPointCosts().size() % 2 == 0;
         return this.countingMemoryController.getPointToPointCosts();
     }
 
     public List<List<Integer>> getRowBroadcastCommunicationTimes() {
+        assert this.countingMemoryController.getRowBroadcastCounts().size() % 2 == 0;
         return this.countingMemoryController.getRowBroadcastCounts();
     }
 
     public List<List<Integer>> getColBroadcastCommunicationTimes() {
+        assert this.countingMemoryController.getColBroadcastCounts().size() % 2 == 0;
         return this.countingMemoryController.getColBroadcastCounts();
     }
 

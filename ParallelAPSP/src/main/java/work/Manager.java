@@ -215,8 +215,6 @@ public class Manager {
     public void doWork() throws CommunicationChannelException, WorkersFailedToCompleteException {
         LOGGER.log(Level.INFO, "Manager is starting {0} phases of work with {1} workers.", new Object[]{this.numComputationPhases, this.p * this.p});
 
-        System.out.println(this.memoryController.hashCode());
-
         // create the executor service which will manage the worker computation
         this.executorService = Executors.newFixedThreadPool(MAX_CONCURRENT_THREADS);
 

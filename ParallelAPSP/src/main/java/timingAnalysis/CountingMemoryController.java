@@ -56,8 +56,6 @@ public class CountingMemoryController extends MemoryController {
             int newCost = this.runningCommunicationChannelCost.get(sendI, sendJ)
                     + this.memoryTopology.distance(sendI, sendJ, receiveI, receiveJ);
             this.runningCommunicationChannelCost.set(sendI, sendJ, newCost);
-            System.out.println("HEYAAA");
-            System.out.println(this.runningCommunicationChannelCost);
         }
         // then execute the same functionality
         super.sendData(sendI, sendJ, receiveI, receiveJ, value);

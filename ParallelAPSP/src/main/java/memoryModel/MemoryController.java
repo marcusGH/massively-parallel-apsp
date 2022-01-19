@@ -357,15 +357,4 @@ public class MemoryController {
             this.colBroadcasterID.set(i, Optional.empty());
         }
     }
-
-    // TODO: implement
-    public void getPointToPointCommunicationCounts() throws ExecutionControl.NotImplementedException {
-        throw new ExecutionControl.NotImplementedException("This method is not yet implemented");
-    }
-
-    // TODO: implement
-    public void getBroadcastCommunicationCounts() throws ExecutionControl.NotImplementedException {
-        throw new ExecutionControl.NotImplementedException("This method is not yet implemented");
-    }
-
 }
