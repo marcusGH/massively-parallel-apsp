@@ -2,6 +2,7 @@ package memoryModel;
 
 import javafx.util.Pair;
 import jdk.jshell.spi.ExecutionControl;
+import memoryModel.topology.SquareGridTopology;
 import memoryModel.topology.Topology;
 import util.Matrix;
 import util.Triple;
@@ -64,6 +65,22 @@ public class MemoryController {
     // item (i, j) gives ID of the sender of the data destined to PE(i, j)
     private final Matrix<Optional<Pair<Integer, Integer>>> senderToRecipientID;
     private final Matrix<Queue<Triple<Integer, Integer, String>>> receiveArguments;
+
+    public int getProcessingElementGridSize() {
+        return p;
+    }
+
+    public Matrix<PrivateMemory> getPrivateMemories() {
+        return privateMemories;
+    }
+
+    /**
+     * This constructor does not make a deep-copy of the provided object, but rather reuses its private memories.
+     * @param memoryController
+     */
+    public MemoryController(MemoryController memoryController) {
+        this(memoryController.getProcessingElementGridSize(), memoryController.getPrivateMemories(), SquareGridTopology::new);
+    }
 
     /**
      * Constructs a MemoryController handling p x p processing elements, each starting with the private memory contents

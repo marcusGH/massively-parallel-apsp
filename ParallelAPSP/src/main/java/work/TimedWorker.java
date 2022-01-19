@@ -20,15 +20,14 @@ class TimedWorker extends Worker {
 
     /**
      * Decorator pattern on worker ...
-     * @param w a Worker object of some subtype of Worker
+     * @param worker a Worker object of some subtype of Worker
      */
-    public TimedWorker(Worker w) {
-        super(w.getRowID(), w.getColID(), w.getP(), w.getN(), w.getNumPhases(),
-                w.getPrivateMemory(), w.getMemoryController());
-        this.worker = w;
+    public TimedWorker(Worker worker) {
+        super(worker);
+        this.worker = worker;
         // there's only one instance of this, so all TimedWorkers hold the same reference
         this.threadMXBean = ManagementFactory.getThreadMXBean();
-        this.elapsedTimes = new ArrayList<>(w.getNumPhases());
+        this.elapsedTimes = new ArrayList<>();
     }
 
     @Override

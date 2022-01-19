@@ -14,19 +14,21 @@ import java.util.logging.Logger;
 
 public class Manager {
 
-    protected static final Logger LOGGER = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
+    private static final Logger LOGGER = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
 
     private static final int MAX_CONCURRENT_THREADS = 16;
 
     // number of rows and columns in input
-    protected final int n;
+    private final int n;
     // number of processing elements
-    protected final int p;
-    protected final int numComputationPhases;
+    private final int p;
+    private final int numComputationPhases;
 
-    protected final MemoryController memoryController;
-    protected final Matrix<PrivateMemory> privateMemoryMatrix;
-    protected final Matrix<Worker> workers;
+    private final Class<? extends Worker> algorithm;
+
+    private MemoryController memoryController;
+    private final Matrix<PrivateMemory> privateMemoryMatrix;
+    private final Matrix<Worker> workers;
 
     private ExecutorService executorService;
     private boolean workHasBeenDone = false;
@@ -46,6 +48,7 @@ public class Manager {
         this.privateMemoryMatrix = manager.privateMemoryMatrix;
         this.executorService = manager.executorService;
         this.workers = manager.workers;
+        this.algorithm = manager.algorithm;
     }
 
     /**
@@ -67,6 +70,7 @@ public class Manager {
         this.n = n;
         this.p = n;
         this.numComputationPhases = numComputationPhases;
+        this.algorithm = workerClass;
 
         if (null != initialMemoryContent) {
             for (String s : initialMemoryContent.keySet()) {
@@ -211,6 +215,8 @@ public class Manager {
     public void doWork() throws CommunicationChannelException, WorkersFailedToCompleteException {
         LOGGER.log(Level.INFO, "Manager is starting {0} phases of work with {1} workers.", new Object[]{this.numComputationPhases, this.p * this.p});
 
+        System.out.println(this.memoryController.hashCode());
+
         // create the executor service which will manage the worker computation
         this.executorService = Executors.newFixedThreadPool(MAX_CONCURRENT_THREADS);
 
@@ -284,5 +290,47 @@ public class Manager {
         }
     }
 
+    public int getProcessingElementGridSize() {
+        return this.p;
+    }
 
+    public Worker getWorker(int i, int j) {
+        return workers.get(i, j);
+    }
+
+    public void setWorker(int i, int j, Worker worker) {
+        this.workers.set(i, j, worker);
+    }
+
+    public MemoryController getMemoryController() {
+        return this.memoryController;
+    }
+
+    /**
+     * Tells the Manager and all of its Workers to use a different memory controller object. NOTE: This causes all
+     * the Worker objects to be invalidated as all the workers are replaced by new ones, sharing the same private
+     * memory. The reasoning for this is as follows: In the Worker implementation, the memory controller must be
+     * final because it's used in a method that is called in the lambda functions defined in getComputationCallable etc.,
+     * so we can't have a setter for the memoryController. Instead, we must recreate the worker with a new memoryController
+     * reference, which is what we do here.
+     *
+     * @param memoryController the new memory controller
+     * @throws WorkerInstantiationException if the worker factory fails
+     */
+    public void setMemoryController(MemoryController memoryController) throws WorkerInstantiationException {
+        // set the self reference
+        this.memoryController = memoryController;
+
+        // TODO: maybe a setter in the Worker actually works as well, and the reason for it not working earlier
+        //       was just the manager.Method fluke instead of this.Method on the TimedManager constructor?
+        WorkerFactory workerFactory = new WorkerFactory(this.algorithm);
+        workerFactory.init(memoryController);
+        for (int i = 0; i < this.p; i++) {
+            for (int j = 0; j < this.p; j++) {
+                Worker newWorker = workerFactory.createWorker(i, j, this.p, this.n, this.numComputationPhases,
+                        this.workers.get(i, j).getPrivateMemory());
+                this.workers.set(i, j, newWorker);
+            }
+        }
+    }
 }

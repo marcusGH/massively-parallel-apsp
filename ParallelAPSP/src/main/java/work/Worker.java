@@ -35,6 +35,17 @@ public abstract class Worker implements Runnable {
     private final PrivateMemory privateMemory;
     private final MemoryController memoryController;
 
+    public Worker(Worker worker) {
+        this.i = worker.i;
+        this.j = worker.j;
+        this.p = worker.p;
+        this.n = worker.n;
+        this.numPhases = worker.numPhases;
+
+        this.privateMemory = worker.getPrivateMemory();
+        this.memoryController = worker.memoryController;
+    }
+
     /**
      * Constructs a Worker that handles the computation and communication on behalf of processing element (i, j).
      * The workers should all be given the same memoryController, cyclicBarrier and runExceptionHandler.
@@ -233,29 +244,5 @@ public abstract class Worker implements Runnable {
 
     public PrivateMemory getPrivateMemory() {
         return privateMemory;
-    }
-
-    public int getRowID() {
-        return i;
-    }
-
-    public int getColID() {
-        return j;
-    }
-
-    protected int getP() {
-        return p;
-    }
-
-    protected int getN() {
-        return n;
-    }
-
-    protected int getNumPhases() {
-        return numPhases;
-    }
-
-    protected MemoryController getMemoryController() {
-        return memoryController;
     }
 }
