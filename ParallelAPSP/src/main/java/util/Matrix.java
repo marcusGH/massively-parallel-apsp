@@ -53,6 +53,22 @@ public class Matrix<T> {
         }
     }
 
+    /**
+     * Make a deep copy
+     * @param matrix a matrix to be copied
+     */
+    public Matrix(Matrix<T> matrix) {
+        this.n = matrix.n;
+
+        this.matrix = new ArrayList<>(this.n);
+        for (int i = 0; i < this.n; i++) {
+            this.matrix.add(new ArrayList<>(this.n));
+            for (int j = 0; j < this.n; j++) {
+                this.matrix.get(i).add(matrix.get(i, j));
+            }
+        }
+    }
+
     public T get(int i, int j) {
         return this.matrix.get(i).get(j);
     }
