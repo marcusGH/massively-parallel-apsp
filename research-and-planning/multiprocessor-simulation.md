@@ -287,6 +287,3 @@ Some more design decisions:
     + Synchronisation happens implicitly in that they will only do one phase at a time
     + Easy to handle exception through Callable, and return back to user
     - Worker needs to have methods giving Runnables, not be Runnable itself
-
-
-TODO next: Done with refactoring generic-removal, so now get on with making the WorkerFactory and getting the WorkerCommunicationTest done

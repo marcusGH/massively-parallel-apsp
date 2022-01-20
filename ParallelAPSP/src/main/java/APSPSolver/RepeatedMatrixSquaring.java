@@ -70,8 +70,8 @@ public class RepeatedMatrixSquaring extends APSPSolver {
         // repeatedly square the distance- and predecessor matrix with min-plus product
         int numIterations = (int) Math.ceil(Math.log(this.n) / Math.log(2));
         for (int i = 0; i < numIterations; i++) {
-            System.out.println("===");
-            System.out.println(distMatrix); // debug
+//            System.out.println("===");
+//            System.out.println(distMatrix); // debug
 
             // run the algorithm
             try {
@@ -81,6 +81,8 @@ public class RepeatedMatrixSquaring extends APSPSolver {
                 return;
             }
 
+            // TODO: extract pred matrix as integers
+
             // prepare for the next iteration by updating the input to what the result from the previous iteration was
             distMatrix = manager.getResult("dist");
             predMatrix = manager.getResult("pred");
@@ -88,6 +90,8 @@ public class RepeatedMatrixSquaring extends APSPSolver {
         }
         System.out.println("===");
         System.out.println(distMatrix);
+        System.out.println("===");
+        System.out.println(predMatrix);
 
         this.predecessorMatrix = predMatrix;
         this.distanceMatrix = distMatrix;
