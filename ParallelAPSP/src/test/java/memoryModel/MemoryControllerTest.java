@@ -14,7 +14,7 @@ class MemoryControllerTest {
     void pointToPoint1() {
         // SETUP
         Matrix<PrivateMemory> privateMemory = new Matrix<>(3, () -> new PrivateMemory(1));
-        MemoryController mc = new MemoryController(3, privateMemory, SquareGridTopology::new);
+        MemoryController mc = new MemoryController(3, privateMemory);
 
         // ACT
         try {
@@ -36,7 +36,7 @@ class MemoryControllerTest {
 
         // 5 x 5 grid of PEs each with 1 x 1 private memory
         Matrix<PrivateMemory> privateMemory = new Matrix<>(5, () -> new PrivateMemory(1));
-        MemoryController mc = new MemoryController(5, privateMemory, SquareGridTopology::new);
+        MemoryController mc = new MemoryController(5, privateMemory);
 
         // ACT
         try {
@@ -61,7 +61,7 @@ class MemoryControllerTest {
     void broadcastRow1() {
         // SETUP
         Matrix<PrivateMemory> privateMemory = new Matrix<>(3, () -> new PrivateMemory(1));
-        MemoryController mc = new MemoryController(3, privateMemory, SquareGridTopology::new);
+        MemoryController mc = new MemoryController(3, privateMemory);
 
         // ACT
         try {
@@ -87,7 +87,7 @@ class MemoryControllerTest {
     void broadcastCol1() {
         // SETUP
         Matrix<PrivateMemory> privateMemory = new Matrix<>(3, () -> new PrivateMemory(1));
-        MemoryController mc = new MemoryController(3, privateMemory, SquareGridTopology::new);
+        MemoryController mc = new MemoryController(3, privateMemory);
 
         // ACT
         try {

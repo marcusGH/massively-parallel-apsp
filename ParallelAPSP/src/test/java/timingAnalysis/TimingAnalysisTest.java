@@ -67,7 +67,7 @@ class TimingAnalysisTest {
         // create the timing manager
         TimedManager timedManager;
         try {
-            Manager manager = new Manager(7, 7, initialMemory, SquareGridTopology::new, FoxOtto.class);
+            Manager manager = new Manager(7, 7, initialMemory, FoxOtto.class);
             timedManager = new TimedManager(manager, SquareGridTopology::new);
         } catch (WorkerInstantiationException e) {
             e.printStackTrace();

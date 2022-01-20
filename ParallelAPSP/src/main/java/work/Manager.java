@@ -1,6 +1,7 @@
 package work;
 
 import memoryModel.*;
+import memoryModel.topology.SquareGridTopology;
 import memoryModel.topology.Topology;
 import util.Matrix;
 
@@ -61,12 +62,11 @@ public class Manager {
      * @param numComputationPhases the number of computation phases each worker should perform
      * @param initialMemoryContent a map from private memory access labels to the content stored in each worker's memory.
      *                             This parameter may be null, in which case all workers start with empty memory.
-     * @param memoryTopology a constructor taking a non-negative integer and giving an object that subtypes Topology
      * @param workerClass a subtype of Worker, specifying that computation and communication each individual worker should do
      * @throws WorkerInstantiationException if any of the workers are not able to be constructed
      */
     public Manager(int n, int numComputationPhases, Map<String, Matrix<Number>> initialMemoryContent,
-                   Function<Integer, ? extends Topology> memoryTopology, Class<? extends Worker> workerClass) throws WorkerInstantiationException {
+                   Class<? extends Worker> workerClass) throws WorkerInstantiationException {
         this.n = n;
         this.p = n;
         this.numComputationPhases = numComputationPhases;
@@ -92,7 +92,7 @@ public class Manager {
 
         // the private memory is used to fetch the results after computation, so save a reference to it
         this.privateMemoryMatrix = privateMemoryMatrix;
-        this.memoryController = new MemoryController(this.p, privateMemoryMatrix, memoryTopology);
+        this.memoryController = new MemoryController(this.p, privateMemoryMatrix);
 
         // set up the worker factory
         WorkerFactory workerFactory = new WorkerFactory(workerClass);

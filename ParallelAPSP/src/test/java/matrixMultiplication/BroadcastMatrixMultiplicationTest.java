@@ -52,7 +52,7 @@ class BroadcastMatrixMultiplicationTest {
         WorkerFactory wf;
         Manager m;
         try {
-            m = new Manager(3, 3,  initialMemory, SquareGridTopology::new, BroadcastMatrixMultiplication.class);
+            m = new Manager(3, 3,  initialMemory, BroadcastMatrixMultiplication.class);
         } catch (WorkerInstantiationException e) {
             e.printStackTrace();
             fail("Could not create worker or manager");

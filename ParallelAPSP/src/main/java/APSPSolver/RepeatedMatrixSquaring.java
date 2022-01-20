@@ -61,7 +61,7 @@ public class RepeatedMatrixSquaring extends APSPSolver {
         WorkerFactory workerFactory;
         Manager manager;
         try {
-          manager = new Manager(this.n, this.n, initialMemory, SquareGridTopology::new, this.minPlusProductImplementation);
+          manager = new Manager(this.n, this.n, initialMemory, this.minPlusProductImplementation);
         } catch (WorkerInstantiationException e) {
             e.printStackTrace();
             return;
