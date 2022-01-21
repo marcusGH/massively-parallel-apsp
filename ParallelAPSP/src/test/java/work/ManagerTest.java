@@ -45,7 +45,7 @@ class ManagerTest {
         // create the manager
         Manager m;
         try {
-            m = new Manager(4, 4, initialMemory, SquareGridTopology::new, SimpleCommunicatingWorker.class);
+            m = new Manager(4, 4, initialMemory, SimpleCommunicatingWorker.class);
         } catch (WorkerInstantiationException e) {
             fail("The manager could not create all the workers");
             return;
@@ -97,7 +97,7 @@ class ManagerTest {
         // create the manager
         Manager m;
         try {
-            m = new Manager(4, 4, initialMemory, SquareGridTopology::new, SimpleCommunicatingWorker.class);
+            m = new Manager(4, 4, initialMemory, SimpleCommunicatingWorker.class);
         } catch (WorkerInstantiationException e) {
             fail("The manager could not create all the workers");
             return;
@@ -112,7 +112,7 @@ class ManagerTest {
         expected.setRow(2, Collections.nCopies(4, 4.0));
         expected.setRow(3, Collections.nCopies(4, 50.0));
 
-        for (int i = 0; i < 1000; i++) {
+        for (int i = 0; i < 50; i++) {
             // reset the memory first
             if (i != 0) {
                 m.resetMemory(initialMemory);
@@ -152,7 +152,7 @@ class ManagerTest {
         // create the manager
         Manager m;
         try {
-            m = new Manager(3, 3, initialMemory, SquareGridTopology::new, BroadcastingWorker.class);
+            m = new Manager(3, 3, initialMemory, BroadcastingWorker.class);
         } catch (WorkerInstantiationException e) {
             fail("The manager could not create all the workers");
             return;
@@ -191,7 +191,7 @@ class ManagerTest {
         final int n = 50;
         Manager m;
         try {
-            m = new Manager(n, n, null, SquareGridTopology::new, EmptyWorker.class);
+            m = new Manager(n, n, null, EmptyWorker.class);
         } catch (WorkerInstantiationException e) {
             e.printStackTrace();
             fail("The manager could not be created");

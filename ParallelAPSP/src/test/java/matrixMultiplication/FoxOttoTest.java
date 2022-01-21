@@ -65,7 +65,7 @@ class FoxOttoTest {
         // create the manager
         Manager m;
         try {
-            m = new Manager(7, 7, initialMemory, SquareGridTopology::new, FoxOtto.class);
+            m = new Manager(7, 7, initialMemory, FoxOtto.class);
         } catch (WorkerInstantiationException e) {
             e.printStackTrace();
             fail("The manager or worker factory could not be created");

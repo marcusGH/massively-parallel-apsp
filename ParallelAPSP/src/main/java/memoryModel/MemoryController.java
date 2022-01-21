@@ -46,10 +46,6 @@ import java.util.function.Function;
 public class MemoryController {
     private int p;
     private Matrix<PrivateMemory> privateMemories;
-    // TODO: refactor this out of the constructor and make new class: CountingMemoryController,
-    //       which wraps this one and implements functionality to count memory transfers, their cost
-    //       and can return a list of these ...
-    private Topology memoryTopology;
 
     // broadcasting
     private final List<Queue<Number>> colBroadcastData;
@@ -79,7 +75,7 @@ public class MemoryController {
      * @param memoryController
      */
     public MemoryController(MemoryController memoryController) {
-        this(memoryController.getProcessingElementGridSize(), memoryController.getPrivateMemories(), SquareGridTopology::new);
+        this(memoryController.getProcessingElementGridSize(), memoryController.getPrivateMemories());
     }
 
     /**
@@ -89,12 +85,10 @@ public class MemoryController {
      *
      * @param p a positive integer
      * @param privateMemories a matrix of private memories of type T
-     * @param memoryTopologySupplier a constructor taking an Integer and returning a Topology
      */
-    public MemoryController(int p, Matrix<PrivateMemory> privateMemories, Function<Integer, ? extends Topology> memoryTopologySupplier) {
+    public MemoryController(int p, Matrix<PrivateMemory> privateMemories) {
         this.p = p;
         this.privateMemories = privateMemories;
-        this.memoryTopology = memoryTopologySupplier.apply(p);
 
         // broadcasting
         // we will only have p elements at all times

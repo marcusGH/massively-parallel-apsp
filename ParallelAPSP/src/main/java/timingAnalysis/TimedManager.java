@@ -22,6 +22,14 @@ public class TimedManager extends Manager {
     private final Matrix<TimedWorker> timedWorkers;
     private final CountingMemoryController countingMemoryController;
 
+
+    /**
+     *  TODO: documentation
+     *
+     * @param manager
+     * @param memoryTopology a constructor taking a non-negative integer and giving an object that subtypes Topology
+     * @throws WorkerInstantiationException
+     */
     public TimedManager(Manager manager, Function<Integer, ? extends Topology> memoryTopology) throws WorkerInstantiationException {
         super(manager);
 
@@ -94,7 +102,7 @@ public class TimedManager extends Manager {
             Matrix<Number> predMatrix = new Matrix<>(7, () -> 0);
             System.out.println(adjacencyMatrix);
             Map<String, Matrix<Number>> initialMemory = Map.of("A", adjacencyMatrix, "B", adjacencyMatrix, "P", predMatrix);
-            manager = new Manager(7, 7, initialMemory, SquareGridTopology::new, FoxOtto.class);
+            manager = new Manager(7, 7, initialMemory, FoxOtto.class);
         } catch (ParseException | WorkerInstantiationException e) {
             e.printStackTrace();
             return;

@@ -4,11 +4,9 @@ import graphReader.GraphReader;
 import matrixMultiplication.FoxOtto;
 import matrixMultiplication.MinPlusProduct;
 import memoryModel.CommunicationChannelException;
-import memoryModel.topology.SquareGridTopology;
 import util.LoggerFormatter;
 import util.Matrix;
 import work.Manager;
-import work.WorkerFactory;
 import work.WorkerInstantiationException;
 import work.WorkersFailedToCompleteException;
 
@@ -22,16 +20,12 @@ public class RepeatedMatrixSquaring extends APSPSolver {
     private static final Logger LOGGER = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
 
     private final Class<? extends MinPlusProduct> minPlusProductImplementation;
-    private final GraphReader graphReader;
     private Matrix<Number> distanceMatrix;
     private Matrix<Number> predecessorMatrix;
 
-    // TODO: use graphreader object in parent as well!
-
-    public RepeatedMatrixSquaring(Matrix<? extends Number> adjacencyMatrix, GraphReader graphReader,
+    public RepeatedMatrixSquaring(GraphReader graphReader, boolean graphIsDirected,
                                   Class<? extends MinPlusProduct> minPlusProductImplementation) {
-        super(adjacencyMatrix);
-        this.graphReader = graphReader;
+        super(graphReader, graphIsDirected);
         this.minPlusProductImplementation = minPlusProductImplementation;
     }
 
@@ -40,7 +34,10 @@ public class RepeatedMatrixSquaring extends APSPSolver {
         // prepare the initial memory content
         Map<String, Matrix<Number>> initialMemory = new HashMap<>();
         // We want to square the weight matrix, so input it as both "A" and "B"
-        Matrix<Number> distMatrix = this.adjacencyMatrix;
+        Matrix<Number> distMatrix = this.graph.getAdjacencyMatrix2(this.graphIsDirected);
+        for (int i = 0; i < this.n; i++) {
+            distMatrix.set(i, i, 0);
+        }
         initialMemory.put("A", distMatrix);
         initialMemory.put("B", distMatrix);
         // The entry P[i, j] contains the predecessor of j in the shortest path i -~-> j, defaulting to value j
@@ -48,7 +45,7 @@ public class RepeatedMatrixSquaring extends APSPSolver {
         Matrix<Number> predMatrix = new Matrix<>(this.n);
         for (int i = 0; i < this.n; i++) {
             for (int j = 0; j < this.n; j++) {
-                if (this.graphReader.hasEdge(i, j)) {
+                if (this.graph.hasEdge(i, j)) {
                     predMatrix.set(i, j, i);
                 } else {
                     predMatrix.set(i, j, j);
@@ -58,11 +55,11 @@ public class RepeatedMatrixSquaring extends APSPSolver {
         initialMemory.put("P", predMatrix);
 
         // create the manager
-        WorkerFactory workerFactory;
         Manager manager;
         try {
-          manager = new Manager(this.n, this.n, initialMemory, SquareGridTopology::new, this.minPlusProductImplementation);
+            manager = new Manager(this.n, this.n, initialMemory, this.minPlusProductImplementation);
         } catch (WorkerInstantiationException e) {
+            System.err.println("The solver was not able to complete: ");
             e.printStackTrace();
             return;
         }
@@ -70,29 +67,23 @@ public class RepeatedMatrixSquaring extends APSPSolver {
         // repeatedly square the distance- and predecessor matrix with min-plus product
         int numIterations = (int) Math.ceil(Math.log(this.n) / Math.log(2));
         for (int i = 0; i < numIterations; i++) {
-//            System.out.println("===");
-//            System.out.println(distMatrix); // debug
-
             // run the algorithm
             try {
                 manager.doWork();
             } catch (CommunicationChannelException | WorkersFailedToCompleteException e) {
+                System.err.println("The solver encountered an error during execution: ");
                 e.printStackTrace();
                 return;
             }
 
-            // TODO: extract pred matrix as integers
-
             // prepare for the next iteration by updating the input to what the result from the previous iteration was
             distMatrix = manager.getResult("dist");
-            predMatrix = manager.getResult("pred");
+            System.out.println("DIstance:\n" + distMatrix);
+            predMatrix = manager.getResult("pred", true);
             manager.resetMemory(Map.of("A", distMatrix, "B", distMatrix, "P", predMatrix));
         }
-        System.out.println("===");
-        System.out.println(distMatrix);
-        System.out.println("===");
-        System.out.println(predMatrix);
-
+        LOGGER.log(Level.FINE, "The computed distance matrix is:\n" + distMatrix);
+        LOGGER.log(Level.FINE, "The computed predecessor matrix is:\n" + predMatrix);
         this.predecessorMatrix = predMatrix;
         this.distanceMatrix = distMatrix;
     }
@@ -109,7 +100,9 @@ public class RepeatedMatrixSquaring extends APSPSolver {
 
         do {
             int pred = this.predecessorMatrix.get(i, j).intValue();
-            assert pred != j;
+            if (pred == j) {
+                throw new IllegalStateException(String.format("The predecessor matrix should not have self-references: Pred(%d, %d)=%d", i, j, pred));
+            }
             path.addFirst(j);
             j = pred;
         } while (i !=  j);
@@ -117,22 +110,29 @@ public class RepeatedMatrixSquaring extends APSPSolver {
         return Optional.of(new ArrayList<>(path));
     }
 
+    @Override
+    public Number getDistanceFrom(int i, int j) {
+        if (this.distanceMatrix == null) {
+            throw new IllegalStateException("Solve must be called before querying distance between nodes");
+        }
+        return this.distanceMatrix.get(i, j);
+    }
+
     public static void main(String[] args) {
-        LoggerFormatter.setupLogger(LOGGER, Level.INFO);
+        LoggerFormatter.setupLogger(LOGGER, Level.FINE);
 
         GraphReader graphReader;
-        Matrix<Double> adjacencyMatrix;
         try {
-            graphReader = new GraphReader("../datasets/7-node-example.cedge");
-            adjacencyMatrix = graphReader.getAdjacencyMatrix(true);
+            graphReader = new GraphReader("../datasets/9-node-example.cedge");
         } catch (ParseException e) {
             e.printStackTrace();
             return;
         }
 
-        APSPSolver solver = new RepeatedMatrixSquaring(adjacencyMatrix, graphReader, FoxOtto.class);
+        APSPSolver solver = new RepeatedMatrixSquaring(graphReader, false, FoxOtto.class);
         solver.solve();
 
-        System.out.println(solver.getShortestPath(0, 2));
+        System.out.println(solver.getShortestPath(0, 4));
+        System.out.println(solver.getDistanceFrom(0, 4));
     }
 }

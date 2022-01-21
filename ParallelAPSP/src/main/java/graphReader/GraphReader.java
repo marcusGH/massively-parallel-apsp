@@ -11,6 +11,9 @@ import java.util.stream.IntStream;
 
 import util.Matrix;
 
+/**
+ * TODO: write a bit more documentation on the methods here
+ */
 public class GraphReader {
     private final List<Triple<Integer, Integer, Double>> edges;
     private final Set<Pair<Integer, Integer>> edgeSet;
@@ -82,6 +85,10 @@ public class GraphReader {
         return nodeIds;
     }
 
+    public int getNumberOfNodes() {
+        return this.nodeIDs.size();
+    }
+
     public boolean hasEdge(int i, int j) {
         return this.edgeSet.contains(new Pair<>(i, j));
     }
@@ -102,17 +109,6 @@ public class GraphReader {
         return adjList;
     }
 
-    public Matrix<Double> getAdjacencyMatrix(boolean isDirected) {
-        Matrix<Double> mat = new Matrix<>(n, () -> Double.POSITIVE_INFINITY);
-        for (Triple<Integer, Integer, Double> e : edges) {
-            mat.set(e.x(), e.y(), e.z());
-            if (!isDirected) {
-                mat.set(e.y(), e.x(), e.z());
-            }
-        }
-        return mat;
-    }
-
     public Matrix<Number> getAdjacencyMatrix2(boolean isDirected) {
         Matrix<Number> mat = new Matrix<>(n, () -> Double.POSITIVE_INFINITY);
         for (Triple<Integer, Integer, Double> e : edges) {
@@ -124,8 +120,9 @@ public class GraphReader {
         return mat;
     }
 
-    public void printSummary() {
+    // TODO: Make method for finding the number of connected components in the graph
 
+    public void printSummary() {
         System.out.println("Number of edges: " + this.edges.size());
         System.out.println("Number of nodes: " + this.nodeIDs.size());
         System.out.println("Max ID: " +  this.nodeIDs.stream().mapToInt(v -> v).max().orElse(-1));
