@@ -4,6 +4,28 @@ import memoryModel.CommunicationChannelCongestionException;
 import memoryModel.MemoryController;
 import memoryModel.PrivateMemory;
 
+/**
+ * This class implements the min-plus matrix product computation, and can be used by passing the class to a
+ * manager. It computes the min-plus product of a left matrix A and a right-matrix B. The resulting product
+ * "dist" is independent of the provided predecessor matrix P. However, if A is equal to B and P is the predecessor
+ * matrix for the graph A and B are distance matrices for, the result "pred" will be the predecessor matrix covering
+ * paths of twice the length as P previously covered.
+ *
+ * The memory preconditions for this algorithm are:
+ * <p>At memory location (i, j), there should be the following {@code PrivateMemory} content:
+ *  <ul>
+ *      <li>"A" maps to the element A[i, j] of the left matrix</li>
+ *      <li>"B" maps to the element B[i, j] of the right matrix</li>
+ *      <li>"P" maps to the element P[i, j] of the predecessor matrix</li>
+ *  </ul>
+ * </p>
+ * <p>After work has been finished, the following results can be accessed with {@link work.Manager#getResult(String)}:
+ * <ul>
+ *     <li>"dist" the resulting min-plus matrix product</li>
+ *     <li>"pred" the resulting predecessor matrix</li>
+ * </ul>
+ * </p>
+ */
 public class FoxOtto extends MinPlusProduct {
 
     public FoxOtto(int i, int j, int p, int n, int numPhases, PrivateMemory privateMemory, MemoryController memoryController) {
@@ -27,13 +49,7 @@ public class FoxOtto extends MinPlusProduct {
     }
 
     /**
-     * Before computation, the worker (i, j) assumes the following content in memory at iteration l:
-     * "a" -> element from left  matrix of product A x B, specifically A[i, ?]
-     * "b" -> element from right matrix of product A x B, specifically B[?, j]
-     * "p" -> element from predecessor matrix, specifically P[?, ?]
-     *
-     * The worker will then store the partial matrix product result for C[i,j] with label "C", and
-     * also store the running predecessor element P[i,j] with label "P"
+     * Worker(i, j) has received appropriate B
      *
      * @param l a non-negative integer representing number of computation phases already completed
      */
@@ -47,6 +63,9 @@ public class FoxOtto extends MinPlusProduct {
         double otherDist = readDouble("A") + readDouble("B");
         // we found a better path
         if (otherDist < curDist) {
+            if (this.i == 0 && this.j == 4) {
+                System.out.println("Old dist is " + curDist + " and new is " + otherDist);
+            }
             store("dist", otherDist);
             // only update predecessor if it doesn't cause loops
             if (k == j) { // or is it readInt("P")???

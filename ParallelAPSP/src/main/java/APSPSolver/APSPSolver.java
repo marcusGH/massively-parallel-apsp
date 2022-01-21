@@ -1,50 +1,34 @@
 package APSPSolver;
 
+import graphReader.GraphReader;
 import util.Matrix;
 
 import java.util.List;
 import java.util.Optional;
 
 public abstract class APSPSolver {
-    private final boolean graphIsDirected;
 
+    protected final GraphReader graph;
+    protected final boolean graphIsDirected;
     protected final int n;
 
-    protected final Matrix<Number> adjacencyMatrix;
-    protected final Matrix<Integer> predecessorMatrix;
-    protected final Matrix<Number> weightMatrix;
-
-    private APSPSolver(int n) {
-        // TODO: add paramter
+    private APSPSolver(GraphReader graphReader, int n, boolean graphIsDirected) {
+        this.graph = graphReader;
         this.n = n;
-        this.graphIsDirected = true;
-        this.adjacencyMatrix = new Matrix<>(n);
-        this.predecessorMatrix = new Matrix<>(n);
-        this.weightMatrix = new Matrix<>(n);
+        this.graphIsDirected = graphIsDirected;
     }
 
-    public APSPSolver(Matrix<? extends Number> adjacencyMatrix) {
-        this(adjacencyMatrix.size());
-        // cast everything to Numbers
-        for (int i = 0; i < adjacencyMatrix.size(); i++) {
-            for (int j = 0; j < adjacencyMatrix.size(); j++) {
-                this.adjacencyMatrix.set(i, j, adjacencyMatrix.get(i, j));
-            }
-        }
-        // set 0s in the diagonal
-        for (int i = 0; i < adjacencyMatrix.size(); i++) {
-            this.adjacencyMatrix.set(i, i, 0);
-        }
+    public APSPSolver(GraphReader graphReader) {
+        this(graphReader, true);
     }
 
-    public Optional<List<Integer>> getShortestPath(int i, int j) {
-        throw new RuntimeException("Not implemented yet");
+    public APSPSolver(GraphReader graphReader, boolean graphIsDirected) {
+        this(graphReader, graphReader.getNumberOfNodes(), graphIsDirected);
     }
 
-    public Number getDistanceFrom(int i, int j) {
-        // TODO: check if computation done first
-        return this.weightMatrix.get(i, j);
-    }
+    public abstract Optional<List<Integer>> getShortestPath(int i, int j);
 
-    abstract public void solve();
+    public abstract Number getDistanceFrom(int i, int j);
+
+    public abstract void solve();
 }
