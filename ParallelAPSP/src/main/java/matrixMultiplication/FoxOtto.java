@@ -63,9 +63,6 @@ public class FoxOtto extends MinPlusProduct {
         double otherDist = readDouble("A") + readDouble("B");
         // we found a better path
         if (otherDist < curDist) {
-            if (this.i == 0 && this.j == 4) {
-                System.out.println("Old dist is " + curDist + " and new is " + otherDist);
-            }
             store("dist", otherDist);
             // only update predecessor if it doesn't cause loops
             if (k == j) { // or is it readInt("P")???
