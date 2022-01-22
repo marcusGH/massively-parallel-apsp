@@ -54,6 +54,11 @@ public class RepeatedMatrixSquaring extends APSPSolver {
         }
         initialMemory.put("P", predMatrix);
 
+        // log initial conditions
+        LOGGER.fine("Distance matrix before start:\n" + distMatrix);
+        LOGGER.fine("Pred matrix before start:\n" + predMatrix);
+
+
         // create the manager
         Manager manager;
         try {
@@ -78,8 +83,9 @@ public class RepeatedMatrixSquaring extends APSPSolver {
 
             // prepare for the next iteration by updating the input to what the result from the previous iteration was
             distMatrix = manager.getResult("dist");
-            System.out.println("DIstance:\n" + distMatrix);
+            LOGGER.fine("Distance matrix at iteration " + i + " is:\n" + distMatrix);
             predMatrix = manager.getResult("pred", true);
+            LOGGER.fine("Pred matrix are iteration " + i + " is:\n" + predMatrix);
             manager.resetMemory(Map.of("A", distMatrix, "B", distMatrix, "P", predMatrix));
         }
         LOGGER.log(Level.FINE, "The computed distance matrix is:\n" + distMatrix);

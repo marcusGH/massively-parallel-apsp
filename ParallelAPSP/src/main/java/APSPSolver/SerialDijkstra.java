@@ -4,8 +4,11 @@ import graphReader.GraphReader;
 import javafx.util.Pair;
 
 import java.util.*;
+import java.util.logging.Logger;
 
 public class SerialDijkstra extends APSPSolver {
+
+    private static final Logger LOGGER = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
 
     private List<List<Double>> distances;
     private List<List<Integer>> predecessors;
@@ -21,7 +24,7 @@ public class SerialDijkstra extends APSPSolver {
         }
         List<Integer> preds = this.predecessors.get(i);
 
-        if (preds.get(j) == -1) {
+        if (preds.get(j) == -1 || i == j) {
             return Optional.empty();
         }
 
@@ -65,18 +68,16 @@ public class SerialDijkstra extends APSPSolver {
                 distance.add(Double.POSITIVE_INFINITY);
                 prev.add(-1);
             }
-            distance.set(source, 0.0);
             prev.set(source, source);
+            distance.set(source, 0.0);
 
             priorityQueue.add(new Pair<>(source, 0.0));
             while (!priorityQueue.isEmpty()) {
                 Pair<Integer, Double> cur = priorityQueue.poll();
 
-                if (cur.getValue() < distance.get(cur.getKey())) {
-                    distance.set(cur.getKey(), cur.getValue());
-                }
+                LOGGER.finer("SerialDijkstra: Inspecting node " + cur.getKey() + " and distance " + cur.getValue());
                 // we have already looked at this node
-                else {
+                if (cur.getValue() > distance.get(cur.getKey())) {
                     continue;
                 }
 
@@ -84,12 +85,15 @@ public class SerialDijkstra extends APSPSolver {
                 for (Pair<Integer, Double> next : neighbours.get(cur.getKey())) {
                     // do relaxation
                     double newDist = cur.getValue() + next.getValue();
-                    if (newDist < cur.getValue()) {
+                    if (newDist < distance.get(next.getKey())) {
+                        distance.set(next.getKey(), newDist);
                         prev.set(next.getKey(), cur.getKey());
                         priorityQueue.add(new Pair<>(next.getKey(), newDist));
                     }
                 }
             }
+            LOGGER.finer("SerialDijkstra computed distances for source=" + source + " to be: " + distance);
+            LOGGER.finer("SerialDijkstra computed preds for source=" + source + " to be: " + prev);
             // store the results
             this.distances.add(distance);
             this.predecessors.add(prev);

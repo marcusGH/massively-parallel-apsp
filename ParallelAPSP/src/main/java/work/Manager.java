@@ -160,7 +160,7 @@ public class Manager {
                     default:
                         throw new IllegalStateException("Unexpected value: " + phaseType);
                 }
-                LOGGER.log(Level.FINER, "Phase {0}: Worker({1}, {2}) is being started.", new Object[]{phaseNumber, i, j});
+                LOGGER.log(Level.FINEST, "Phase {0}: Worker({1}, {2}) is being started.", new Object[]{phaseNumber, i, j});
                 Future<?> workerFuture = this.executorService.submit(workerTask);
                 workerFutures.add(workerFuture);
             }
@@ -221,19 +221,19 @@ public class Manager {
         List<Future<?>> workerFutures;
 
         // run the initialisation phase first of each worker
-        LOGGER.log(Level.FINE, "Manager is running initialisation phase.");
+        LOGGER.log(Level.FINER, "Manager is running initialisation phase.");
         workerFutures = startWorkerExecution(-1, Worker.WorkerPhases.INITIALISATION);
         checkForWorkerFailure(workerFutures);
 
         for (int l = 0; l < this.numComputationPhases; l++) {
             // COMMUNICATION_BEFORE phase
-            LOGGER.log(Level.FINE, "Manager is starting communicationBefore phase {0}", l);
+            LOGGER.log(Level.FINER, "Manager is starting communicationBefore phase {0}", l);
             workerFutures = startWorkerExecution(l, Worker.WorkerPhases.COMMUNICATION_BEFORE);
             checkForWorkerFailure(workerFutures);
             this.memoryController.flush();
 
             // COMPUTATION phase (no exception can be thrown here)
-            LOGGER.log(Level.FINE, "Manager is starting computation phase {0}", l);
+            LOGGER.log(Level.FINER, "Manager is starting computation phase {0}", l);
             // Why do we need to synchronise workers between computation and communication_after?:
             //   If we don't synchronise, we may get concurrent access to the workers' PrivateMemory through
             //   reading in both computation and communication. PrivateMemory does not guarantee thread-safe
@@ -242,7 +242,7 @@ public class Manager {
             checkForWorkerFailure(workerFutures);
 
             // COMMUNICATION_AFTER phase
-            LOGGER.log(Level.FINE, "Manager is starting communicationAfter phase {0}", l);
+            LOGGER.log(Level.FINER, "Manager is starting communicationAfter phase {0}", l);
             workerFutures = startWorkerExecution(l, Worker.WorkerPhases.COMMUNICATION_AFTER);
             checkForWorkerFailure(workerFutures);
             this.memoryController.flush();
