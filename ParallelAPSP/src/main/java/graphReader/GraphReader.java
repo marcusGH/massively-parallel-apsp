@@ -114,7 +114,13 @@ public class GraphReader {
     }
 
     public boolean hasEdge(int i, int j) {
-        return this.edgeSet.contains(new Pair<>(i, j));
+        boolean result = this.edgeSet.contains(new Pair<>(i, j));
+        if (this.graphIsDirected) {
+            return result;
+        } else {
+            // check the other direction as well
+            return result || this.edgeSet.contains(new Pair<>(j, i));
+        }
     }
 
     public List<List<Pair<Integer, Double>>> getAdjacencyList() {
