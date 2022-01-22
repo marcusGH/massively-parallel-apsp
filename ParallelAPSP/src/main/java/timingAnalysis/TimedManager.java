@@ -97,8 +97,8 @@ public class TimedManager extends Manager {
         // create the manager
         Manager manager;
         try {
-            GraphReader graphReader = new GraphReader("../datasets/7-node-example.cedge");
-            Matrix<Number> adjacencyMatrix = graphReader.getAdjacencyMatrix2(false);
+            GraphReader graphReader = new GraphReader("../datasets/7-node-example.cedge", true);
+            Matrix<Number> adjacencyMatrix = graphReader.getAdjacencyMatrix2();
             Matrix<Number> predMatrix = new Matrix<>(7, () -> 0);
             System.out.println(adjacencyMatrix);
             Map<String, Matrix<Number>> initialMemory = Map.of("A", adjacencyMatrix, "B", adjacencyMatrix, "P", predMatrix);

@@ -19,8 +19,11 @@ public class GraphReader {
     private final Set<Pair<Integer, Integer>> edgeSet;
     private final Set<Integer> nodeIDs;
     private final int n;
+    final boolean graphIsDirected;
 
-    public GraphReader(String filename) throws ParseException {
+    public GraphReader(String filename, boolean isDirected) throws ParseException {
+        this.graphIsDirected = isDirected;
+
         // try to open the file
         File file = new File(filename);
         FileReader fr;
@@ -59,9 +62,30 @@ public class GraphReader {
         // save the read data
         this.edges = reIndexEdges(edges);
         // create set for quick edge queries
-        this.edgeSet = this.edges.stream().map(t -> new Pair<>(t.getFirst(), t.getSecond())).collect(Collectors.toSet());
+        this.edgeSet = findEdgeSet(this.edges);
     }
 
+    public GraphReader(List<Triple<Integer, Integer, Double>> edges, boolean isDirected) {
+        this.graphIsDirected = isDirected;
+
+        // keep track of what node IDs found
+        this.nodeIDs = getNodeIDSet(edges);
+        this.n = this.nodeIDs.size();
+        // save the read data
+        this.edges = reIndexEdges(edges);
+        // create set for quick edge queries
+        this.edgeSet = findEdgeSet(this.edges);
+    }
+
+    private Set<Pair<Integer, Integer>> findEdgeSet(List<Triple<Integer, Integer, Double>> edges) {
+        return edges.stream().map(t -> new Pair<>(t.getFirst(), t.getSecond())).collect(Collectors.toSet());
+    }
+
+    /**
+     * Makes all the edges be indexed from 0 to n-1 where n is the number of edges in the graph
+     * @param edges
+     * @return
+     */
     private List<Triple<Integer, Integer, Double>> reIndexEdges(List<Triple<Integer, Integer, Double>> edges) {
         // maps from old IDs to proposed new reindexed IDs, starting at 0
         Map<Integer, Integer> idMap = new HashMap<>();
@@ -93,7 +117,7 @@ public class GraphReader {
         return this.edgeSet.contains(new Pair<>(i, j));
     }
 
-    public List<List<Pair<Integer, Double>>> getAdjacencyList(boolean isDirected) {
+    public List<List<Pair<Integer, Double>>> getAdjacencyList() {
         // initialize to have a list for each node
         List<List<Pair<Integer, Double>>> adjList = new ArrayList<>();
         for (int i = 0; i < n; i++) {
@@ -102,25 +126,32 @@ public class GraphReader {
         // add entries for each edge
         for (Triple<Integer, Integer, Double> triple : edges) {
             adjList.get(triple.x()).add(new Pair<>(triple.y(), triple.z()));
-            if (!isDirected) {
+            if (!this.graphIsDirected) {
                 adjList.get(triple.y()).add(new Pair<>(triple.x(), triple.z()));
             }
         }
         return adjList;
     }
 
-    public Matrix<Number> getAdjacencyMatrix2(boolean isDirected) {
+    public Matrix<Number> getAdjacencyMatrix2() {
         Matrix<Number> mat = new Matrix<>(n, () -> Double.POSITIVE_INFINITY);
         for (Triple<Integer, Integer, Double> e : edges) {
-            mat.set(e.x(), e.y(), e.z());
-            if (!isDirected) {
-                mat.set(e.y(), e.x(), e.z());
+            // in case of multiple edges between same pair of nodes, use minimum weight
+            double weight = Math.min(e.z(), mat.get(e.x(), e.y()).doubleValue());
+            if (!this.graphIsDirected) {
+                weight = Math.min(weight, mat.get(e.y(), e.x()).doubleValue());
+                mat.set(e.y(), e.x(), weight);
             }
+            mat.set(e.x(), e.y(), weight);
         }
         return mat;
     }
 
-    // TODO: Make method for finding the number of connected components in the graph
+    public List<Triple<Integer, Integer, Double>> getEdges() {
+        return edges;
+    }
+
+// TODO: Make method for finding the number of connected components in the graph
 
     public void printSummary() {
         System.out.println("Number of edges: " + this.edges.size());
@@ -133,7 +164,7 @@ public class GraphReader {
         }
 
         // compute statistics from the adjacency list
-        List<List<Pair<Integer, Double>>> neighbours = getAdjacencyList(false);
+        List<List<Pair<Integer, Double>>> neighbours = getAdjacencyList();
         System.out.println("Max degree: " + neighbours.stream().mapToInt(List::size).max().orElse(-1));
         System.out.println("Min degree: " + neighbours.stream().mapToInt(List::size).min().orElse(-1));
         System.out.println("Average degree: " + neighbours.stream().mapToInt(List::size).average().orElse(-1));
@@ -145,7 +176,7 @@ public class GraphReader {
     public static void main(String[] args) {
         try {
 //            GraphReader gr = new GraphReader("../datasets/small-example.cedge");
-            GraphReader gr = new GraphReader("../datasets/SF.cedge");
+            GraphReader gr = new GraphReader("../datasets/SF.cedge", true);
             gr.printSummary();
 //            System.out.println("The matrix:");
 //            System.out.println(gr.getAdjacencyMatrix(false));

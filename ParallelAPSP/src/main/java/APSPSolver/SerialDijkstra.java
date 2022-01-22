@@ -10,8 +10,8 @@ public class SerialDijkstra extends APSPSolver {
     private List<List<Double>> distances;
     private List<List<Integer>> predecessors;
 
-    public SerialDijkstra(GraphReader graphReader, boolean graphIsDirected) {
-        super(graphReader, graphIsDirected);
+    public SerialDijkstra(GraphReader graphReader) {
+        super(graphReader);
     }
 
     @Override
@@ -50,7 +50,7 @@ public class SerialDijkstra extends APSPSolver {
         this.distances = new ArrayList<>();
         this.predecessors = new ArrayList<>();
 
-        List<List<Pair<Integer, Double>>> neighbours = this.graph.getAdjacencyList(this.graphIsDirected);
+        List<List<Pair<Integer, Double>>> neighbours = this.graph.getAdjacencyList();
         // solve Dijkstra once for each origin node
         for (int source = 0; source < this.n; source++) {
 

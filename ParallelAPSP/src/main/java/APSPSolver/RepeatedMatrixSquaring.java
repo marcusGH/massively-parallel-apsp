@@ -23,9 +23,9 @@ public class RepeatedMatrixSquaring extends APSPSolver {
     private Matrix<Number> distanceMatrix;
     private Matrix<Number> predecessorMatrix;
 
-    public RepeatedMatrixSquaring(GraphReader graphReader, boolean graphIsDirected,
+    public RepeatedMatrixSquaring(GraphReader graphReader,
                                   Class<? extends MinPlusProduct> minPlusProductImplementation) {
-        super(graphReader, graphIsDirected);
+        super(graphReader);
         this.minPlusProductImplementation = minPlusProductImplementation;
     }
 
@@ -34,7 +34,7 @@ public class RepeatedMatrixSquaring extends APSPSolver {
         // prepare the initial memory content
         Map<String, Matrix<Number>> initialMemory = new HashMap<>();
         // We want to square the weight matrix, so input it as both "A" and "B"
-        Matrix<Number> distMatrix = this.graph.getAdjacencyMatrix2(this.graphIsDirected);
+        Matrix<Number> distMatrix = this.graph.getAdjacencyMatrix2();
         for (int i = 0; i < this.n; i++) {
             distMatrix.set(i, i, 0);
         }
@@ -123,13 +123,13 @@ public class RepeatedMatrixSquaring extends APSPSolver {
 
         GraphReader graphReader;
         try {
-            graphReader = new GraphReader("../datasets/9-node-example.cedge");
+            graphReader = new GraphReader("../datasets/9-node-example.cedge", false);
         } catch (ParseException e) {
             e.printStackTrace();
             return;
         }
 
-        APSPSolver solver = new RepeatedMatrixSquaring(graphReader, false, FoxOtto.class);
+        APSPSolver solver = new RepeatedMatrixSquaring(graphReader, FoxOtto.class);
         solver.solve();
 
         System.out.println(solver.getShortestPath(0, 4));

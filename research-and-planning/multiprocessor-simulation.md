@@ -287,3 +287,13 @@ Some more design decisions:
     + Synchronisation happens implicitly in that they will only do one phase at a time
     + Easy to handle exception through Callable, and return back to user
     - Worker needs to have methods giving Runnables, not be Runnable itself
+
+Evaluation plan:
+* First find constants for latency on single processor with e.g. 16 x 16 or 64 x 64 cores, which should
+  be on the order of a few nanoseconds or number of cycles around 5-20. Then we extrapolate this to broadcasting
+  highways and point-to-point communication. This should give a very good ratio on computation to communication.
+  After this we acknowledge that such architectures can not scale up due to dennard etc., so unrealistic for larger
+  systems. Therefore, reference supercomputers like Sunway and consider the speedup case where each e.g. 8 x 8 multiprocessor
+  handles 64 of the elements in the matrix, and then they have a 10 us or bigger communication phase after doing 8 computation
+  phases internally. This should still give a good ratio because we do 8 computation phases (e.g. 6 us each) for every
+  10us communication phase.
