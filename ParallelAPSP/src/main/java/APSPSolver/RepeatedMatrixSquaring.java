@@ -34,7 +34,7 @@ public class RepeatedMatrixSquaring extends APSPSolver {
         // prepare the initial memory content
         Map<String, Matrix<Number>> initialMemory = new HashMap<>();
         // We want to square the weight matrix, so input it as both "A" and "B"
-        Matrix<Number> distMatrix = this.graph.getAdjacencyMatrix2();
+        Matrix<Number> distMatrix = this.graph.getAdjacencyMatrix();
         for (int i = 0; i < this.n; i++) {
             distMatrix.set(i, i, 0);
         }

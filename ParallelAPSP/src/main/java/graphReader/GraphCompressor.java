@@ -120,7 +120,7 @@ public class GraphCompressor {
     }
 
     Matrix<Number> getAdjacencyMatrix() {
-        return this.graphReader.getAdjacencyMatrix2();
+        return this.graphReader.getAdjacencyMatrix();
     }
 
     public GraphReader getGraphReader() {

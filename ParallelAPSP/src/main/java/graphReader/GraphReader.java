@@ -133,7 +133,7 @@ public class GraphReader {
         return adjList;
     }
 
-    public Matrix<Number> getAdjacencyMatrix2() {
+    public Matrix<Number> getAdjacencyMatrix() {
         Matrix<Number> mat = new Matrix<>(n, () -> Double.POSITIVE_INFINITY);
         for (Triple<Integer, Integer, Double> e : edges) {
             // in case of multiple edges between same pair of nodes, use minimum weight
