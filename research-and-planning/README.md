@@ -2,6 +2,8 @@
 
 [Dissertation writing tips](dissertation-tips.md)
 
+[Progress Report](progress-report)
+
 ## Expanded timetable
 
 [Timetable](timetable.md)
@@ -256,5 +258,34 @@ at as a further optimisation of the algorithm.
 * Planning phase should involve **requirements** of the like:
   * The multiprocessor simulation supports both point-to-point sending and
     simulated broadcasting
+
+## Trying to determining latency constants
+
+Resources:
+* Intel's [skylake](https://en.wikichip.org/wiki/intel/microarchitectures/skylake_(server)#Memory_Hierarchy) processors have mest interconnet microarhictecture
+* Some analysis on mesh interconnect, with cycle counts in [paper](https://dl.acm.org/doi/pdf/10.1145/3316781.3317808)
+* article with concrete nanosecond latency numbers [here](https://www.anandtech.com/show/16594/intel-3rd-gen-xeon-scalable-review/4)
+* Intel Xeon also seems to be such a processor, e.g. xeon gold
+* Neoverse chips also use mesh [here](https://fuse.wikichip.org/news/5006/the-mesh-network-for-next-generation-neoverse-chips/)
+* AMD Opteron is also a processor, with hyper-transport thing (sub 10ns latency?). See [this](https://www.sciencedirect.com/topics/earth-and-planetary-sciences/distributed-memory)
+* SO thread on inter-core stuff [here](https://stackoverflow.com/questions/57670764/different-inter-core-latency-measured-on-two-identical-skylake-xeon-gold-6154-sy)
+* More intel xeon stuff:
+  * [article 1](https://www.eteknix.com/intel-xeon-gold-6146-12-core24-thread-processor-review/9/)
+  * [paper](https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.740.3541&rep=rep1&type=pdf)
+* [Another paper](https://arxiv.org/pdf/2012.02973.pdf)
+
+
+
+Dear Professor R. D. Mullins,
+
+For my dissertation, I am implementing a parallel algorithm on a simulation of a multiprocessor with a distributed memory model and a mesh interconnect architecture. To evaluate the performance of this algorithm, my plan is to estimate the communication and computation time it would take to execute on the simulated multiprocessor. I want to find such an estimate my using realistic values for memory latency and bandwidth, but I am having trouble finding such values. In particular, I am looking for the latency associated with one core sending some amount of data to an adjacent core in the mesh interconnect. Do you know of any good sources of realistic values for such latency?
+
+Trying to look up these values, for example on the Intel skylake server microarchitecture [1], I am unable to find values for this type of "mesh interconnect" latency. I am wondering if I am missing something fundamental with this interconnect architecture. Do cores communicate by writing to the closest shared cache, instead of using some inter-core message passing API? Or is passing data to adjacent cores simply an instruction provided by the "multiprocessor ISA", in which case it would only take a few clock cycles?
+
+Best wishes,
+
+Marcus
+
+
 
 <!-- vim: set nospell: -->
