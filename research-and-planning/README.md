@@ -277,6 +277,8 @@ Resources:
 * [dangorra paper](http://www.netlib.org/utk/people/JackDongarra/PAPERS/sunway-taihulight.pdf)
 * [paper with actualy values on sunway](https://arxiv.org/pdf/1903.06934.pdf)
 
+Stack overflow thread on measuring compute time in Java: [here](https://stackoverflow.com/questions/29405662/is-there-any-way-to-count-the-number-of-instructions-in-java)
+
 Diss discusssion:
 * Modelling computation time problems. Ran code in completely different architecture, so whenever memory
   needs to be fetched, can get higher latency. For example, on the multiprocessor, this would be in private memory,
@@ -286,5 +288,14 @@ Diss discusssion:
   using clock frequency (could write quick C++ snippet to do this though). However, if if we did that, we would still not know
   how long memory fetching takes due to uncertainties in memory reads and writes and complexities regarding that.
 
+Some suggestions from Prof R. Mullins:
+* Do _sensitivity analysis_ i.e. after finding your results using some constants, tweak them to other realistic values
+  and see how things change. E.g. what is the compute-communicate ratio for different latencies?
+* Send an email to Timothy Jones about estimating computation time from JVM bytecode, and explain what you've done
+  i.e. how you've done the timings with currentTimeNano etc., and how many cycles observe take, and java compile
+  how many instructiosn that gives.
+* Do other methods of estimating computation, like running the same code segments many times over right after each other
+  (It's possible there's a lot of cache misses in the code, which might slow down). This method should prevent that and
+  also minimize memory lookup.
 
 <!-- vim: set nospell: -->
