@@ -100,6 +100,11 @@ public class Matrix<T> {
         }
     }
 
+    public List<T> toList() {
+        // flatten the list by merging streams
+        return this.matrix.stream().flatMap(List::stream).collect(Collectors.toList());
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();

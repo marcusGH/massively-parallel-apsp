@@ -273,19 +273,18 @@ Resources:
   * [article 1](https://www.eteknix.com/intel-xeon-gold-6146-12-core24-thread-processor-review/9/)
   * [paper](https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.740.3541&rep=rep1&type=pdf)
 * [Another paper](https://arxiv.org/pdf/2012.02973.pdf)
+* Random [blog](http://sites.utexas.edu/jdm4372/2016/12/06/memory-latency-on-the-intel-xeon-phi-x200-knights-landing-processor/)
+* [dangorra paper](http://www.netlib.org/utk/people/JackDongarra/PAPERS/sunway-taihulight.pdf)
+* [paper with actualy values on sunway](https://arxiv.org/pdf/1903.06934.pdf)
 
-
-
-Dear Professor R. D. Mullins,
-
-For my dissertation, I am implementing a parallel algorithm on a simulation of a multiprocessor with a distributed memory model and a mesh interconnect architecture. To evaluate the performance of this algorithm, my plan is to estimate the communication and computation time it would take to execute on the simulated multiprocessor. I want to find such an estimate my using realistic values for memory latency and bandwidth, but I am having trouble finding such values. In particular, I am looking for the latency associated with one core sending some amount of data to an adjacent core in the mesh interconnect. Do you know of any good sources of realistic values for such latency?
-
-Trying to look up these values, for example on the Intel skylake server microarchitecture [1], I am unable to find values for this type of "mesh interconnect" latency. I am wondering if I am missing something fundamental with this interconnect architecture. Do cores communicate by writing to the closest shared cache, instead of using some inter-core message passing API? Or is passing data to adjacent cores simply an instruction provided by the "multiprocessor ISA", in which case it would only take a few clock cycles?
-
-Best wishes,
-
-Marcus
-
+Diss discusssion:
+* Modelling computation time problems. Ran code in completely different architecture, so whenever memory
+  needs to be fetched, can get higher latency. For example, on the multiprocessor, this would be in private memory,
+  so would have low latency, but on my computer, the threads run in arbitrary order (not really though), so could have
+  cases where the memory that would-be low-latency private memory is all the way in DRAM on my computer. Additionally, using
+  Java, which compiles to bytecode, so no way of counting the number of instructions in assembly and estiamte computation time
+  using clock frequency (could write quick C++ snippet to do this though). However, if if we did that, we would still not know
+  how long memory fetching takes due to uncertainties in memory reads and writes and complexities regarding that.
 
 
 <!-- vim: set nospell: -->
