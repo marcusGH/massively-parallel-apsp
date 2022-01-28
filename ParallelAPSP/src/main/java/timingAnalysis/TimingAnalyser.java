@@ -138,20 +138,25 @@ public class TimingAnalyser {
         // create the content to write
         List<String> computationLines = new ArrayList<>();
         for (int i = 0; i < computationTimes.size(); i++) {
-            String sb = i + ", " + computationTimes.get(i).stream()
+            String sb = i + ", computation, computation, "
+                    + computationTimes.get(i).stream()
                             .map(String::valueOf)
                             .collect(Collectors.joining(", "));
             computationLines.add(sb);
         }
         List<String> communicationLines = new ArrayList<>();
         for (int i = 0; i < p2pTimes.size(); i++) {
-            communicationLines.add(i + ", " + p2pTimes.get(i).stream()
+            String com_type = ((i % 2 == 0) ? "communication_before" : "communication_after");
+            communicationLines.add((i / 2) + ", " + com_type + ", point_to_point, "
+                    + p2pTimes.get(i).stream()
                     .map(String::valueOf)
                     .collect(Collectors.joining(", ")));
-            communicationLines.add(i + ", " + rowTimes.get(i).stream()
+            communicationLines.add((i / 2) + ", " + com_type + ", row_broadcast, "
+                    + rowTimes.get(i).stream()
                     .map(String::valueOf)
                     .collect(Collectors.joining(", ")));
-            communicationLines.add(i + ", " + colTimes.get(i).stream()
+            communicationLines.add((i / 2) + ", " + com_type + ", col_broadcast, "
+                    + colTimes.get(i).stream()
                     .map(String::valueOf)
                     .collect(Collectors.joining(", ")));
         }
@@ -224,7 +229,7 @@ public class TimingAnalyser {
 
         timingAnalyser.getComputationTimes();
         try {
-            timingAnalyser.saveTimings("../test-file");
+            timingAnalyser.saveTimings("../evaluation/timing-data/test-file");
         } catch (IOException e) {
             e.printStackTrace();
         }
