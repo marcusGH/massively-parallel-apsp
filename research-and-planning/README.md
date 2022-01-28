@@ -278,6 +278,7 @@ Resources:
 * [paper with actualy values on sunway](https://arxiv.org/pdf/1903.06934.pdf)
 
 Stack overflow thread on measuring compute time in Java: [here](https://stackoverflow.com/questions/29405662/is-there-any-way-to-count-the-number-of-instructions-in-java)
+Paper timing various instructions in the JVM [here](https://www.sciencedirect.com/science/article/pii/S1571066108004581)
 
 Diss discusssion:
 * Modelling computation time problems. Ran code in completely different architecture, so whenever memory
