@@ -19,6 +19,9 @@ public class TimedWorker extends Worker {
     private final List<Long> elapsedTimes;
     private final Worker worker;
 
+    private boolean average_compute;
+    private int average_num_iters;
+
     /**
      * Decorator pattern on worker ...
      * @param worker a Worker object of some subtype of Worker
@@ -29,6 +32,7 @@ public class TimedWorker extends Worker {
         // there's only one instance of this, so all TimedWorkers hold the same reference
         this.threadMXBean = ManagementFactory.getThreadMXBean();
         this.elapsedTimes = new ArrayList<>();
+        this.average_compute = false;
     }
 
     @Override
@@ -51,20 +55,38 @@ public class TimedWorker extends Worker {
         worker.communicationAfter(l);
     }
 
-
     @Override
     protected Callable<Object> getComputationCallable(int l) {
         return () -> {
             LOGGER.log(Level.FINER, "Timed worker({0}, {1}) is starting computation phase {2}", new Object[]{i, j, l});
+
             // time the computation
+            long elapsedTime = -1;
+            if (this.average_compute) {
+                // saving and resetting this means the worker does the same control flow each iteration
+                double oldDist = this.getPrivateMemory().get(0, 0, "dist").doubleValue();
+                long timeBefore = this.threadMXBean.getCurrentThreadCpuTime();
+                for (int i = 0; i < this.average_num_iters; i++) {
+                    computation(l);
+                    this.getPrivateMemory().set("dist", oldDist);
+                }
+                elapsedTime = (this.threadMXBean.getCurrentThreadCpuTime() - timeBefore) / average_num_iters;
+            }
+            // we need to do computation again anyways to save the result
             long timeBefore = this.threadMXBean.getCurrentThreadCpuTime();
             computation(l);
-            long elapsedTime = this.threadMXBean.getCurrentThreadCpuTime() - timeBefore;
+            long elapsedTimeNonAverage = this.threadMXBean.getCurrentThreadCpuTime() - timeBefore;
+
             // and save it for later
-            this.elapsedTimes.add(elapsedTime);
+            this.elapsedTimes.add(this.average_compute ? elapsedTime : elapsedTimeNonAverage);
 
             return null;
         };
+    }
+
+    void enableAverageComputeTimes(int num_iterations) {
+        this.average_compute = true;
+        this.average_num_iters = num_iterations;
     }
 
     List<Long> getElapsedTimes() {

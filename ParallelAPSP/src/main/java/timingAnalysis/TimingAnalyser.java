@@ -13,7 +13,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -23,7 +22,7 @@ public class TimingAnalyser {
     // TODO: change everything to nanoseconds! We are getting overflows :/
 
     // cat /proc/cpuinfo | grep GHz
-    public static final int ACER_NITRO_CPU_CYCLES_PER_SECOND = (int) (2.3 * 1E9); // 2.3GHz
+    public static final double ACER_NITRO_CPU_CYCLES_PER_NANOSECOND = 2.3; // 2.3GHz
     public static final int POINT_TO_POINT_SEND_CLOCK_CYCLES = 75;
     public static final int BROADCAST_CLOCK_CYCLES = POINT_TO_POINT_SEND_CLOCK_CYCLES;
 
@@ -46,7 +45,7 @@ public class TimingAnalyser {
      * @param p2p_bandwidth_bytes_per_cycle       The bandwidth of core-to-core communication, measured in Bytes per cycle
      * @param broadcast_bandwidth_bytes_per_cycle the bandwidth of broadcasting, measured in Bytes per cycle
      */
-    public TimingAnalyser(TimedManager timedManager, int cpu_cps, int p2p_cycles, int broadcast_cycles,
+    public TimingAnalyser(TimedManager timedManager, double cpu_cps, int p2p_cycles, int broadcast_cycles,
                           int p2p_bandwidth_bytes_per_cycle, int broadcast_bandwidth_bytes_per_cycle) {
         this.timedManager = timedManager;
         // find latency
@@ -89,6 +88,10 @@ public class TimingAnalyser {
     }
 
     private double get_send_time(int num_words, boolean is_broadcast) {
+        // special case
+        if (num_words == 0) {
+            return 0.0;
+        }
         if (is_broadcast) {
             return this.broadcast_latency + (num_words * this.word_size / this.broadcast_bandwidth);
         } else {
@@ -107,7 +110,7 @@ public class TimingAnalyser {
     }
 
     private List<List<Double>> getBroadcastCommunicationTimes(List<List<Integer>> broadcastCounts) {
-        return broadcastCounts .stream()
+        return broadcastCounts.stream()
                 .map(l -> l.stream()
                         .mapToDouble(t -> get_send_time(t, true)).boxed()
                         .collect(Collectors.toList()))
@@ -200,6 +203,7 @@ public class TimingAnalyser {
         try {
             Manager manager = new Manager(7, 7, initialMemory, FoxOtto.class);
             timedManager = new TimedManager(manager, SquareGridTopology::new);
+            timedManager.enableFoxOttoTimeAveraging(10000);
         } catch (WorkerInstantiationException e) {
             e.printStackTrace();
             return;
@@ -214,7 +218,7 @@ public class TimingAnalyser {
         }
 
         // print statistics
-        TimingAnalyser timingAnalyser = new TimingAnalyser(timedManager, TimingAnalyser.ACER_NITRO_CPU_CYCLES_PER_SECOND,
+        TimingAnalyser timingAnalyser = new TimingAnalyser(timedManager, TimingAnalyser.ACER_NITRO_CPU_CYCLES_PER_NANOSECOND,
                 TimingAnalyser.POINT_TO_POINT_SEND_CLOCK_CYCLES, TimingAnalyser.BROADCAST_CLOCK_CYCLES,
                 64, 64);
 

@@ -53,6 +53,14 @@ public class TimedManager extends Manager {
         }
     }
 
+    public void enableFoxOttoTimeAveraging(int num_iters) {
+        for (int i = 0; i < this.p; i++) {
+            for (int j = 0; j < this.p; j++) {
+                this.timedWorkers.get(i, j).enableAverageComputeTimes(num_iters);
+            }
+        }
+    }
+
     /**
      * Returns a list with one entry for each computation phase. Every entry is a matrix where entry (i, j) is the
      * time in nanoseconds processing element PE(i, j) took to complete its computation.

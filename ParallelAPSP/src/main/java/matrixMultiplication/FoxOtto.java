@@ -4,6 +4,9 @@ import memoryModel.CommunicationChannelCongestionException;
 import memoryModel.MemoryController;
 import memoryModel.PrivateMemory;
 
+import java.lang.management.ManagementFactory;
+import java.lang.management.ThreadMXBean;
+
 /**
  * This class implements the min-plus matrix product computation, and can be used by passing the class to a
  * manager. It computes the min-plus product of a left matrix A and a right-matrix B. The resulting product
@@ -95,5 +98,31 @@ public class FoxOtto extends MinPlusProduct {
         }
         receive("B");
         receive("P");
+    }
+
+    public static void main(String[] args) {
+        int num_iters = 1000;
+
+        PrivateMemory pm = new PrivateMemory(1);
+        pm.set("A", 100000);
+        pm.set("B", 3.14);
+        pm.set("P", 5);
+        FoxOtto worker = new FoxOtto(4, 3, 6, 6, 6, pm, null);
+        worker.initialise();
+        ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
+        long timeBefore = threadMXBean.getCurrentThreadCpuTime();
+        for (int i = 0; i < num_iters; i++) {
+            worker.computation(i);
+            pm.set("A", Math.random() * 100000);
+        }
+        long timeElapsed = threadMXBean.getCurrentThreadCpuTime() - timeBefore;
+        System.out.println("Compute time: " + timeElapsed);
+        timeBefore = threadMXBean.getCurrentThreadCpuTime();
+        for (int i = 0; i < num_iters; i++) {
+            int a = (int) (Math.random() * 1000);
+        }
+        long randTime = threadMXBean.getCurrentThreadCpuTime() - timeBefore;
+        System.out.println("Rand time: " + randTime);
+        System.out.println((double) (timeElapsed - randTime) / num_iters);
     }
 }
