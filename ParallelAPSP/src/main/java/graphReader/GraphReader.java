@@ -77,6 +77,63 @@ public class GraphReader {
         this.edgeSet = findEdgeSet(this.edges);
     }
 
+    public void onlyUseLargestConnectedComponent() {
+        Set<Integer> visited = new HashSet<>();
+        List<List<Pair<Integer, Double>>> adjacencyList = this.getAdjacencyList();
+        List<List<Triple<Integer, Integer, Double>>> newEdges = new ArrayList<>();
+
+        // iterate all nodes, finding their appropriate connected components
+        for (int i = 0; i < this.n; i++) {
+            newEdges.add(findConnectedComponent(adjacencyList, visited, i));
+        }
+
+        newEdges.sort(Comparator.comparingInt(List::size));
+        Collections.reverse(newEdges);
+
+        for (int i = 0; i < 8; i++) {
+            System.out.println(newEdges.get(i).size());
+        }
+    }
+
+    /**
+     * Does a flood fill from the source and returns all the edges found
+     * @param adjacencyList
+     * @param visited
+     * @param source
+     * @return
+     */
+    private List<Triple<Integer, Integer, Double>> findConnectedComponent(List<List<Pair<Integer, Double>>> adjacencyList,
+                                                                          Set<Integer> visited, int source) {
+        List<Triple<Integer, Integer, Double>> newEdges = new ArrayList<>();
+
+        // already flood-filled in this component
+        if (visited.contains(source)) {
+            return newEdges;
+        }
+
+        // set up BFS
+        Queue<Integer> q = new LinkedList<>();
+        q.add(source);
+        visited.add(source);
+
+        while (!q.isEmpty()) {
+            int cur = q.poll();
+
+            List<Pair<Integer, Double>> neighbours = adjacencyList.get(cur);
+            for (Pair<Integer, Double> next : neighbours) {
+                // next node not visited
+                if (!visited.contains(next.getKey())) {
+                    q.add(next.getKey());
+                    visited.add(next.getKey());
+                }
+                // keep track of the edge
+                newEdges.add(new Triple<>(cur, next.getKey(), next.getValue()));
+            }
+        }
+
+        return newEdges;
+    }
+
     private Set<Pair<Integer, Integer>> findEdgeSet(List<Triple<Integer, Integer, Double>> edges) {
         return edges.stream().map(t -> new Pair<>(t.getFirst(), t.getSecond())).collect(Collectors.toSet());
     }
@@ -182,8 +239,9 @@ public class GraphReader {
     public static void main(String[] args) {
         try {
 //            GraphReader gr = new GraphReader("../datasets/small-example.cedge");
-            GraphReader gr = new GraphReader("../datasets/SF.cedge", true);
+            GraphReader gr = new GraphReader("../datasets/SF.cedge", false);
             gr.printSummary();
+            gr.onlyUseLargestConnectedComponent();
 //            System.out.println("The matrix:");
 //            System.out.println(gr.getAdjacencyMatrix(false));
         } catch (ParseException e) {
