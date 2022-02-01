@@ -38,3 +38,51 @@ To be ahead of schedule, I need to have started the generalising part etc.
 
 Questions:
 * Who is the target? Should I assume audience know proposal? Or introduce project?
+
+## The report itself
+
+Introduction (content: the project is on schedule, no unexpected difficulties,
+brief summary of main paragraph)
+
+The project is currently on schedule, and work items have been completed as they
+were described on the timetable. There has not been any unexpected difficulties with
+implementation. Additionally, all the milestones of the work items leading up
+to, but not including, evaluation have been met. I am currently doing evaluation,
+which is in line with the timetable has the period 20 Jan to 2 Feb is set of
+for evaluation.
+
+I have implemented a python script and Java class to, respectively, download
+and transform various graph datasets into the appropriate format to feed into
+the all-pairs shortest paths (APSP) algorithm.  I have also finished the
+multiprocessor simulation; It now provides the programmer with an interface
+where they can program what a general processing element (PE) $PE(i, j)$ should do
+during its computation and communication phases, having access to methods such
+as `send(other_i, other_j, data)` and `broadcastRow(data)`. This description
+can then be passed onto a `Manager` which instantiates workers according to the
+description, loads the initial memory content, and runs them until they have
+completed a specified number of phases. It also handles their communication
+using a `MemoryController` that I have implemented.  I have also implemented
+the `FoxOtto` algorithm, which runs on the multiprocessor simulator.
+Additionally, I have finished implementing the main APSP algorithm, which uses
+FoxOtto min-plus matrix multiplication as a subroutine.  I have also thoroughly
+tested for correctness by manually creating small example graphs and verifying
+that the shortest paths found are correct, and I have also run it on a large
+graph with 250 nodes and compared the results with the output of a serial
+Dijkstra algorithm I am certain is correct.
+
+_Note on above: for the slides, add a slide on example code using multiprocessor interface_
+
+Currently, I am working on the evaluation of the algorithm. I have implemented timing and
+communication-counting wrappers, and used these to estimate the computation and communication
+time required by the algorithm. I have also been researching how the algorithm implemented would
+map onto real multiprocessor hardware, and looked into what the memory latency
+and bandwidth are on such hardware. This will be used to create a more realistic estimate
+of the communication time. What remains to be
+done as part of evaluation is to do more measurements for graphs of various sizes to get measures
+for how the algorithm's performance scales. The current progress is thus in line with
+the timetable as the period 20 Jan -- 2 Feb is set of for evaluation.
+
+Going forward, I will finish evaluation, then aim to complete two of my extensions, one of
+which I'm more than halfway done with: Graph compression through removal of 2-degree nodes.
+The other extension is generalizing the implementation to also handle the case where each PE handles
+a sub-matrix of size greater than 1 x 1.
