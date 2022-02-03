@@ -15,6 +15,7 @@ public class CountingMemoryController extends MemoryController {
 
     // processing element grid size
     private final int p;
+    private boolean isEnabled;
 
     private final Topology memoryTopology;
     // we have one entry in the lists for each communication phase
@@ -40,6 +41,16 @@ public class CountingMemoryController extends MemoryController {
         this.runningCommunicationChannelCost = new Matrix<>(p, () -> 0);
         this.runningRowBroadcastCounts = Stream.generate(() -> 0).limit(p).collect(Collectors.toList());
         this.runningColBroadcastCounts = Stream.generate(() -> 0).limit(p).collect(Collectors.toList());
+
+        this.isEnabled = true;
+    }
+
+    public void disable() {
+        this.isEnabled = false;
+    }
+
+    public void enable() {
+        this.isEnabled = true;
     }
 
     /**
@@ -83,10 +94,12 @@ public class CountingMemoryController extends MemoryController {
 
     @Override
     public synchronized void flush() throws InconsistentCommunicationChannelUsageException {
-        // save the communication costs counted so far (make a deep copy so that it's not 0'ed)
-        this.allCommunicationChannelCosts.add(new Matrix<>(this.runningCommunicationChannelCost));
-        this.allRowBroadcastCounts.add(new ArrayList<>(this.runningRowBroadcastCounts));
-        this.allColBroadcastCounts.add(new ArrayList<>(this.runningColBroadcastCounts));
+        if (this.isEnabled) {
+            // save the communication costs counted so far (make a deep copy so that it's not 0'ed)
+            this.allCommunicationChannelCosts.add(new Matrix<>(this.runningCommunicationChannelCost));
+            this.allRowBroadcastCounts.add(new ArrayList<>(this.runningRowBroadcastCounts));
+            this.allColBroadcastCounts.add(new ArrayList<>(this.runningColBroadcastCounts));
+        }
         // and reset the counts for the next communication phase
         this.runningCommunicationChannelCost.setAll(() -> 0);
         for (int i = 0; i < this.p; i++) {

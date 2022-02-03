@@ -66,7 +66,8 @@ public class TimedManager extends Manager {
      * time in nanoseconds processing element PE(i, j) took to complete its computation.
      * @return a list of matrix containing times
      */
-    public List<Matrix<Long>> getComputationTimes() {
+    public Matrix<Long> getComputationTimes() {
+        // TODO: work from here ....., make return just a matrix!
         List<Matrix<Long>> computationTimes = new ArrayList<>();
         // TODO: wrap doWork and count number of phases, so can do better limit
         for (int l = 0; l < this.timedWorkers.get(0, 0).getElapsedTimes().size(); l++) {

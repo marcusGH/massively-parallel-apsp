@@ -16,7 +16,7 @@ public class TimedWorker extends Worker {
     private static final Logger LOGGER = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
 
     private final ThreadMXBean threadMXBean;
-    private final List<Long> elapsedTimes;
+    private long accumulatedElapsedTime;
     private final Worker worker;
 
     private boolean average_compute;
@@ -31,7 +31,7 @@ public class TimedWorker extends Worker {
         this.worker = worker;
         // there's only one instance of this, so all TimedWorkers hold the same reference
         this.threadMXBean = ManagementFactory.getThreadMXBean();
-        this.elapsedTimes = new ArrayList<>();
+        this.accumulatedElapsedTime = 0;
         this.average_compute = false;
     }
 
@@ -82,7 +82,7 @@ public class TimedWorker extends Worker {
             long elapsedTimeNonAverage = this.threadMXBean.getCurrentThreadCpuTime() - timeBefore;
 
             // and save it for later
-            this.elapsedTimes.add(this.average_compute ? elapsedTime : elapsedTimeNonAverage);
+            this.accumulatedElapsedTime += this.average_compute ? elapsedTime : elapsedTimeNonAverage;
 
             return null;
         };
@@ -93,7 +93,7 @@ public class TimedWorker extends Worker {
         this.average_num_iters = num_iterations;
     }
 
-    List<Long> getElapsedTimes() {
-        return elapsedTimes;
+    long getElapsedTime() {
+        return this.accumulatedElapsedTime;
     }
 }
