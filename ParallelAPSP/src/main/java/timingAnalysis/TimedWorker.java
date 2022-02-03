@@ -63,11 +63,15 @@ public class TimedWorker extends Worker {
             // time the computation
             long elapsedTime = -1;
             if (this.average_compute) {
-                // saving and resetting this means the worker does the same control flow each iteration
+                // do the computation once, and reset memory, such that we don't get a cache miss
                 double oldDist = this.getPrivateMemory().get(0, 0, "dist").doubleValue();
+                computation(l);
+                this.getPrivateMemory().set("dist", oldDist);
+
                 long timeBefore = this.threadMXBean.getCurrentThreadCpuTime();
                 for (int i = 0; i < this.average_num_iters; i++) {
                     computation(l);
+                    // saving and resetting this means the worker does the same control flow each iteration
                     this.getPrivateMemory().set("dist", oldDist);
                 }
                 elapsedTime = (this.threadMXBean.getCurrentThreadCpuTime() - timeBefore) / average_num_iters;

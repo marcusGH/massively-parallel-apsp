@@ -19,9 +19,9 @@ public class RepeatedMatrixSquaring extends APSPSolver {
 
     private static final Logger LOGGER = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
 
-    private final Class<? extends MinPlusProduct> minPlusProductImplementation;
-    private Matrix<Number> distanceMatrix;
-    private Matrix<Number> predecessorMatrix;
+    protected final Class<? extends MinPlusProduct> minPlusProductImplementation;
+    protected Matrix<Number> distanceMatrix;
+    protected Matrix<Number> predecessorMatrix;
 
     public RepeatedMatrixSquaring(GraphReader graphReader,
                                   Class<? extends MinPlusProduct> minPlusProductImplementation) {
@@ -29,9 +29,7 @@ public class RepeatedMatrixSquaring extends APSPSolver {
         this.minPlusProductImplementation = minPlusProductImplementation;
     }
 
-    @Override
-    public void solve() {
-        // prepare the initial memory content
+    protected Map<String, Matrix<Number>> prepareInitialMemory() {
         Map<String, Matrix<Number>> initialMemory = new HashMap<>();
         // We want to square the weight matrix, so input it as both "A" and "B"
         Matrix<Number> distMatrix = this.graph.getAdjacencyMatrix();
@@ -58,6 +56,15 @@ public class RepeatedMatrixSquaring extends APSPSolver {
         LOGGER.fine("Distance matrix before start:\n" + distMatrix);
         LOGGER.fine("Pred matrix before start:\n" + predMatrix);
 
+        return initialMemory;
+    }
+
+    @Override
+    public void solve() {
+        // prepare the initial memory content
+        Map<String, Matrix<Number>> initialMemory = this.prepareInitialMemory();
+        Matrix<Number> distMatrix = null;
+        Matrix<Number> predMatrix = null;
 
         // create the manager
         Manager manager;

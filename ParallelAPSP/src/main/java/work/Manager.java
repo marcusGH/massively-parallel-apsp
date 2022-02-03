@@ -226,6 +226,9 @@ public class Manager {
         checkForWorkerFailure(workerFutures);
 
         for (int l = 0; l < this.numComputationPhases; l++) {
+            if (l % 50 == 0) {
+                LOGGER.info("Manager has completed " + l + " phases of work.");
+            }
             // COMMUNICATION_BEFORE phase
             LOGGER.log(Level.FINER, "Manager is starting communicationBefore phase {0}", l);
             workerFutures = startWorkerExecution(l, Worker.WorkerPhases.COMMUNICATION_BEFORE);

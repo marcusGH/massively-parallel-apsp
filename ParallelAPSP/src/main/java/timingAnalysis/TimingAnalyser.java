@@ -27,6 +27,7 @@ public class TimingAnalyser {
     public static final int BROADCAST_CLOCK_CYCLES = POINT_TO_POINT_SEND_CLOCK_CYCLES;
 
     private final TimedManager timedManager;
+    private final int n;
 
     // measured in seconds
     private final double broadcast_latency;
@@ -48,6 +49,7 @@ public class TimingAnalyser {
     public TimingAnalyser(TimedManager timedManager, double cpu_cps, int p2p_cycles, int broadcast_cycles,
                           int p2p_bandwidth_bytes_per_cycle, int broadcast_bandwidth_bytes_per_cycle) {
         this.timedManager = timedManager;
+        this.n = timedManager.getComputationTimes().get(0).size();
         // find latency
         this.broadcast_latency = (double) broadcast_cycles / cpu_cps;
         this.p2p_latency = (double) p2p_cycles / cpu_cps;
@@ -82,7 +84,6 @@ public class TimingAnalyser {
         List<Matrix<Long>> p2pTimes = this.timedManager.getComputationTimes();
         for (int i = 0; i < p2pTimes.size(); i++) {
             LongSummaryStatistics longSummaryStatistics = getStatsSummary(p2pTimes.get(i));
-            System.out.println(p2pTimes.get(i).toList());
             System.out.println("In phase " + i + " average compute=" + longSummaryStatistics.getAverage() + " std+" + getDeviation(p2pTimes.get(i)));
         }
     }
@@ -105,6 +106,9 @@ public class TimingAnalyser {
                 // Find time it takes to do this communication from each PE
                 .map(l -> l.stream()
                         .mapToDouble(t -> get_send_time(t, false)).boxed()
+                        // TODO: this runs out of heap space, so instead just iterate the list and write to file!
+                        // TODO: another todo is to make the TImedManager write to file every now and then such that
+                        //       the arrays don't grow massive
                         .collect(Collectors.toList()))
                 .collect(Collectors.toList());
     }
@@ -138,27 +142,27 @@ public class TimingAnalyser {
         // create the content to write
         List<String> computationLines = new ArrayList<>();
         for (int i = 0; i < computationTimes.size(); i++) {
-            String sb = i + ", computation, computation, "
+            String sb = i + ",computation,computation,"
                     + computationTimes.get(i).stream()
                             .map(String::valueOf)
-                            .collect(Collectors.joining(", "));
+                            .collect(Collectors.joining(","));
             computationLines.add(sb);
         }
         List<String> communicationLines = new ArrayList<>();
         for (int i = 0; i < p2pTimes.size(); i++) {
             String com_type = ((i % 2 == 0) ? "communication_before" : "communication_after");
-            communicationLines.add((i / 2) + ", " + com_type + ", point_to_point, "
+            communicationLines.add((i / 2) + "," + com_type + ",point_to_point, "
                     + p2pTimes.get(i).stream()
                     .map(String::valueOf)
                     .collect(Collectors.joining(", ")));
-            communicationLines.add((i / 2) + ", " + com_type + ", row_broadcast, "
+            communicationLines.add((i / 2) + "," + com_type + ",row_broadcast, "
                     + rowTimes.get(i).stream()
                     .map(String::valueOf)
-                    .collect(Collectors.joining(", ")));
-            communicationLines.add((i / 2) + ", " + com_type + ", col_broadcast, "
+                    .collect(Collectors.joining(", ")) + ",".repeat(this.n * this.n - this.n));
+            communicationLines.add((i / 2) + "," + com_type + ",col_broadcast, "
                     + colTimes.get(i).stream()
                     .map(String::valueOf)
-                    .collect(Collectors.joining(", ")));
+                    .collect(Collectors.joining(", ")) + ",".repeat(this.n * this.n - this.n));
         }
 
         // write the content
@@ -228,10 +232,10 @@ public class TimingAnalyser {
                 64, 64);
 
         timingAnalyser.getComputationTimes();
-        try {
-            timingAnalyser.saveTimings("../evaluation/timing-data/test-file");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+//        try {
+//            timingAnalyser.saveTimings("../evaluation/timing-data/test-file");
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
     }
 }

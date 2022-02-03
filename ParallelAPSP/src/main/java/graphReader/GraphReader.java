@@ -90,6 +90,7 @@ public class GraphReader {
         newEdges.sort(Comparator.comparingInt(List::size));
         Collections.reverse(newEdges);
 
+        // TODO: only prints at the moment. Doesn't do what it says.
         for (int i = 0; i < 8; i++) {
             System.out.println(newEdges.get(i).size());
         }
