@@ -276,6 +276,7 @@ Resources:
 * Random [blog](http://sites.utexas.edu/jdm4372/2016/12/06/memory-latency-on-the-intel-xeon-phi-x200-knights-landing-processor/)
 * [dangorra paper](http://www.netlib.org/utk/people/JackDongarra/PAPERS/sunway-taihulight.pdf)
 * [paper with actualy values on sunway](https://arxiv.org/pdf/1903.06934.pdf)
+* A paper with propert latency constants on network-on-chip solutions (Good reference!) [here](https://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=6787311)
 
 Stack overflow thread on measuring compute time in Java: [here](https://stackoverflow.com/questions/29405662/is-there-any-way-to-count-the-number-of-instructions-in-java)
 Paper timing various instructions in the JVM [here](https://www.sciencedirect.com/science/article/pii/S1571066108004581)
