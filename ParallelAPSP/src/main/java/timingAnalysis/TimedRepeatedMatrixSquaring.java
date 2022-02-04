@@ -49,6 +49,8 @@ public class TimedRepeatedMatrixSquaring extends RepeatedMatrixSquaring {
             Manager manager = new Manager(this.n, this.n, initialMemory, this.minPlusProductImplementation);
             this.timedManager = new TimedManager(manager, this.topologyFunction);
             this.timedManager.enableFoxOttoTimeAveraging(this.numRepetitionsPerPhase);
+            // the communication is the same at each before and after phase, so only save one of each
+            this.timedManager.disableCommunicationTrackingAfterNPhases(2);
         } catch (WorkerInstantiationException e) {
             System.err.println("The solver was not able to complete: ");
             e.printStackTrace();

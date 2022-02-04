@@ -80,7 +80,7 @@ class TimingAnalysisTest {
         Matrix<Number> distResult;
         Matrix<Number> predResult;
 
-        List<Matrix<Long>> computeTimes;
+        Matrix<Long> computeTimes;
         List<Matrix<Integer>> pointCounts;
         List<List<Integer>> rowCounts;
         List<List<Integer>> colCounts;
@@ -127,12 +127,16 @@ class TimingAnalysisTest {
                 "The timing manager produces the correct distance matrix");
 
         // check that some timing was done
-        assertEquals(7, computeTimes.size(),  "There were 7 computation phases measures");
+        assertEquals(7, computeTimes.size(),  "There were 7 x 7 computation time measures");
         assertEquals(14, pointCounts.size(), "There were twice as many communication phases as computation phases");
         assertEquals(14, rowCounts.size(), "There were 14 broadcasting opportunities");
         assertEquals(14, colCounts.size(), "There were 14 broadcasting opportunities");
 
-        assertTrue(computeTimes.get(3).get(3, 2) > 0, "Some computation time was measured");
+        for (int i = 0; i < 7; i++) {
+            for (int j = 0; j < 7; j++) {
+                assertTrue(computeTimes.get(i, j) > 0.0, "Some computation time measured for PE(" + i + ", " + j + ").");
+            }
+        }
         assertTrue(pointCounts.get(1).get(5, 4) > 0, "Some point-to-point communication happened in communication_after");
         assertTrue(rowCounts.get(6).get(4) > 0, "Row broadcasting happened in communication_before");
         assertEquals(colCounts.get(6).get(4), 0, "No column broadcasting happened in communication_before");
@@ -142,7 +146,7 @@ class TimingAnalysisTest {
         System.out.println("Point-to-point counts:");
         System.out.println(pointCounts.get(3));
         System.out.println("Computation timings:");
-        System.out.println(computeTimes.get(3));
+        System.out.println(computeTimes);
         System.out.println("Row broadcast usage:");
         System.out.println(rowCounts.get(4));
     }

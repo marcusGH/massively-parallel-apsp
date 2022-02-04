@@ -15,7 +15,10 @@ public class CountingMemoryController extends MemoryController {
 
     // processing element grid size
     private final int p;
-    private boolean isEnabled;
+
+    // to limit the amount of memory uses to track communication
+    private int disableAfterNPhases;
+    private int communicationPhasesCompleted;
 
     private final Topology memoryTopology;
     // we have one entry in the lists for each communication phase
@@ -25,7 +28,6 @@ public class CountingMemoryController extends MemoryController {
     private final Matrix<Integer> runningCommunicationChannelCost;
     private final List<Integer> runningRowBroadcastCounts;
     private final List<Integer> runningColBroadcastCounts;
-
 
     public CountingMemoryController(MemoryController memoryController, Topology memoryTopology) {
         super(memoryController);
@@ -42,15 +44,12 @@ public class CountingMemoryController extends MemoryController {
         this.runningRowBroadcastCounts = Stream.generate(() -> 0).limit(p).collect(Collectors.toList());
         this.runningColBroadcastCounts = Stream.generate(() -> 0).limit(p).collect(Collectors.toList());
 
-        this.isEnabled = true;
+        this.communicationPhasesCompleted = 0;
+        this.disableAfterNPhases = -1;
     }
 
-    public void disable() {
-        this.isEnabled = false;
-    }
-
-    public void enable() {
-        this.isEnabled = true;
+    public void disableAfterNPhases(int n) {
+        this.disableAfterNPhases = n;
     }
 
     /**
@@ -94,7 +93,8 @@ public class CountingMemoryController extends MemoryController {
 
     @Override
     public synchronized void flush() throws InconsistentCommunicationChannelUsageException {
-        if (this.isEnabled) {
+        // stop saving data after this point
+        if (this.disableAfterNPhases == -1 || this.communicationPhasesCompleted < this.disableAfterNPhases) {
             // save the communication costs counted so far (make a deep copy so that it's not 0'ed)
             this.allCommunicationChannelCosts.add(new Matrix<>(this.runningCommunicationChannelCost));
             this.allRowBroadcastCounts.add(new ArrayList<>(this.runningRowBroadcastCounts));
@@ -106,6 +106,8 @@ public class CountingMemoryController extends MemoryController {
             this.runningColBroadcastCounts.set(i, 0);
             this.runningRowBroadcastCounts.set(i, 0);
         }
+        // increment
+        this.communicationPhasesCompleted++;
         // then perform the standard functionality
         super.flush();
     }
