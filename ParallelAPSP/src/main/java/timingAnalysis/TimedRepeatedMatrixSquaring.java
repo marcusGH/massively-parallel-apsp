@@ -92,9 +92,11 @@ public class TimedRepeatedMatrixSquaring extends RepeatedMatrixSquaring {
     }
 
     public static void main(String[] args) {
+        String filename = "SF-d-70";
+
         GraphReader graphReader;
         try {
-            graphReader = new GraphReader("../test-datasets/SF-d-30.cedge", false);
+            graphReader = new GraphReader("../test-datasets/" + filename + ".cedge", false);
         } catch (ParseException e) {
             e.printStackTrace();
             return;
@@ -124,7 +126,7 @@ public class TimedRepeatedMatrixSquaring extends RepeatedMatrixSquaring {
 
         TimingAnalyser timingAnalyser = solver.getTimings();
         try {
-            timingAnalyser.saveTimings("../evaluation/timing-data/SF-d-30");
+            timingAnalyser.saveTimings("../evaluation/timing-data/" + filename);
         } catch (IOException e) {
             e.printStackTrace();
         }
