@@ -300,4 +300,19 @@ Some suggestions from Prof R. Mullins:
   (It's possible there's a lot of cache misses in the code, which might slow down). This method should prevent that and
   also minimize memory lookup.
 
+
+# Notes from February 4th
+
+* Plots of timing as problem size increases looks weird. These plots should be
+  linear right, but they look quadratic. What is going on? This is when we just
+  look at the computation time. Something is off. Investigate!
+* Had the idea of refactoring the whole of my Worker, to allow locking/blocking etc.
+  when messages are sent and received. I will need to evaluate all the pros and cons of
+  the two approaches. Some pros of my approach is that I can easily scale up the number of
+  PEs massively since I don't have thread management overhead. Additionally, can do repeated
+  timings of each computation(l). Also need to evaluate what the **impact** across my code is
+  for such refactoring.
+* TODO: need to implement a method to report on number of computation phases done, so that I
+  can multiply by this in python when computing the communication time!
+
 <!-- vim: set nospell: -->

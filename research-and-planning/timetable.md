@@ -1,19 +1,30 @@
 # Timetable
 
 What TODO now:
-* Go through all of code so far, execute refactor TODOs and refactor complete Worker -> Algorithm, and write some more **class documentation**
-* Write new implementation progress list, and the next items to add are: Add timing wrapper for Algorithm and Manager, Add SSSP Dijkstra (that finds all paths) and can be used for testing
+* **Allow MIMD execution, communication stalls**:
+  * All this can be done by modifying `CountingMemoryController`
+  * We keep a matrix for each PE that counts the time in ns they are _currently at_
+  * We also keep a reference to every single Worker in a Matrix
+  * Whenever methods like `sendData` are called, we know that each worker must have finished
+    their computation phase bc. of internals in Manager, so it's safe to look into the reference
+    for that worker and call `getCurrentComputationTime`. We do that on the **recipient** of the
+    data and potentially add a stalling time to the _currently at_ time. Additionally, we now
+    compute the latency and bandwidth time requires by the send. After this, we need to somehow
+    reset the computation time of the worker because we might have "communicationAfter" ->
+    "communicationBefore" without compute between.
+  * We can also pass some modification of `TimingAnalyser` which just contains hardware specs,
+    is used when adding the times in the above methods
+  * After this, there is not really any need for `TimingAnalyser` as the Counting mc can
+    return three matrices, communication times for each PE, computation times for each PE etc.
+  * To get error bars on this kind of scheme, we simply run the whole thing many times (e.g. 10)
+    and compare the total times...
+* **Generalize the implementation**:
+  * This is what it says, and I think it's more important than the evaluation fix bit, so do this
+    first!
 
 Documentation/refactoring cleanup:
 - [ ] Do more clean-up on APSPSolver and graphReader and matrixMultiplication. Mostlyu done in memoryModel, util and work.
 
-Implemention TODOs:
-* Done: Write CountingMemoryController adapter, and new constructor taking a MemoryController
-* Done: Fix up Worker adapter by creating new constructor instead of all the getters
-* Done: Investigate if possible to nicely move all timing functionality to a different package
-* Done?: Refactor memoryTopology passing out of memorycontroller base class
-* Done: Write a _test for correctness_ on timing manager which works the same as the FoxOtto test (just copy the expected matrices and check if they're reproduced after running algo twice using the same manger).
-* TODO next: Clean up driver code, refactor out topology in manager constructor (do this in different branch :))
 
 Implementation progress:
 - [X] memoryModel
@@ -38,8 +49,8 @@ Implementation progress:
 - [.] evaluation (rename):
   - [X] Planned and written evaluation package
   - [ ] Write test for timingAnalysis package
-- [ ] Correctness test
-  - [ ] Written Dijkstra package that can be used to test for correctness on the driver, on many
+- [X] Correctness test
+  - [X] Written Dijkstra package that can be used to test for correctness on the driver, on many
         graphs, including really big ones
 - [ ] **generalised algorithm!**
 - [ ] graphCompression:
