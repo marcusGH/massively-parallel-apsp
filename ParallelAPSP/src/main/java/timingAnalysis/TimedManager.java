@@ -61,22 +61,21 @@ public class TimedManager extends Manager {
         }
     }
 
+    public void disableCommunicationTrackingAfterNPhases(int n) {
+        this.countingMemoryController.disableAfterNPhases(n);
+    }
+
     /**
      * Returns a list with one entry for each computation phase. Every entry is a matrix where entry (i, j) is the
      * time in nanoseconds processing element PE(i, j) took to complete its computation.
      * @return a list of matrix containing times
      */
-    public List<Matrix<Long>> getComputationTimes() {
-        List<Matrix<Long>> computationTimes = new ArrayList<>();
-        // TODO: wrap doWork and count number of phases, so can do better limit
-        for (int l = 0; l < this.timedWorkers.get(0, 0).getElapsedTimes().size(); l++) {
-            Matrix<Long> elapsedTimes = new Matrix<>(this.p);
-            for (int i = 0; i < this.p; i++) {
-                for (int j = 0; j < this.p; j++) {
-                    elapsedTimes.set(i, j, this.timedWorkers.get(i, j).getElapsedTimes().get(l));
-                }
+    public Matrix<Long> getComputationTimes() {
+        Matrix<Long> computationTimes = new Matrix<>(this.p);
+        for (int i = 0; i < this.p; i++) {
+            for (int j = 0; j < this.p; j++) {
+                computationTimes.set(i, j, this.timedWorkers.get(i, j).getElapsedTime());
             }
-            computationTimes.add(elapsedTimes);
         }
         return computationTimes;
     }
@@ -117,7 +116,7 @@ public class TimedManager extends Manager {
         }
 
         // decorate it
-        TimedManager timedManager = null;
+        TimedManager timedManager;
         try {
             timedManager = new TimedManager(manager, SquareGridTopology::new);
         } catch (WorkerInstantiationException e) {
@@ -133,12 +132,12 @@ public class TimedManager extends Manager {
         }
 
         System.out.println(timedManager.getResult("dist"));
+        System.out.println(timedManager.getComputationTimes());
 
         for (int i = 0; i < timedManager.getComputationTimes().size(); i++) {
             System.out.println("Times for iteration " + i + ":");
-            System.out.println(timedManager.getComputationTimes().get(i));
-            System.out.println("---");
             System.out.println(timedManager.getPointToPointCommunicationTimes().get(i));
+            System.out.println("---");
         }
     }
 }

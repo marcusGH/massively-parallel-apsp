@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 
 
-def read_timings_quick(file_basename):
+def read_timings2(file_basename):
     """
     The below method takes a long time because of the joins, so this one
     aggregates mean communication time as it reads, allowing less flexibility
@@ -16,17 +16,29 @@ def read_timings_quick(file_basename):
     # read the communication file
     communication_times_df = pd.read_csv(file_basename + "_communication.csv", sep=",", header=None)
 
-    header_names = ["phase", "phase_name", "type"] + ["{0}".format(i) for i in range(compute_times_df.shape[1] - 3)]
-    compute_times_df.set_axis(header_names, axis=1, inplace=True)
+    header_names = ["phase", "phase_name", "type"] + ["{0}".format(i) for i in
+                                                      range(communication_times_df.shape[1] - 3)]
+    compute_times_df.set_axis(header_names[1:], axis=1, inplace=True)
     communication_times_df.set_axis(header_names, axis=1, inplace=True)
 
+    # we are only interested in the values
+    compute_times_df.drop(["phase_name", "type"], axis=1, inplace=True)
+
     # make into numpy floats
-    for i in range(compute_times_df.shape[1] - 3):
+    for i in range(compute_times_df.shape[1] - 2):
         compute_times_df["{0}".format(i)] = pd.to_numeric(compute_times_df["{0}".format(i)])
         communication_times_df["{0}".format(i)] = pd.to_numeric(communication_times_df["{0}".format(i)])
-    # make multiindex
-    return (compute_times_df.reset_index().set_index(["phase", "phase_name", "type"]).stack().unstack([1, 2]),
-            communication_times_df.reset_index().set_index(["phase", "phase_name", "type"]).stack().unstack([1, 2]))
+
+    # create multiindex
+    communication_multi_df = communication_times_df.reset_index() \
+        .set_index(["phase", "phase_name", "type"]).stack().unstack([1, 2])
+    # remove unneeded value that is added for some reason
+    communication_multi_df.drop('index', level=1, inplace=True)
+
+    # TODO: we are doing max() because must wait until all communication done before proceed
+    return compute_times_df.to_numpy(), \
+           (communication_multi_df["communication_before"] + communication_multi_df["communication_after"]).max(), \
+           int(np.sqrt(compute_times_df.to_numpy().shape[1]))
 
 
 def plot_performance_scaling(filenames):
@@ -37,26 +49,18 @@ def plot_performance_scaling(filenames):
     err = []
 
     for i, file in enumerate(filenames):
-        compute_df, communicate_df = read_timings_quick(file)
-        # remove this sneaky row which appears for some reason
-        compute_df.drop('index', level=1, inplace=True)
-        communicate_df.drop('index', level=1, inplace=True)
+        compute_df, communicate_df, p = read_timings2(file)
 
-        phase_mean = compute_df.groupby("phase").mean()
-        phase_var = compute_df.groupby("phase").var()
-        phase_communicate_max = (communicate_df["communication_before"] +
-                                 communicate_df["communication_after"]).groupby("phase").max()
-
-        compute_time = phase_mean.sum(axis=0).values[0]
-        error_std = np.sqrt(phase_var.sum(axis=0).values[0])
-        communicate_time = phase_communicate_max.sum(axis=0).values[0]
+        compute_time = compute_df.sum()
+        error_std = compute_df.std()
+        communicate_time = (communicate_df["point_to_point"] + communicate_df["row_broadcast"] + communicate_df["col_broadcast"]) * 100  # TODO: extract data from files
 
         # add to plot
-        xs.append(np.sqrt(compute_df.loc[0].shape[0]))
+        xs.append(p)
         print("{0} err={1}".format(communicate_time + compute_time, error_std))
         print("ratio: {0}".format(compute_time / (communicate_time + compute_time)))
-        ys.append(compute_time + communicate_time)
-        err.append(error_std)
+        ys.append(np.log(compute_time + communicate_time))
+        err.append(np.log(error_std))
 
     axs[0].set_title("Total computation and communication time for various input sizes")
     axs[0].set_xlabel("Problem size")
@@ -64,6 +68,7 @@ def plot_performance_scaling(filenames):
     axs[0].errorbar(x=xs, y=ys, yerr=err, marker="D", markersize=6, capsize=5, elinewidth=2)
 
     plt.show()
+
 
 def read_timings(file_basename):
     # read the computation file

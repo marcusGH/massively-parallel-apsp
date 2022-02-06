@@ -49,6 +49,8 @@ public class TimedRepeatedMatrixSquaring extends RepeatedMatrixSquaring {
             Manager manager = new Manager(this.n, this.n, initialMemory, this.minPlusProductImplementation);
             this.timedManager = new TimedManager(manager, this.topologyFunction);
             this.timedManager.enableFoxOttoTimeAveraging(this.numRepetitionsPerPhase);
+            // the communication is the same at each before and after phase, so only save one of each
+            this.timedManager.disableCommunicationTrackingAfterNPhases(2);
         } catch (WorkerInstantiationException e) {
             System.err.println("The solver was not able to complete: ");
             e.printStackTrace();
@@ -90,9 +92,11 @@ public class TimedRepeatedMatrixSquaring extends RepeatedMatrixSquaring {
     }
 
     public static void main(String[] args) {
+        String filename = "SF-d-70";
+
         GraphReader graphReader;
         try {
-            graphReader = new GraphReader("../test-datasets/SF-d-30.cedge", false);
+            graphReader = new GraphReader("../test-datasets/" + filename + ".cedge", false);
         } catch (ParseException e) {
             e.printStackTrace();
             return;
@@ -122,7 +126,7 @@ public class TimedRepeatedMatrixSquaring extends RepeatedMatrixSquaring {
 
         TimingAnalyser timingAnalyser = solver.getTimings();
         try {
-            timingAnalyser.saveTimings("../evaluation/timing-data/SF-d-30");
+            timingAnalyser.saveTimings("../evaluation/timing-data/" + filename);
         } catch (IOException e) {
             e.printStackTrace();
         }

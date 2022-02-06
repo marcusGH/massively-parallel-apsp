@@ -49,7 +49,7 @@ public class TimingAnalyser {
     public TimingAnalyser(TimedManager timedManager, double cpu_cps, int p2p_cycles, int broadcast_cycles,
                           int p2p_bandwidth_bytes_per_cycle, int broadcast_bandwidth_bytes_per_cycle) {
         this.timedManager = timedManager;
-        this.n = timedManager.getComputationTimes().get(0).size();
+        this.n = timedManager.getComputationTimes().size();
         // find latency
         this.broadcast_latency = (double) broadcast_cycles / cpu_cps;
         this.p2p_latency = (double) p2p_cycles / cpu_cps;
@@ -80,12 +80,9 @@ public class TimingAnalyser {
         return Math.sqrt(sum / (matrix.size() * matrix.size()));
     }
 
-    public void getComputationTimes() {
-        List<Matrix<Long>> p2pTimes = this.timedManager.getComputationTimes();
-        for (int i = 0; i < p2pTimes.size(); i++) {
-            LongSummaryStatistics longSummaryStatistics = getStatsSummary(p2pTimes.get(i));
-            System.out.println("In phase " + i + " average compute=" + longSummaryStatistics.getAverage() + " std+" + getDeviation(p2pTimes.get(i)));
-        }
+    public void printComputationTimesSummary() {
+        Matrix<Long> computationTimes = this.timedManager.getComputationTimes();
+        System.out.println(computationTimes);
     }
 
     private double get_send_time(int num_words, boolean is_broadcast) {
@@ -121,12 +118,9 @@ public class TimingAnalyser {
                 .collect(Collectors.toList());
     }
 
-    private List<List<Double>> getComputationTimes2() {
-        return this.timedManager.getComputationTimes().stream()
-                .map(Matrix::toList)
-                .map(l -> l.stream()
-                        .mapToDouble(Long::doubleValue).boxed()
-                        .collect(Collectors.toList()))
+    private List<Double> getComputationTimes() {
+        return this.timedManager.getComputationTimes().toList().stream()
+                .mapToDouble(Long::doubleValue).boxed()
                 .collect(Collectors.toList());
     }
 
@@ -134,20 +128,16 @@ public class TimingAnalyser {
         Path computation_file = Paths.get(file_basename + "_computation.csv");
         Path communication_file = Paths.get(file_basename + "_communication.csv");
 
-        List<List<Double>> computationTimes = getComputationTimes2();
+        // TODO: work from here, after limiting communication time output
+        List<Double> computationTimes = getComputationTimes();
         List<List<Double>> p2pTimes = getPointToPointCommunicationTimes();
         List<List<Double>> rowTimes = getBroadcastCommunicationTimes(this.timedManager.getRowBroadcastCommunicationTimes());
         List<List<Double>> colTimes = getBroadcastCommunicationTimes(this.timedManager.getColBroadcastCommunicationTimes());
 
         // create the content to write
-        List<String> computationLines = new ArrayList<>();
-        for (int i = 0; i < computationTimes.size(); i++) {
-            String sb = i + ",computation,computation,"
-                    + computationTimes.get(i).stream()
-                            .map(String::valueOf)
-                            .collect(Collectors.joining(","));
-            computationLines.add(sb);
-        }
+        List<String> computationLines = Collections.singletonList("computation,computation," +
+                computationTimes.stream().map(String::valueOf).collect(Collectors.joining(",")));
+
         List<String> communicationLines = new ArrayList<>();
         for (int i = 0; i < p2pTimes.size(); i++) {
             String com_type = ((i % 2 == 0) ? "communication_before" : "communication_after");
@@ -212,7 +202,7 @@ public class TimingAnalyser {
         try {
             Manager manager = new Manager(7, 7, initialMemory, FoxOtto.class);
             timedManager = new TimedManager(manager, SquareGridTopology::new);
-            timedManager.enableFoxOttoTimeAveraging(10000);
+            timedManager.enableFoxOttoTimeAveraging(10);
         } catch (WorkerInstantiationException e) {
             e.printStackTrace();
             return;
@@ -231,7 +221,7 @@ public class TimingAnalyser {
                 TimingAnalyser.POINT_TO_POINT_SEND_CLOCK_CYCLES, TimingAnalyser.BROADCAST_CLOCK_CYCLES,
                 64, 64);
 
-        timingAnalyser.getComputationTimes();
+        timingAnalyser.printComputationTimesSummary();
 //        try {
 //            timingAnalyser.saveTimings("../evaluation/timing-data/test-file");
 //        } catch (IOException e) {
