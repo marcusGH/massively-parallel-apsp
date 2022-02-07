@@ -1,5 +1,6 @@
 package APSPSolver;
 
+import graphReader.GraphCompressor;
 import graphReader.GraphReader;
 import matrixMultiplication.FoxOtto;
 import matrixMultiplication.MinPlusProduct;
@@ -19,30 +20,62 @@ public class RepeatedMatrixSquaring extends APSPSolver {
 
     private static final Logger LOGGER = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
 
+    protected final int n;
+    protected final int p;
     protected final Class<? extends MinPlusProduct> minPlusProductImplementation;
     protected Matrix<Number> distanceMatrix;
     protected Matrix<Number> predecessorMatrix;
 
-    public RepeatedMatrixSquaring(GraphReader graphReader,
+    /**
+     *
+     * @param graphReader
+     * @param p the problem will be solves by p x p processing elements
+     * @param minPlusProductImplementation
+     */
+    public RepeatedMatrixSquaring(GraphReader graphReader, int p,
                                   Class<? extends MinPlusProduct> minPlusProductImplementation) {
         super(graphReader);
+        this.p = p;
+        // problem size can be distributed nicely
+        if (super.n % p == 0) {
+            this.n = super.n;
+        } else {
+            // add a few extra nodes, but no more than p new nodes
+            this.n = super.n + (p - super.n % p);
+        }
         this.minPlusProductImplementation = minPlusProductImplementation;
+    }
+
+    public RepeatedMatrixSquaring(GraphReader graphReader,
+                                  Class<? extends MinPlusProduct> minPlusProductImplementation) {
+        this(graphReader, graphReader.getNumberOfNodes(), minPlusProductImplementation);
     }
 
     protected Map<String, Matrix<Number>> prepareInitialMemory() {
         Map<String, Matrix<Number>> initialMemory = new HashMap<>();
-        // We want to square the weight matrix, so input it as both "A" and "B"
-        Matrix<Number> distMatrix = this.graph.getAdjacencyMatrix();
-        for (int i = 0; i < this.n; i++) {
-            distMatrix.set(i, i, 0);
-        }
-        initialMemory.put("A", distMatrix);
-        initialMemory.put("B", distMatrix);
+
+        Matrix<Number> originalAdjMatrix = this.graph.getAdjacencyMatrix();
+        // The entry D[i, j] contains the weight of edge (i, j), defaulting to \infty if there is no such edge
+        Matrix<Number> distMatrix = new Matrix<>(this.n);
         // The entry P[i, j] contains the predecessor of j in the shortest path i -~-> j, defaulting to value j
         //   if no such path has been found yet
         Matrix<Number> predMatrix = new Matrix<>(this.n);
         for (int i = 0; i < this.n; i++) {
             for (int j = 0; j < this.n; j++) {
+                // self-loop
+                if (i == j) {
+                    distMatrix.set(i, j, 0);
+                }
+                // from original adjacency matrix
+                if (i < super.n && j < super.n) {
+                    distMatrix.set(i, j, originalAdjMatrix.get(i, j));
+                }
+                // dummy node
+                else {
+                    distMatrix.set(i, j, Double.POSITIVE_INFINITY);
+                }
+
+                // setup the predecessor matrix as well
                 if (this.graph.hasEdge(i, j)) {
                     predMatrix.set(i, j, i);
                 } else {
@@ -50,6 +83,10 @@ public class RepeatedMatrixSquaring extends APSPSolver {
                 }
             }
         }
+
+        // We want to square the weight matrix, so input it as both "A" and "B"
+        initialMemory.put("A", distMatrix);
+        initialMemory.put("B", distMatrix);
         initialMemory.put("P", predMatrix);
 
         // log initial conditions
@@ -59,12 +96,11 @@ public class RepeatedMatrixSquaring extends APSPSolver {
         return initialMemory;
     }
 
+
     @Override
     public void solve() {
         // prepare the initial memory content
         Map<String, Matrix<Number>> initialMemory = this.prepareInitialMemory();
-        Matrix<Number> distMatrix = null;
-        Matrix<Number> predMatrix = null;
 
         // create the manager
         Manager manager;
@@ -75,6 +111,14 @@ public class RepeatedMatrixSquaring extends APSPSolver {
             e.printStackTrace();
             return;
         }
+
+        this.manageWork(manager);
+    }
+
+    protected void manageWork(Manager manager) {
+        // we store our results here
+        Matrix<Number> distMatrix = null;
+        Matrix<Number> predMatrix = null;
 
         // repeatedly square the distance- and predecessor matrix with min-plus product
         int numIterations = (int) Math.ceil(Math.log(this.n) / Math.log(2));
@@ -88,6 +132,8 @@ public class RepeatedMatrixSquaring extends APSPSolver {
                 return;
             }
 
+            // TODO: this can be removed if we modify the initialisation step in FoxOtto
+
             // prepare for the next iteration by updating the input to what the result from the previous iteration was
             distMatrix = manager.getResult("dist");
             LOGGER.fine("Distance matrix at iteration " + i + " is:\n" + distMatrix);
@@ -95,6 +141,8 @@ public class RepeatedMatrixSquaring extends APSPSolver {
             LOGGER.fine("Pred matrix are iteration " + i + " is:\n" + predMatrix);
             manager.setPrivateMemory(Map.of("A", distMatrix, "B", distMatrix, "P", predMatrix));
         }
+
+        // log and save
         LOGGER.log(Level.FINE, "The computed distance matrix is:\n" + distMatrix);
         LOGGER.log(Level.FINE, "The computed predecessor matrix is:\n" + predMatrix);
         this.predecessorMatrix = predMatrix;
