@@ -74,7 +74,7 @@ public class TimedRepeatedMatrixSquaring extends RepeatedMatrixSquaring {
             LOGGER.fine("Distance matrix at iteration " + i + " is:\n" + distMatrix);
             predMatrix = this.timedManager.getResult("pred", true);
             LOGGER.fine("Pred matrix are iteration " + i + " is:\n" + predMatrix);
-            timedManager.resetMemory(Map.of("A", distMatrix, "B", distMatrix, "P", predMatrix));
+            timedManager.setPrivateMemory(Map.of("A", distMatrix, "B", distMatrix, "P", predMatrix));
         }
         LOGGER.log(Level.FINE, "The computed distance matrix is:\n" + distMatrix);
         LOGGER.log(Level.FINE, "The computed predecessor matrix is:\n" + predMatrix);

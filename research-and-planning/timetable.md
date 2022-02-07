@@ -21,6 +21,7 @@ What TODO now:
 * **Generalize the implementation**:
   * This is what it says, and I think it's more important than the evaluation fix bit, so do this
     first!
+* **Random graphs with networkx in python**
 
 Documentation/refactoring cleanup:
 - [ ] Do more clean-up on APSPSolver and graphReader and matrixMultiplication. Mostlyu done in memoryModel, util and work.

@@ -93,7 +93,7 @@ public class RepeatedMatrixSquaring extends APSPSolver {
             LOGGER.fine("Distance matrix at iteration " + i + " is:\n" + distMatrix);
             predMatrix = manager.getResult("pred", true);
             LOGGER.fine("Pred matrix are iteration " + i + " is:\n" + predMatrix);
-            manager.resetMemory(Map.of("A", distMatrix, "B", distMatrix, "P", predMatrix));
+            manager.setPrivateMemory(Map.of("A", distMatrix, "B", distMatrix, "P", predMatrix));
         }
         LOGGER.log(Level.FINE, "The computed distance matrix is:\n" + distMatrix);
         LOGGER.log(Level.FINE, "The computed predecessor matrix is:\n" + predMatrix);

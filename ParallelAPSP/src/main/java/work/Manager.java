@@ -58,45 +58,41 @@ public class Manager {
      * finished. If any error occurs during execution, such as {@link CommunicationChannelCongestionException}
      * or {@link InconsistentCommunicationChannelUsageException}, an exception will be thrown.
      *
-     * @param n a matrix of n x n workers are created
+     * @param n integer - the problem size
+     * @param p a matrix of p x p workers are created
      * @param numComputationPhases the number of computation phases each worker should perform
      * @param initialMemoryContent a map from private memory access labels to the content stored in each worker's memory.
      *                             This parameter may be null, in which case all workers start with empty memory.
      * @param workerClass a subtype of Worker, specifying that computation and communication each individual worker should do
      * @throws WorkerInstantiationException if any of the workers are not able to be constructed
      */
-    public Manager(int n, int numComputationPhases, Map<String, Matrix<Number>> initialMemoryContent,
+    public Manager(int n, int p, int numComputationPhases, Map<String, Matrix<Number>> initialMemoryContent,
                    Class<? extends Worker> workerClass) throws WorkerInstantiationException {
         this.n = n;
-        this.p = n;
+        this.p = p;
         this.numComputationPhases = numComputationPhases;
         this.algorithm = workerClass;
 
-        if (null != initialMemoryContent) {
-            for (String s : initialMemoryContent.keySet()) {
-                assert initialMemoryContent.get(s).size() == this.p;
-            }
+        // not possible to divide up memory evenly
+        if (n % p != 0) {
+            throw new IllegalArgumentException(String.format("The passed initial memory does to distribute well among the PEs." +
+                    " A matrix of size %d cannot be spread among %d PEs.", n, p));
         }
 
-        // initialize the private memory
-        Matrix<PrivateMemory> privateMemoryMatrix = new Matrix<>(this.p, () -> new PrivateMemory(1));
-        if (null != initialMemoryContent) {
-            for (int i = 0; i < this.p; i++) {
-                for (int j = 0; j < this.p; j++) {
-                    for (String s : initialMemoryContent.keySet()) {
-                        privateMemoryMatrix.get(i, j).set(s, initialMemoryContent.get(s).get(i, j));
-                    }
-                }
-            }
+        // no memory provided
+        if (null == initialMemoryContent) {
+            // the private memory is used to fetch the results after computation, so save a reference to it
+            this.privateMemoryMatrix =  new Matrix<>(p, () -> new PrivateMemory(n / p));
+        } else {
+            this.privateMemoryMatrix = new Matrix<>(this.p, () -> new PrivateMemory(n / p));
+            this.setPrivateMemory(initialMemoryContent);
         }
 
-        // the private memory is used to fetch the results after computation, so save a reference to it
-        this.privateMemoryMatrix = privateMemoryMatrix;
-        this.memoryController = new MemoryController(this.p, privateMemoryMatrix);
+        this.memoryController = new MemoryController(this.p, this.privateMemoryMatrix);
 
         // set up the worker factory
         WorkerFactory workerFactory = new WorkerFactory(workerClass);
-        workerFactory.init(memoryController);
+        workerFactory.init(this.memoryController);
 
         // and create all the workers
         this.workers = new Matrix<>(this.p);
@@ -108,28 +104,44 @@ public class Manager {
         }
     }
 
-    // TODO: resetMemory() which wipes everything
-
     /**
      * Does not delete existing memory content, just overrides what is provided.
      * @param memoryContent a map from string labels to numbers to distribute to each processing element
      */
-    public void resetMemory(Map<String, Matrix<Number>> memoryContent) {
-        assert memoryContent != null;
-        // TODO: modify when generalizing everything
+    public void setPrivateMemory(Map<String, Matrix<Number>> memoryContent) {
+        int matSizePerPE = n / p;
+
+        // validate input
         for (String s : memoryContent.keySet()) {
-            assert memoryContent.get(s).size() == this.p;
+            // mismatch in dimension
+            if (memoryContent.get(s).size() != n) {
+                throw new IllegalArgumentException(String.format("The passed initial memory content for label '%s' has dimension" +
+                        "%d when dimension %d was expected.", s, memoryContent.get(s).size(), n));
+            }
         }
 
+        // initialize the private memory
         for (int i = 0; i < this.p; i++) {
             for (int j = 0; j < this.p; j++) {
                 for (String s : memoryContent.keySet()) {
-                    // private memory of PE(i, j) has label "s" assigned to memoryContent[i, j] associated with "s"
-                    this.privateMemoryMatrix.get(i, j).set(s, memoryContent.get(s).get(i, j));
+                    for (int mi = 0; mi < matSizePerPE; mi++) {
+                        for (int mj = 0; mj < matSizePerPE; mj++) {
+                            privateMemoryMatrix.get(i, j).set(mi, mj, s, memoryContent.get(s).get(
+                                    i * matSizePerPE + mi, j * matSizePerPE + mj
+                            ));
+                        }
+                    }
                 }
             }
         }
     }
+
+    public Manager(int n, int numComputationPhases, Map<String, Matrix<Number>> initialMemoryContent,
+                   Class<? extends Worker> workerClass) throws WorkerInstantiationException {
+        this(n, n, numComputationPhases, initialMemoryContent, workerClass);
+    }
+
+    // TODO: resetMemory() which wipes everything
 
     /**
      * We want to return a list of features so that we can look at exceptions thrown during execution by workers
@@ -267,7 +279,7 @@ public class Manager {
      * when accessed with the label {@code label}.
      *
      * @param label the string label. May be null, in which case an empty matrix is returned.
-     * @return a Matrix of numbers
+     * @return a Matrix of numbers of size n x n, independent of p
      */
     public Matrix<Number> getResult(String label, boolean asInt)  {
         if (!this.workHasBeenDone) {
@@ -275,18 +287,25 @@ public class Manager {
         } else if (null == label) {
             return new Matrix<>(this.p);
         } else {
-            // TODO: generalize
-            Matrix<Number> resultMatrix = new Matrix<>(this.p);
-            assert this.p == this.n;
+            // spread each PE's private memory across the result matrix
+            int matSizePerPE = this.n / this.p;
+            Matrix<Number> resultMatrix = new Matrix<>(this.n);
             for (int i = 0; i < this.p; i++) {
                 for (int j = 0; j < this.p; j++) {
-                    if (asInt) {
-                        resultMatrix.set(i, j, this.workers.get(i, j).readInt(label));
-                    } else {
-                        resultMatrix.set(i, j, this.workers.get(i, j).readDouble(label));
+                    for (int mi = 0; mi < matSizePerPE; mi++) {
+                        for (int mj = 0; mj < matSizePerPE; mj++) {
+                            if (asInt) {
+                                resultMatrix.set(i * matSizePerPE + mi, j * matSizePerPE + mj,
+                                        this.workers.get(i, j).readInt(mi, mj, label));
+                            } else {
+                                resultMatrix.set(i * matSizePerPE + mi, j * matSizePerPE + mj,
+                                        this.workers.get(i, j).readDouble(mi, mj, label));
+                            }
+                        }
                     }
                 }
             }
+
             return resultMatrix;
         }
     }

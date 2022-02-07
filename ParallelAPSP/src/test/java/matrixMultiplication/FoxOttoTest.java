@@ -1,13 +1,11 @@
 package matrixMultiplication;
 
 import memoryModel.CommunicationChannelException;
-import memoryModel.topology.SquareGridTopology;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import util.LoggerFormatter;
 import util.Matrix;
 import work.Manager;
-import work.WorkerFactory;
 import work.WorkerInstantiationException;
 import work.WorkersFailedToCompleteException;
 
@@ -84,7 +82,7 @@ class FoxOttoTest {
             System.out.println(predResult);
 
             // compute W3 and P3
-            m.resetMemory(Map.of("A", distResult, "B", distResult, "P", predResult));
+            m.setPrivateMemory(Map.of("A", distResult, "B", distResult, "P", predResult));
             m.doWork();
             distResult = m.getResult("dist", true);
             predResult = m.getResult("pred", true);
