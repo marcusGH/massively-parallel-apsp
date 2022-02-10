@@ -1,22 +1,29 @@
 package matrixMultiplication;
 
+import APSPSolver.APSPSolver;
+import APSPSolver.RepeatedMatrixSquaring;
+import graphReader.GraphReader;
 import memoryModel.CommunicationChannelException;
+import memoryModel.topology.SquareGridTopology;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import timingAnalysis.TimedManager;
 import util.LoggerFormatter;
 import util.Matrix;
 import work.Manager;
 import work.WorkerInstantiationException;
 import work.WorkersFailedToCompleteException;
 
+import java.text.ParseException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
-class FoxOttoTest {
+class GeneralisedFoxOttoTest {
 
     private static final Logger LOGGER = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
 
@@ -33,19 +40,20 @@ class FoxOttoTest {
 
         // the graph we're working with
         Number[][] adjacencyGrid = {
-                {0,   6,    2,   3,  INF, INF, INF},
-                {INF, 0  , INF, INF,  1 , INF, INF},
-                {INF, INF, 0  , INF, INF,  2,   1 },
-                {INF, INF, INF,  0 , INF, INF,  2 },
-                {INF, INF, INF, INF,  0 , INF, INF},
-                {INF,  1 , INF, INF, INF,  0 , INF},
-                {INF, INF, INF, INF, INF, INF,  0 },
+                {0,   6,    2,   3,  INF, INF, INF, INF},
+                {INF, 0  , INF, INF,  1 , INF, INF, INF},
+                {INF, INF, 0  , INF, INF,  2,   1,  INF},
+                {INF, INF, INF,  0 , INF, INF,  2,  INF},
+                {INF, INF, INF, INF,  0 , INF, INF, INF},
+                {INF,  1 , INF, INF, INF,  0 , INF, INF},
+                {INF, INF, INF, INF, INF, INF,  0 , INF},
+                {INF, INF, INF, INF, INF, INF,  INF , 0},
         };
-        Matrix<Number> adjMatrix = new Matrix<Number>(7, adjacencyGrid);
+        Matrix<Number> adjMatrix = new Matrix<Number>(8, adjacencyGrid);
         // setup the predecessor matrix
-        Matrix<Number> predMatrix = new Matrix<>(7);
-        for (int i = 0; i < 7; i++) {
-            for (int j = 0; j < 7; j++) {
+        Matrix<Number> predMatrix = new Matrix<>(8);
+        for (int i = 0; i < 8; i++) {
+            for (int j = 0; j < 8; j++) {
                 if (INF == adjMatrix.get(i, j).intValue()) {
                     predMatrix.set(i, j, j);
                 } else {
@@ -63,7 +71,8 @@ class FoxOttoTest {
         // create the manager
         Manager m;
         try {
-            m = new Manager(7, 7, initialMemory, FoxOtto.class);
+            m = new Manager(8, 2,2, initialMemory, GeneralisedFoxOtto.class);
+            m = new TimedManager(m, SquareGridTopology::new);
         } catch (WorkerInstantiationException e) {
             e.printStackTrace();
             fail("The manager or worker factory could not be created");
@@ -95,27 +104,28 @@ class FoxOttoTest {
         // ASSERT
 
         Number[][] expectedPred = {
-            {0, 5, 0, 0, 1, 2, 2},
-            {0, 1, 2, 3, 1, 5, 6},
-            {0, 5, 2, 3, 1, 2, 2},
-            {0, 1, 2, 3, 4, 5, 3},
-            {0, 1, 2, 3, 4, 5, 6},
-            {0, 5, 2, 3, 1, 5, 6},
-            {0, 1, 2, 3, 4, 5, 6},
+            {0, 5, 0, 0, 1, 2, 2, 7},
+            {0, 1, 2, 3, 1, 5, 6, 7},
+            {0, 5, 2, 3, 1, 2, 2, 7},
+            {0, 1, 2, 3, 4, 5, 3, 7},
+            {0, 1, 2, 3, 4, 5, 6, 7},
+            {0, 5, 2, 3, 1, 5, 6, 7},
+            {0, 1, 2, 3, 4, 5, 6, 7},
+            {0, 1, 2, 3, 4, 5, 6, 7},
         };
-        Matrix<Number> expectedPredMatrix = new Matrix<>(7, expectedPred);
+        Matrix<Number> expectedPredMatrix = new Matrix<>(8, expectedPred);
         Number[][] expectedDist = {
-                {0,   5,    2,   3,  6, 4, 3},
-                {INF, 0  , INF, INF,  1 , INF, INF},
-                {INF, 3, 0  , INF, 4,  2,   1 },
-                {INF, INF, INF,  0 , INF, INF,  2 },
-                {INF, INF, INF, INF,  0 , INF, INF},
-                {INF,  1 , INF, INF, 2,  0 , INF},
-                {INF, INF, INF, INF, INF, INF,  0 },
+                {0,   5,    2,   3,  6, 4, 3, INF},
+                {INF, 0  , INF, INF,  1 , INF, INF, INF},
+                {INF, 3, 0  , INF, 4,  2,   1, INF },
+                {INF, INF, INF,  0 , INF, INF,  2, INF },
+                {INF, INF, INF, INF,  0 , INF, INF, INF},
+                {INF,  1 , INF, INF, 2,  0 , INF, INF},
+                {INF, INF, INF, INF, INF, INF,  0, INF },
+                {INF, INF, INF, INF, INF, INF,  INF, 0 },
         };
-        Matrix<Number> expectedDistMatrix = new Matrix<>(7, expectedDist);
-        assertEquals(expectedPredMatrix, predResult, "The predecessor matrix is correct after 2 steps");
+        Matrix<Number> expectedDistMatrix = new Matrix<>(8, expectedDist);
         assertEquals(expectedDistMatrix, distResult, "The distance matrix is correct after 2 steps");
+        assertEquals(expectedPredMatrix, predResult, "The predecessor matrix is correct after 2 steps");
     }
-
 }

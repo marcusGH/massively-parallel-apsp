@@ -3,6 +3,7 @@ package APSPSolver;
 import graphReader.GraphCompressor;
 import graphReader.GraphReader;
 import matrixMultiplication.FoxOtto;
+import matrixMultiplication.GeneralisedFoxOtto;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import util.LoggerFormatter;
@@ -91,7 +92,7 @@ class RepeatedMatrixSquaringTest {
     }
 
     @Test
-    void apspAlgorithmGivesCorrectResultOnLargeGraph() {
+    void generalisedAPSPAlgorithmGivesCorrectResultOnLargeGraph() {
         // SETUP
         GraphReader graphReader;
         try {
@@ -105,7 +106,7 @@ class RepeatedMatrixSquaringTest {
             return;
         }
         // fox otto solver
-        APSPSolver matrixSolver = new RepeatedMatrixSquaring(graphReader, FoxOtto.class);
+        APSPSolver matrixSolver = new RepeatedMatrixSquaring(graphReader, 23, GeneralisedFoxOtto.class);
         // dijkstra solver
         APSPSolver dijkstraSolver = new SerialDijkstra(graphReader);
 
@@ -122,6 +123,76 @@ class RepeatedMatrixSquaringTest {
                 // expected is first item, actual is second item
                 assertEquals(dijkstraSolver.getDistanceFrom(i, j).doubleValue(),
                         matrixSolver.getDistanceFrom(i, j).doubleValue(), 1E-5, "The distance from node " + i + " to node " + j
+                                + " is correct");
+                assertEquals(dijkstraSolver.getShortestPath(i, j), matrixSolver.getShortestPath(i, j),
+                        "The shortest path produced is correct: " + i + " -> " + j + " with dist="
+                                + matrixSolver.getDistanceFrom(i, j));
+            }
+        }
+    }
+
+    // we now test the generalised version
+
+    @Test
+    void generalizedAPSPAlgorithmGivesCorrectResultOnSmallGraph1() {
+        // SETUP
+        GraphReader graphReader;
+        try {
+            graphReader = new GraphReader("../test-datasets/7-node-example.cedge", true);
+        } catch (ParseException e) {
+            e.printStackTrace();
+            fail("The test data could not be read");
+            return;
+        }
+        // fox otto solver
+        APSPSolver matrixSolver = new RepeatedMatrixSquaring(graphReader,  2, GeneralisedFoxOtto.class);
+        // dijkstra solver
+        APSPSolver dijkstraSolver = new SerialDijkstra(graphReader);
+
+        // ACT
+        matrixSolver.solve();
+        dijkstraSolver.solve();
+
+        // ASSERT
+        for (int i = 0; i < 7; i++) {
+            for (int j = 0; j < 7; j++) {
+                // expected is first item, actual is second item
+                assertEquals(dijkstraSolver.getDistanceFrom(i, j),
+                        matrixSolver.getDistanceFrom(i, j), "The distance from node " + i + " to node " + j
+                                + " is correct");
+                assertEquals(dijkstraSolver.getShortestPath(i, j), matrixSolver.getShortestPath(i, j),
+                        "The shortest path produced is correct: " + i + " -> " + j + " with dist="
+                                + matrixSolver.getDistanceFrom(i, j));
+            }
+        }
+    }
+
+    @Test
+    void generalisedAPSPAlgorithmGivesCorrectResultOnSmallGraph2() {
+        // SETUP
+        GraphReader graphReader;
+        try {
+            graphReader = new GraphReader("../test-datasets/9-node-example.cedge", false);
+        } catch (ParseException e) {
+            e.printStackTrace();
+            fail("The test data could not be read");
+            return;
+        }
+        // fox otto solver
+        APSPSolver matrixSolver = new RepeatedMatrixSquaring(graphReader, 4, GeneralisedFoxOtto.class);
+        // dijkstra solver
+        APSPSolver dijkstraSolver = new SerialDijkstra(graphReader);
+
+        // ACT
+        matrixSolver.solve();
+        dijkstraSolver.solve();
+
+        // ASSERT
+        for (int i = 0; i < 9; i++) {
+            for (int j = 0; j < 9; j++) {
+                // expected is first item, actual is second item
+                assertEquals(dijkstraSolver.getDistanceFrom(i, j),
+                        matrixSolver.getDistanceFrom(i, j), "The distance from node " + i + " to node " + j
                                 + " is correct");
                 assertEquals(dijkstraSolver.getShortestPath(i, j), matrixSolver.getShortestPath(i, j),
                         "The shortest path produced is correct: " + i + " -> " + j + " with dist="

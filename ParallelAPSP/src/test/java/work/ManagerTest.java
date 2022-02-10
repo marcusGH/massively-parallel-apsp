@@ -4,7 +4,6 @@ import memoryModel.CommunicationChannelCongestionException;
 import memoryModel.CommunicationChannelException;
 import memoryModel.MemoryController;
 import memoryModel.PrivateMemory;
-import memoryModel.topology.SquareGridTopology;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import util.LoggerFormatter;
@@ -115,7 +114,7 @@ class ManagerTest {
         for (int i = 0; i < 50; i++) {
             // reset the memory first
             if (i != 0) {
-                m.resetMemory(initialMemory);
+                m.setPrivateMemory(initialMemory);
             }
             // then compute
             Matrix<Number> result;

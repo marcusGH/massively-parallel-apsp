@@ -30,6 +30,13 @@ public class TimedRepeatedMatrixSquaring extends RepeatedMatrixSquaring {
 
     private TimedManager timedManager;
 
+    public TimedRepeatedMatrixSquaring(GraphReader graphReader, int p, Function<Integer, Topology> topologyFunction,
+                                       Class<? extends MinPlusProduct> minPlusProductImplementation, int numRepetitionsPerPhase) {
+        super(graphReader, p, minPlusProductImplementation);
+        this.numRepetitionsPerPhase = numRepetitionsPerPhase;
+        this.topologyFunction = topologyFunction;
+    }
+
     public TimedRepeatedMatrixSquaring(GraphReader graphReader, Function<Integer, Topology> topologyFunction,
                                        Class<? extends MinPlusProduct> minPlusProductImplementation, int numRepetitionsPerPhase) {
         super(graphReader, minPlusProductImplementation);
@@ -41,10 +48,8 @@ public class TimedRepeatedMatrixSquaring extends RepeatedMatrixSquaring {
     public void solve() {
         // prepare the initial memory content
         Map<String, Matrix<Number>> initialMemory = this.prepareInitialMemory();
-        Matrix<Number> distMatrix = null;
-        Matrix<Number> predMatrix = null;
 
-        // create the manager
+        // create the timed manager
         try {
             Manager manager = new Manager(this.n, this.n, initialMemory, this.minPlusProductImplementation);
             this.timedManager = new TimedManager(manager, this.topologyFunction);
@@ -57,29 +62,7 @@ public class TimedRepeatedMatrixSquaring extends RepeatedMatrixSquaring {
             return;
         }
 
-        // repeatedly square the distance- and predecessor matrix with min-plus product
-        int numIterations = (int) Math.ceil(Math.log(this.n) / Math.log(2));
-        for (int i = 0; i < numIterations; i++) {
-            // run the algorithm
-            try {
-                this.timedManager.doWork();
-            } catch (CommunicationChannelException | WorkersFailedToCompleteException e) {
-                System.err.println("The solver encountered an error during execution: ");
-                e.printStackTrace();
-                return;
-            }
-
-            // prepare for the next iteration by updating the input to what the result from the previous iteration was
-            distMatrix = this.timedManager.getResult("dist");
-            LOGGER.fine("Distance matrix at iteration " + i + " is:\n" + distMatrix);
-            predMatrix = this.timedManager.getResult("pred", true);
-            LOGGER.fine("Pred matrix are iteration " + i + " is:\n" + predMatrix);
-            timedManager.resetMemory(Map.of("A", distMatrix, "B", distMatrix, "P", predMatrix));
-        }
-        LOGGER.log(Level.FINE, "The computed distance matrix is:\n" + distMatrix);
-        LOGGER.log(Level.FINE, "The computed predecessor matrix is:\n" + predMatrix);
-        this.predecessorMatrix = predMatrix;
-        this.distanceMatrix = distMatrix;
+        this.manageWork(this.timedManager);
     }
 
     public TimingAnalyser getTimings() {

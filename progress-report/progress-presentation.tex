@@ -1,4 +1,6 @@
 \documentclass{beamer}
+\usepackage[]{geometry,array} 
+\usepackage[]{longtable} 
 
 \usetheme{default} % Copenhagen for the cool blocks
 \def\dissertationtitle{A parallel algorithm for all-pairs shortest paths that minimises data movement}
@@ -18,14 +20,110 @@
     \frametitle{Introduction}
     % TODO: explain what the project is about here, because overseers and fellow
     %       students will have forgotten it, not know it
+    \begin{block}{What is the project about?}
+        \begin{itemize} \item Develop a parallel algorithm for solving
+            all-pairs shortest paths (APSP)
+                % This will use matrix multiplication as a subroutine
+            \item A 2D grid of processing elements and message passing
+                % Each has some private memory and can send messages to each
+                % other
+            \item Multiprocessor simulation
+            \item Parallelise a matrix multiplication, Minimise data movement with \texttt{FoxOtto}
+                % Used as a subroutine ...
+                % To implement it on..... ? TODO: rephrase and restructure
+        \end{itemize}
+    \end{block}
 \end{frame}
 
 \begin{frame}{Current state of progress}
+    \begin{block}{Timetable}
+        \begin{longtable}{m{40pt}m{75pt}m{120pt}}
+            $\dots$ & $\dots$ & $\dots$ \\
+            \hline
+            16 -- 17 & 20 Jan -- 2 Feb & \textbf{Evaluation} $\cdots$ \\
+            \hline
+            18 -- 20 & 3 Feb -- 23 Feb & \textbf{Extensions} $\cdots$ \\
+            \hline
+            21 -- $\cdots$ & 24 Feb -- $\cdots$ & \textbf{Dissertation writing} \\
+        \end{longtable}
+    \end{block}
+    \begin{block}{Current state}
     \begin{itemize}
-        \item Still working on evaluation
-        \item Maybe a week behind
-        \item ...
+            % TODO: explain this: When started doing evaluation, discovered
+            % some parts missing: some more functionality needed by the timing
+            % analyser that reads the timing data found. Additionally,
+            % difficult to get sufficiently different problem sizes in fine
+            % enough granularity with the real-world datasets I am using, so
+            % considering using random graph generation with networkX in
+            % python. These two items will probably not take too long, and I
+            % have already completed 1.5 of my extensions... Compare with
+            % timetable...
+
+            % In the timetable, I said I would be done with evaluation on 2 Feb,
+            % but there is still some work left to be done here. I have a script to
+            % extract subgraphs of real-world datasets I am using, but it's unreliable
+            % to control the problem size with this method. Need to make more
+            % measurements to get a sense of scaling, so a work item remaining is
+            % generating random graphs to do more measurements on execution time. Already found a library
+            % to do this, and plan on setting parameters based on real-world datasets I've used.
+            %
+            % Another work item on evaluation that is not strictly necessary, but
+            % is beneficial: Currently doing measurements where assume each PE take
+            % the same amount of time to finish computation, i.e. similar to SIMD, but
+            % more realistic to assume that each PE is independent, so can also
+            % measure the communication time that is waiting for message senders to
+            % finish their computation. This will only require a change in the timing wrapper around the simulator,
+            % not a change in the simulator itself. Therefore, I do not think it will take too long.
+            %
+            % Regarding the extensions, I have already completed 1.5 of them, so even
+            % though I am behind on evaluation, done some ext. Reason for doing this is
+            % that some of the evaluation work is affected my one of the extensions,
+            % so suitable to do the extension first.
+            %
+        \item Work items left on evaluation:
+            \begin{itemize}
+                \item Generate more input graphs, using random graph library
+                \item (Allow independent processing element (PE) execution in timing class)
+            \end{itemize}
+        \item Extensions done:
+            \begin{itemize}
+                % TODO: explain algorithm multiplication technique
+                \item Finished generalising simulation and FoxOtto
+                \item Halfway done with graph compression
+            \end{itemize}
     \end{itemize}
+\end{block}
+\end{frame}
+
+% So to summarise, the work remaining are
+%
+% Complete the two work items related to evaluation. After this, I will conduct some measurements and
+% plot the results for use in the writeup. Then I will finish an extension I've already started on.
+% After this, I will see how much time is left, and consider parallelising Floyd-Warshall as an additional
+% extension. With the framwork for implementing parallel algorithm set up, extending the project with other
+% algorithms does not require much implementation work. I am therefore a bit uncertain whether I should push
+% dissertation writing start back by ~1 week in favour of further extensions, like parallelising another routing
+% algorithm or implementing Cannon's algorithm.
+% 
+%
+\begin{frame}[t]
+    \frametitle{Moving forward}
+    \begin{block}{Key work items left}
+    \begin{itemize}
+        \item Finish evaluation
+            \begin{itemize}
+                \item Generate random graphs of various sizes
+                \item Allow independent processing element execution in timing wrapper % TODO: rephrease
+                \item Do execution time measurements for various problem sizes
+            \end{itemize}
+        \item Finish graph compression optimisation (extension)
+        \item (Parallelise Floyd-Warshall (extension))
+        \item Start writing dissertation? Or more extensions?
+            \begin{itemize}
+                \item 24 February in timetable
+            \end{itemize}
+    \end{itemize}
+    \end{block}
 \end{frame}
 
 \begin{frame}[t]
@@ -36,11 +134,11 @@
             \item Data preparation script and class
             \item Multiprocessor simulation
                 \begin{itemize}
-                    \item Can pass \texttt{Worker} description
+                    \item Can pass \texttt{Worker} description for \texttt{PE(i, j)}
                     \item \texttt{Manager} and \texttt{MemoryController} handles
-                        execution of \texttt{Worker}s
+                        execution of \texttt{Worker}s and their communication
                 \end{itemize}
-            \item Fox-Otto min-plus matrix multiplication
+            \item \texttt{FoxOtto} min-plus matrix multiplication
             \item Main APSP algorithm
         \end{itemize}
     \end{block}
@@ -52,27 +150,11 @@
         \end{itemize}
     \end{block}
 
-
 \end{frame}
 
-\begin{frame}[t]
-    \frametitle{Moving forward}
-    \begin{itemize}
-        \item Finish evaluation
-    \end{itemize}
-
-    % \pause
-
-    \begin{block}{Extensions}
-        \begin{itemize}
-            \item ...
-        \end{itemize}
-    \end{block}
-
-    \begin{alertblock}{Important}
-        hey
-    \end{alertblock}
+\begin{frame}[plain,c]
+    \begin{center}
+        \usebeamerfont*{frametitle} \usebeamercolor[fg]{frametitle} {\Huge Questions?}
+    \end{center}
 \end{frame}
-
-
 \end{document}

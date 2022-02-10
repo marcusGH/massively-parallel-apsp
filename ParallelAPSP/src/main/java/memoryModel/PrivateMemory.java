@@ -8,12 +8,14 @@ import java.util.Map;
 public class PrivateMemory {
     // used in case we have a 1 x 1 private memory layout
     private Map<String, Number> singleMemory;
+
     // fast access to "A", "B", and "C" because used often
     // TODO: implement
     // used in case we have a 1 x n private memory layout
     // TODO: implement
     // used in case we have a n x 1 private memory layout
     // TODO: implement
+
     // used in the general case
     private Matrix<Map<String, Number>> matrixMemory;
 
@@ -89,6 +91,10 @@ public class PrivateMemory {
             }
             return this.singleMemory.get(label);
         } else {
+            if (!this.matrixMemory.get(mi, mj).containsKey(label)) {
+                throw new IllegalStateException(String.format("matrixMemory does not contain label %s at (%d, %d), "
+                        + "only labels %s.", label, mi, mj, this.singleMemory.keySet()));
+            }
             return this.matrixMemory.get(mi, mj).get(label);
         }
     }

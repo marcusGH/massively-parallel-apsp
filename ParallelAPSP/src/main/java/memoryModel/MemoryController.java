@@ -305,6 +305,16 @@ public class MemoryController {
         // we now handle row-broadcasting
         for (int i = 0; i < this.p; i++) {
             Queue<Number> rowBroadcastDataQueue = this.rowBroadcastData.get(i);;
+
+            // check for inconsistencies
+            for (int pj = 0; pj < this.p; pj++) {
+                // no broadcaster when expected one
+                if (!this.rowBroadcastReceiveArguments.get(i, pj).isEmpty() && rowBroadcastDataQueue.isEmpty()) {
+                    throw new InconsistentCommunicationChannelUsageException("Processing element in row " + i
+                            + " did not receive any broadcasts when they expected to receive one.");
+                }
+            }
+
             while (!rowBroadcastDataQueue.isEmpty()) {
                 Number value = rowBroadcastDataQueue.poll();
                 for (int j = 0; j < this.p; j++) {
@@ -326,6 +336,16 @@ public class MemoryController {
         // we then handle column-broadcasting
         for (int j = 0; j < this.p; j++) {
             Queue<Number> colBroadcastDataQueue = this.colBroadcastData.get(j);
+
+            // check for inconsistencies
+            for (int pi = 0; pi < this.p; pi++) {
+                // no broadcaster when expected one
+                if (!this.colBroadcastReceiveArguments.get(pi, j).isEmpty() && colBroadcastDataQueue.isEmpty()) {
+                    throw new InconsistentCommunicationChannelUsageException("Processing element in row " + j
+                            + " did not receive any broadcasts when they expected to receive one.");
+                }
+            }
+
             while (!colBroadcastDataQueue.isEmpty()) {
                 Number value = colBroadcastDataQueue.poll();
                 for (int i = 0; i < this.p; i++) {
