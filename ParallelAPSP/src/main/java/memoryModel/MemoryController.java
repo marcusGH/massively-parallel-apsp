@@ -307,9 +307,9 @@ public class MemoryController {
             Queue<Number> rowBroadcastDataQueue = this.rowBroadcastData.get(i);;
 
             // check for inconsistencies
-            for (Queue<Triple<Integer, Integer, String>> receiveArgs : this.rowBroadcastReceiveArguments.toList()) {
+            for (int pj = 0; pj < this.p; pj++) {
                 // no broadcaster when expected one
-                if (!receiveArgs.isEmpty() && rowBroadcastDataQueue.isEmpty()) {
+                if (!this.rowBroadcastReceiveArguments.get(i, pj).isEmpty() && rowBroadcastDataQueue.isEmpty()) {
                     throw new InconsistentCommunicationChannelUsageException("Processing element in row " + i
                             + " did not receive any broadcasts when they expected to receive one.");
                 }
@@ -338,9 +338,9 @@ public class MemoryController {
             Queue<Number> colBroadcastDataQueue = this.colBroadcastData.get(j);
 
             // check for inconsistencies
-            for (Queue<Triple<Integer, Integer, String>> receiveArgs : this.colBroadcastReceiveArguments.toList()) {
+            for (int pi = 0; pi < this.p; pi++) {
                 // no broadcaster when expected one
-                if (!receiveArgs.isEmpty() && colBroadcastDataQueue.isEmpty()) {
+                if (!this.colBroadcastReceiveArguments.get(pi, j).isEmpty() && colBroadcastDataQueue.isEmpty()) {
                     throw new InconsistentCommunicationChannelUsageException("Processing element in row " + j
                             + " did not receive any broadcasts when they expected to receive one.");
                 }

@@ -49,11 +49,16 @@ public class GeneralisedFoxOtto extends MinPlusProduct {
         for (int i2 = 0; i2 < subMatrixSize; i2++) {
             for (int j2 = 0; j2 < subMatrixSize; j2++) {
                 // running total of least distance found so far
-                store(i2, j2, "dist", Integer.MAX_VALUE); // represents C[i, j]
+                store(i2, j2, "dist", Double.POSITIVE_INFINITY); // represents C[i, j]
                 // the "A" entry is never shifted, only broadcasted, so make a copy of it to prevent overwrite
                 store(i2, j2, "A_CONST", read(i2, j2,"A"));
                 // keep a default pred value in case we don't find any
                 store(i2, j2, "pred", read(i2, j2, "P")); // TODO: this.j or "P"? Does it make a difference?
+
+                // we are using integer weights instead
+                if (read(i2, j2, "A") instanceof Integer) {
+                    store(i2, j2, "dist", Integer.MAX_VALUE);
+                }
             }
         }
     }
@@ -71,13 +76,16 @@ public class GeneralisedFoxOtto extends MinPlusProduct {
 
                 // We are partially computing C[size * i + i2, size * j + j2] at corresponding PE, so let
                 //   i' = size * i + i2, j' = size * j + j2
-                for (int iter = 0; iter < subMatrixSize; iter++) {
+                for (int m = 0; m < subMatrixSize; m++) {
+                    // When computing C[i', j'] at l=0, which should start with k such that
+                    //   k = i'. This is to be consistent with the non-generalized version and
+                    //   is necessary to get the predecessor pointers right
+                    int iter = (i2 + m) % subMatrixSize;
                     // In this iteration, we are computing A[i', k] + B[k, j'], where
                     int k = (subMatrixSize * (i + l) + iter) % n;
 
                     double curDist = readDouble(i2, j2, "dist");
                     double otherDist = readDouble(i2, iter, "A") + readDouble(iter, j2, "B");
-
 
                     // found better distance
                     if (otherDist < curDist) {

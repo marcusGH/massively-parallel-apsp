@@ -67,7 +67,7 @@ public class RepeatedMatrixSquaring extends APSPSolver {
                     distMatrix.set(i, j, 0);
                 }
                 // from original adjacency matrix
-                if (i < super.n && j < super.n) {
+                else if (i < super.n && j < super.n) {
                     distMatrix.set(i, j, originalAdjMatrix.get(i, j));
                 }
                 // dummy node
@@ -105,7 +105,7 @@ public class RepeatedMatrixSquaring extends APSPSolver {
         // create the manager
         Manager manager;
         try {
-            manager = new Manager(this.n, this.n, initialMemory, this.minPlusProductImplementation);
+            manager = new Manager(this.n, this.p, this.p, initialMemory, this.minPlusProductImplementation);
         } catch (WorkerInstantiationException e) {
             System.err.println("The solver was not able to complete: ");
             e.printStackTrace();
@@ -163,6 +163,8 @@ public class RepeatedMatrixSquaring extends APSPSolver {
             int pred = this.predecessorMatrix.get(i, j).intValue();
             if (pred == j) {
                 throw new IllegalStateException(String.format("The predecessor matrix should not have self-references: Pred(%d, %d)=%d", i, j, pred));
+            } else if (path.size() > this.n) {
+                throw new IllegalStateException(String.format("Encountered infinite loop in path from %d to %d", i, j));
             }
             path.addFirst(j);
             j = pred;
