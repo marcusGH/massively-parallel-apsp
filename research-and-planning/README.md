@@ -315,4 +315,24 @@ Some suggestions from Prof R. Mullins:
 * TODO: need to implement a method to report on number of computation phases done, so that I
   can multiply by this in python when computing the communication time!
 
+# Notes from Feb 10
+
+* **Problem with generalized FoxOtto**: 
+  In the general version, we first started the multiplication by iterating from the top of the submatrix
+  (see diagram in notes for $C_{10,6}$ for instance). However, this causes problems for the predecessor
+  values because of the initial conditions. Consider the scenario for $C_{10,6}$ where want to compute
+  path 10 -> 10. Whenever we get to $k=10$, we would not assign predecessor because of exemption condition
+  (which is necessary, otherwise we get other bugs). And at this point ($k=10$) we discover path of length
+  0. However, because of the generalization, we start with $k=8$ (ref. to diagram), so we find another
+  path of longer length, and when we get to $k=10$, we optimize the path, but leave the predecessor as
+  it was for the longer path because of the exemption condition. One fix is to save the initial "dist"
+  and not use $\infty$ every time. Another option is making sure we start with $k=10$ when running algo
+  i.e. being consistent with non-general version. That way, we immediately relax distance to 0 and keep
+  the initial predecessor, this.j (or read("P") which is same thing). This is the option I went for,
+  and is the reasoning behind the `m` loop and then modifying `iter`.
+* In `CountingMemoryController`, we assume that each PE only sends data to **one** other PE, but this is
+  NOT CHECKED anywhere. However, it is enforced in underlying memory controller that each PE can only
+  receive from **one** other PE, which is not equivilant, but in _most cases_ (all PE do the same thing)
+  causes the above assumption to hold.
+
 <!-- vim: set nospell: -->
