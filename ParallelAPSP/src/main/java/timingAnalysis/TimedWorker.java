@@ -16,7 +16,7 @@ public class TimedWorker extends Worker {
     private static final Logger LOGGER = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
 
     private final ThreadMXBean threadMXBean;
-    private long accumulatedElapsedTime;
+    private long elapsedTime;
     private final Worker worker;
 
     private boolean average_compute;
@@ -31,7 +31,7 @@ public class TimedWorker extends Worker {
         this.worker = worker;
         // there's only one instance of this, so all TimedWorkers hold the same reference
         this.threadMXBean = ManagementFactory.getThreadMXBean();
-        this.accumulatedElapsedTime = 0;
+        this.elapsedTime = 0L;
         this.average_compute = false;
     }
 
@@ -62,6 +62,9 @@ public class TimedWorker extends Worker {
 
             // time the computation
             long elapsedTime = -1;
+
+            // TODO: this does not work for generalized version. Suggested fix: Change the worker method for set
+            //  and make it only do something if some flag enabled. Then disable the flag from here!
             if (this.average_compute) {
                 // do the computation once, and reset memory, such that we don't get a cache miss
                 double oldDist = this.getPrivateMemory().get(0, 0, "dist").doubleValue();
@@ -82,7 +85,7 @@ public class TimedWorker extends Worker {
             long elapsedTimeNonAverage = this.threadMXBean.getCurrentThreadCpuTime() - timeBefore;
 
             // and save it for later
-            this.accumulatedElapsedTime += this.average_compute ? elapsedTime : elapsedTimeNonAverage;
+            this.elapsedTime += this.average_compute ? elapsedTime : elapsedTimeNonAverage;
 
             return null;
         };
@@ -94,6 +97,10 @@ public class TimedWorker extends Worker {
     }
 
     long getElapsedTime() {
-        return this.accumulatedElapsedTime;
+        return this.elapsedTime;
+    }
+
+    void resetElapsedTime() {
+        this.elapsedTime = 0L;
     }
 }

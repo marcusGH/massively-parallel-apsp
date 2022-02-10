@@ -37,6 +37,7 @@ public class TimedManager extends Manager {
 
         // decorate the memory controller and use it with dynamic dispatch
         Topology topology = memoryTopology.apply(this.p);
+        // TODO: work from here....
         this.countingMemoryController = new CountingMemoryController(manager.getMemoryController(), topology);
         this.setMemoryController(this.countingMemoryController);
 
@@ -61,10 +62,6 @@ public class TimedManager extends Manager {
         }
     }
 
-    public void disableCommunicationTrackingAfterNPhases(int n) {
-        this.countingMemoryController.disableAfterNPhases(n);
-    }
-
     /**
      * Returns a list with one entry for each computation phase. Every entry is a matrix where entry (i, j) is the
      * time in nanoseconds processing element PE(i, j) took to complete its computation.
@@ -78,26 +75,6 @@ public class TimedManager extends Manager {
             }
         }
         return computationTimes;
-    }
-
-    /**
-     * Note that every even-numbered item in the returned list will be statistics from the COMMUNICATION_BEFORE
-     * phase and every odd-numbered item will be statistics from the COMMUNICATION_AFTER phase.
-     * @return a list with 2*n elements, where n is the number of work phases
-     */
-    public List<Matrix<Integer>> getPointToPointCommunicationTimes() {
-        assert this.countingMemoryController.getPointToPointCosts().size() % 2 == 0;
-        return this.countingMemoryController.getPointToPointCosts();
-    }
-
-    public List<List<Integer>> getRowBroadcastCommunicationTimes() {
-        assert this.countingMemoryController.getRowBroadcastCounts().size() % 2 == 0;
-        return this.countingMemoryController.getRowBroadcastCounts();
-    }
-
-    public List<List<Integer>> getColBroadcastCommunicationTimes() {
-        assert this.countingMemoryController.getColBroadcastCounts().size() % 2 == 0;
-        return this.countingMemoryController.getColBroadcastCounts();
     }
 
     public static void main(String[] args) {

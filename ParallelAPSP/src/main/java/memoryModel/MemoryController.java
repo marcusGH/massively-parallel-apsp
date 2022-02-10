@@ -45,21 +45,21 @@ import java.util.function.Function;
  */
 public class MemoryController {
     private int p;
-    private Matrix<PrivateMemory> privateMemories;
+    protected Matrix<PrivateMemory> privateMemories;
 
     // broadcasting
     private final List<Queue<Number>> colBroadcastData;
     private final List<Queue<Number>> rowBroadcastData;
     // IDs of the PEs using the row- and column broadcast highways
-    private final List<Optional<Pair<Integer, Integer>>> colBroadcasterID;
-    private final List<Optional<Pair<Integer, Integer>>> rowBroadcasterID;
+    protected final List<Optional<Pair<Integer, Integer>>> colBroadcasterID;
+    protected final List<Optional<Pair<Integer, Integer>>> rowBroadcasterID;
     private final Matrix<Queue<Triple<Integer, Integer, String>>> rowBroadcastReceiveArguments;
     private final Matrix<Queue<Triple<Integer, Integer, String>>> colBroadcastReceiveArguments;
 
     // point-to-point communications
     private final Matrix<Queue<Number>> sentData;
     // item (i, j) gives ID of the sender of the data destined to PE(i, j)
-    private final Matrix<Optional<Pair<Integer, Integer>>> senderToRecipientID;
+    protected final Matrix<Optional<Pair<Integer, Integer>>> senderToRecipientID;
     private final Matrix<Queue<Triple<Integer, Integer, String>>> receiveArguments;
 
     public int getProcessingElementGridSize() {
