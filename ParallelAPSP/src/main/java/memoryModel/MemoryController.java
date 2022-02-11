@@ -9,6 +9,7 @@ import util.Triple;
 
 import java.util.*;
 import java.util.function.Function;
+import java.util.logging.Logger;
 
 // TODO: switch from synchronised to thread-safe queues etc.
 
@@ -44,6 +45,9 @@ import java.util.function.Function;
  * </p>
  */
 public class MemoryController {
+
+    private static final Logger LOGGER = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
+
     private int p;
     protected Matrix<PrivateMemory> privateMemories;
 
@@ -322,8 +326,14 @@ public class MemoryController {
                     Triple<Integer, Integer, String> args = rowReceiveArgumentsQueue.poll();
                     // nothing to do
                     if (value == null && args == null) continue;
+                    // there is data in the highway, but we are not interested in it
+                    if (args == null) {
+                        LOGGER.fine(String.format("Processing element PE(%d, %d) did pick up data from row broadcast away when" +
+                                " there was data available.", i, j));
+                        continue;
+                    }
                     // look for inconsistencies
-                    if (value == null || args == null) {
+                    if (value == null) {
                         throw new InconsistentCommunicationChannelUsageException("Processing element PE(" + i + ", " + j
                                 + ") did not receive as many data items as it specified it would receive through row broadcast");
                     } else {
@@ -353,8 +363,14 @@ public class MemoryController {
                     Triple<Integer, Integer, String> args = colReceiveArgumentsQueue.poll();
                     // nothing to do
                     if (value == null && args == null) continue;
+                    // there is data in the highway, but we are not interested in it
+                    if (args == null) {
+                        LOGGER.fine(String.format("Processing element PE(%d, %d) did pick up data from column broadcast away when" +
+                                " there was data available.", i, j));
+                        continue;
+                    }
                     // look for inconsistencies
-                    if (value == null || args == null) {
+                    if (value == null) {
                         throw new InconsistentCommunicationChannelUsageException("Processing element PE(" + i + ", " + j
                                 + ") did not receive as many data items as it specified it would receive through column broadcast");
                     } else {
