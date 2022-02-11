@@ -43,6 +43,12 @@ public class FoxOtto extends MinPlusProduct {
      */
     @Override
     public void initialise() {
+        // This is not the first management of this worker, so recall input (see main-loop in RepeatedMatrixSquaring)
+        if (presentInMemory("dist")) {
+            store("A", read("dist"));
+            store("B", read("dist"));
+            store("P", read("pred"));
+        }
         // running total of least distance found so far
         store("dist", Double.POSITIVE_INFINITY); // represents C[i, j]
         // the "A" entry is never shifted, only broadcasted, so make a copy of it to prevent overwrite
