@@ -80,9 +80,11 @@ public class TimedWorker extends Worker {
                 elapsedTime = (this.threadMXBean.getCurrentThreadCpuTime() - timeBefore) / average_num_iters;
             }
             // we need to do computation again anyways to save the result
-            long timeBefore = this.threadMXBean.getCurrentThreadCpuTime();
+//            long timeBefore = this.threadMXBean.getCurrentThreadCpuTime();
+            long timeBefore = System.nanoTime();
             computation(l);
             long elapsedTimeNonAverage = this.threadMXBean.getCurrentThreadCpuTime() - timeBefore;
+            elapsedTimeNonAverage = System.nanoTime() - timeBefore;
 
             // and save it for later
             this.elapsedTime += this.average_compute ? elapsedTime : elapsedTimeNonAverage;
@@ -91,6 +93,13 @@ public class TimedWorker extends Worker {
         };
     }
 
+    /**
+     * TODO: docs, explain that use system nanotime in non-average version because allow easier testing
+     *   enabling this is therefore switching to an improved way of timing the threads as also use
+     *   Thread.BeanTime()
+     *
+     * @param num_iterations
+     */
     void enableAverageComputeTimes(int num_iterations) {
         this.average_compute = true;
         this.average_num_iters = num_iterations;

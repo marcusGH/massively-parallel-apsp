@@ -29,12 +29,14 @@ public class TimedRepeatedMatrixSquaring extends RepeatedMatrixSquaring {
     private final Function<Integer, Topology> topologyFunction;
 
     private TimedManager timedManager;
+    private final MultiprocessorAttributes multiprocessorAttributes;
 
     public TimedRepeatedMatrixSquaring(GraphReader graphReader, int p, Function<Integer, Topology> topologyFunction,
                                        Class<? extends MinPlusProduct> minPlusProductImplementation, int numRepetitionsPerPhase) {
         super(graphReader, p, minPlusProductImplementation);
         this.numRepetitionsPerPhase = numRepetitionsPerPhase;
         this.topologyFunction = topologyFunction;
+        this.multiprocessorAttributes = new MultiprocessorAttributes();
     }
 
     public TimedRepeatedMatrixSquaring(GraphReader graphReader, Function<Integer, Topology> topologyFunction,
@@ -42,6 +44,7 @@ public class TimedRepeatedMatrixSquaring extends RepeatedMatrixSquaring {
         super(graphReader, minPlusProductImplementation);
         this.numRepetitionsPerPhase = numRepetitionsPerPhase;
         this.topologyFunction = topologyFunction;
+        this.multiprocessorAttributes = new MultiprocessorAttributes();
     }
 
     @Override
@@ -52,10 +55,10 @@ public class TimedRepeatedMatrixSquaring extends RepeatedMatrixSquaring {
         // create the timed manager
         try {
             Manager manager = new Manager(this.n, this.n, initialMemory, this.minPlusProductImplementation);
-            this.timedManager = new TimedManager(manager, this.topologyFunction);
+            this.timedManager = new TimedManager(manager, this.multiprocessorAttributes, this.topologyFunction);
             this.timedManager.enableFoxOttoTimeAveraging(this.numRepetitionsPerPhase);
             // the communication is the same at each before and after phase, so only save one of each
-            this.timedManager.disableCommunicationTrackingAfterNPhases(2);
+//            this.timedManager.disableCommunicationTrackingAfterNPhases(2);
         } catch (WorkerInstantiationException e) {
             System.err.println("The solver was not able to complete: ");
             e.printStackTrace();
@@ -65,14 +68,14 @@ public class TimedRepeatedMatrixSquaring extends RepeatedMatrixSquaring {
         this.manageWork(this.timedManager);
     }
 
-    public TimingAnalyser getTimings() {
-        // use the analyser
-        TimingAnalyser timingAnalyser = new TimingAnalyser(this.timedManager, TimingAnalyser.ACER_NITRO_CPU_CYCLES_PER_NANOSECOND,
-                TimingAnalyser.POINT_TO_POINT_SEND_CLOCK_CYCLES, TimingAnalyser.BROADCAST_CLOCK_CYCLES,
-                64, 64);
-//        timingAnalyser.getComputationTimes();
-        return timingAnalyser;
-    }
+//    public TimingAnalyser getTimings() {
+//        // use the analyser
+//        TimingAnalyser timingAnalyser = new TimingAnalyser(this.timedManager, TimingAnalyser.ACER_NITRO_CPU_CYCLES_PER_NANOSECOND,
+//                TimingAnalyser.POINT_TO_POINT_SEND_CLOCK_CYCLES, TimingAnalyser.BROADCAST_CLOCK_CYCLES,
+//                64, 64);
+////        timingAnalyser.getComputationTimes();
+//        return timingAnalyser;
+//    }
 
     public static void main(String[] args) {
         String filename = "SF-d-70";
@@ -107,12 +110,14 @@ public class TimedRepeatedMatrixSquaring extends RepeatedMatrixSquaring {
         //       causing memory lookup to be way to fast? Might be more fair to do the computation once, and then again
         //       with the timing -> Can also be justified!
 
-        TimingAnalyser timingAnalyser = solver.getTimings();
-        try {
-            timingAnalyser.saveTimings("../evaluation/timing-data/" + filename);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+//        TimingAnalyser timingAnalyser = solver.getTimings();
+//        try {
+//            timingAnalyser.saveTimings("../evaluation/timing-data/" + filename);
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+
+        // TODO TODO TODO: fix all of this
 
     }
 }

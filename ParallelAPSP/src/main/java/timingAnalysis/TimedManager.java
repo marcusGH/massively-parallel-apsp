@@ -11,8 +11,6 @@ import work.WorkerInstantiationException;
 import work.WorkersFailedToCompleteException;
 
 import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
@@ -22,27 +20,31 @@ public class TimedManager extends Manager {
     private final Matrix<TimedWorker> timedWorkers;
     private final CountingMemoryController countingMemoryController;
 
-
     /**
-     *  TODO: documentation
+     * Decorates a passed Manager object with functionality to measure the computation time and estimate the
+     * communication time of the workers managed by the passer manager. These execution times can be returned
+     * after the manager has completed its work.
      *
-     * @param manager
+     * @param manager the manager to decorate
+     * @param multiprocessorAttributes a specification of the communication and computation hardware used
      * @param memoryTopology a constructor taking a non-negative integer and giving an object that subtypes Topology
-     * @throws WorkerInstantiationException
+     * @throws WorkerInstantiationException if the timed workers fail to instantiate
      */
-    public TimedManager(Manager manager, Function<Integer, ? extends Topology> memoryTopology) throws WorkerInstantiationException {
+    public TimedManager(Manager manager, MultiprocessorAttributes multiprocessorAttributes,
+                        Function<Integer, ? extends Topology> memoryTopology) throws WorkerInstantiationException {
         super(manager);
 
         this.p = manager.getProcessingElementGridSize();
 
-        // decorate the memory controller and use it with dynamic dispatch
+        // We decorate the memory controller with timing analyses functionality
         Topology topology = memoryTopology.apply(this.p);
-        // TODO: work from here....
-        this.countingMemoryController = new CountingMemoryController(manager.getMemoryController(), topology);
+        this.timedWorkers = new Matrix<>(this.p);
+        this.countingMemoryController = new CountingMemoryController(manager.getMemoryController(),
+                this.timedWorkers, topology, multiprocessorAttributes);
+        // then use it instead of the existing one with dynamic dispatch
         this.setMemoryController(this.countingMemoryController);
 
-        // decorate all the workers
-        this.timedWorkers = new Matrix<>(this.p);
+        // decorate all the workers with timing behaviour
         for (int i = 0; i < this.p; i++) {
             for (int j = 0; j < this.p; j++) {
                 // save a reference so we can extract times later
@@ -62,19 +64,32 @@ public class TimedManager extends Manager {
         }
     }
 
-    /**
-     * Returns a list with one entry for each computation phase. Every entry is a matrix where entry (i, j) is the
-     * time in nanoseconds processing element PE(i, j) took to complete its computation.
-     * @return a list of matrix containing times
-     */
-    public Matrix<Long> getComputationTimes() {
-        Matrix<Long> computationTimes = new Matrix<>(this.p);
+    public Matrix<Double> getComputationTimes() {
+        return this.countingMemoryController.getWorkerComputationTimes();
+    }
+
+    public Matrix<Double> getTotalCommunicationTimes() {
+        Matrix<Double> communicationTimes = new Matrix<>(this.countingMemoryController.getWorkerCommunicationTimes());
+        // add time the workers stall
         for (int i = 0; i < this.p; i++) {
             for (int j = 0; j < this.p; j++) {
-                computationTimes.set(i, j, this.timedWorkers.get(i, j).getElapsedTime());
+                communicationTimes.set(i, j, communicationTimes.get(i, j) +
+                        this.countingMemoryController.getWorkerStallTimes().get(i, j));
             }
         }
-        return computationTimes;
+        return communicationTimes;
+    }
+
+    public Matrix<Double> getStallTimes() {
+        return this.countingMemoryController.getWorkerStallTimes();
+    }
+
+    public Matrix<Double> getSendTimes() {
+        return this.countingMemoryController.getWorkerCommunicationTimes();
+    }
+
+    public Matrix<Double> getTotalExecutionTimes() {
+        return this.countingMemoryController.getTotalWorkerTimes();
     }
 
     public static void main(String[] args) {
@@ -95,7 +110,7 @@ public class TimedManager extends Manager {
         // decorate it
         TimedManager timedManager;
         try {
-            timedManager = new TimedManager(manager, SquareGridTopology::new);
+            timedManager = new TimedManager(manager, new MultiprocessorAttributes(), SquareGridTopology::new);
         } catch (WorkerInstantiationException e) {
             e.printStackTrace();
             return;
@@ -110,11 +125,8 @@ public class TimedManager extends Manager {
 
         System.out.println(timedManager.getResult("dist"));
         System.out.println(timedManager.getComputationTimes());
+        System.out.println("---");
+        System.out.println(timedManager.getTotalCommunicationTimes());
 
-        for (int i = 0; i < timedManager.getComputationTimes().size(); i++) {
-            System.out.println("Times for iteration " + i + ":");
-            System.out.println(timedManager.getPointToPointCommunicationTimes().get(i));
-            System.out.println("---");
-        }
     }
 }

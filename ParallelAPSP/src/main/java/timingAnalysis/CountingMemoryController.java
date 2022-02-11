@@ -7,6 +7,7 @@ import memoryModel.MemoryController;
 import memoryModel.topology.Topology;
 import util.Matrix;
 
+import javax.management.MBeanAttributeInfo;
 import java.util.*;
 
 /**
@@ -46,11 +47,14 @@ public class CountingMemoryController extends MemoryController {
     private final Matrix<Double> cumulativeWorkerStallTimes;
     private final Matrix<Double> cumulativeWorkerComputationTimes;
 
+    // keep track of number of bytes sent, so can compute with bandwidth later
     private final Matrix<Integer> workerBytesSent;
     private final Matrix<Integer> workerRowBroadcastBytesSent;
     private final Matrix<Integer> workerColBroadcastBytesSent;
 
     private final Matrix<Integer> sendingDistance;
+    private final Matrix<Boolean> isReceivingRowBroadcast;
+    private final Matrix<Boolean> isReceivingColBroadcast;
 
     private final Matrix<TimedWorker> timedWorkers;
 
@@ -85,7 +89,9 @@ public class CountingMemoryController extends MemoryController {
         this.workerColBroadcastBytesSent = new Matrix<>(this.p, () -> 0);
 
         // keep track of sending distance, based on topology
-        this.sendingDistance = new Matrix<>(this.p);
+        this.sendingDistance = new Matrix<>(this.p, () -> 0);
+        this.isReceivingRowBroadcast = new Matrix<>(this.p, () -> false);
+        this.isReceivingColBroadcast = new Matrix<>(this.p, () -> false);
 
         // for convenience
         this.communicationPhasesCompleted = 0;
@@ -153,6 +159,22 @@ public class CountingMemoryController extends MemoryController {
     }
 
     @Override
+    public void receiveRowBroadcast(int i, int j, int mi, int mj, String label) {
+        synchronized (this.isReceivingRowBroadcast) {
+            this.isReceivingRowBroadcast.set(i, j, true);
+        }
+        super.receiveRowBroadcast(i, j, mi, mj, label);
+    }
+
+    @Override
+    public void receiveColBroadcast(int i, int j, int mi, int mj, String label) {
+        synchronized (this.isReceivingColBroadcast) {
+            this.isReceivingColBroadcast.set(i, j, true);
+        }
+        super.receiveColBroadcast(i, j, mi, mj, label);
+    }
+
+    @Override
     public synchronized void flush() throws InconsistentCommunicationChannelUsageException {
         // We first add all the communication time associated with sending/broadcasting data (not counting stalls)
         //   as well as time spent on any computation phases between this flush and the previous one
@@ -203,8 +225,13 @@ public class CountingMemoryController extends MemoryController {
                 // first find the time we need to stall, looking at Worker[i, j] as a receiver
                 double stallTime = 0.0;
 
-                List<Optional<Pair<Integer, Integer>>> senderIDs = Arrays.asList(
-                        senderToRecipientID.get(i, j), rowBroadcasterID.get(i), colBroadcasterID.get(j));
+                List<Optional<Pair<Integer, Integer>>> senderIDs = new ArrayList<>(Collections.singleton(senderToRecipientID.get(i, j)));
+                if (this.isReceivingColBroadcast.get(i, j)) {
+                    senderIDs.add(colBroadcasterID.get(j));
+                }
+                if (this.isReceivingRowBroadcast.get(i, j)) {
+                    senderIDs.add(rowBroadcasterID.get(i));
+                }
                 for (Optional<Pair<Integer, Integer>> id : senderIDs) {
                     // we look at all the possible senders that are sending to Worker[i, j] and then find the one
                     //   sending at the latest possible time, and find the stall wait caused by that
@@ -227,6 +254,8 @@ public class CountingMemoryController extends MemoryController {
         this.workerBytesSent.setAll(() -> 0);
         this.workerRowBroadcastBytesSent.setAll(() -> 0);
         this.workerColBroadcastBytesSent.setAll(() -> 0);
+        this.isReceivingRowBroadcast.setAll(() -> false);
+        this.isReceivingColBroadcast.setAll(() -> false);
 
         // the actual functionality must be performed last because it resets the sender IDs, that we use above
         super.flush();
@@ -234,5 +263,21 @@ public class CountingMemoryController extends MemoryController {
 
     public int getCommunicationPhasesCompleted() {
         return communicationPhasesCompleted;
+    }
+
+    public Matrix<Double> getTotalWorkerTimes() {
+        return currentWorkerTimes;
+    }
+
+    public Matrix<Double> getWorkerCommunicationTimes() {
+        return cumulativeWorkerCommunicationTimes;
+    }
+
+    public Matrix<Double> getWorkerStallTimes() {
+        return cumulativeWorkerStallTimes;
+    }
+
+    public Matrix<Double> getWorkerComputationTimes() {
+        return cumulativeWorkerComputationTimes;
     }
 }

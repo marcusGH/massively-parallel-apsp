@@ -9,10 +9,11 @@ public class MultiprocessorAttributes {
 
     // cat /proc/cpuinfo | grep GHz
     public static final double ACER_NITRO_CPU_CYCLES_PER_NANOSECOND = 2.3; // 2.3GHz
+    public static final double ACER_NITRO_CPU_CYCLES_PER_SECOND = 2_300_000_000.0;
     public static final int POINT_TO_POINT_SEND_CLOCK_CYCLES = 75;
     public static final int BROADCAST_CLOCK_CYCLES = POINT_TO_POINT_SEND_CLOCK_CYCLES;
+    public static final int DEFAULT_BANDWIDTH_PER_CYCLE = 8; // one 64 bit register per clock cycle
 
-    private static final int WORD_SIZE = 4; // 32 bits
     private static final long SEC_TO_NANO = 1_000_000_000;
 
     // measured in seconds
@@ -39,25 +40,30 @@ public class MultiprocessorAttributes {
         this.broadcast_bandwidth = broadcast_bandwidth_bytes_per_cycle * cpu_cps;
     }
 
+    public MultiprocessorAttributes() {
+        this(ACER_NITRO_CPU_CYCLES_PER_SECOND, POINT_TO_POINT_SEND_CLOCK_CYCLES, BROADCAST_CLOCK_CYCLES,
+                DEFAULT_BANDWIDTH_PER_CYCLE, DEFAULT_BANDWIDTH_PER_CYCLE);
+    }
+
     /**
      * Returns time in nanoseconds
      *
-     * @param num_words
+     * @param num_bytes
      * @param is_broadcast
      * @param no_latency
      * @return
      */
-    public double getSendTime(int num_words, boolean is_broadcast, boolean no_latency) {
+    public double getSendTime(int num_bytes, boolean is_broadcast, boolean no_latency) {
         // special case
-        if (num_words == 0) {
-            return 0L;
+        if (num_bytes == 0) {
+            return 0.0;
         }
         if (is_broadcast) {
             double latency = no_latency ? 0 : this.broadcast_latency;
-            return (latency + (num_words * WORD_SIZE / this.broadcast_bandwidth)) * SEC_TO_NANO;
+            return (latency + (num_bytes / this.broadcast_bandwidth)) * SEC_TO_NANO;
         } else {
             double latency = no_latency ? 0 : this.p2p_latency;
-            return (latency + (num_words * WORD_SIZE / this.p2p_bandwidth)) * SEC_TO_NANO;
+            return (latency + (num_bytes / this.p2p_bandwidth)) * SEC_TO_NANO;
         }
     }
 

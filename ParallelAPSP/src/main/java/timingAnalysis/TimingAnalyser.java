@@ -60,172 +60,172 @@ public class TimingAnalyser {
         // TODO: add other constructor for this variant
     }
 
-    private LongSummaryStatistics getStatsSummary(Matrix<Long> matrix) {
-        return matrix.toList().stream().collect(
-                LongSummaryStatistics::new,
-                LongSummaryStatistics::accept,
-                LongSummaryStatistics::combine);
-    }
-
-    private double getDeviation(Matrix<? extends Number> matrix) {
-        double sum = 0.0;
-        double mean = matrix.toList().stream().mapToDouble(Number::doubleValue).average().orElse(-1);
-        if (mean == -1) {
-            throw new RuntimeException("Provided matrix is empty");
-        }
-        for (Number n : matrix.toList()) {
-            sum += Math.pow(Math.abs(n.doubleValue() - mean), 2);
-        }
-
-        return Math.sqrt(sum / (matrix.size() * matrix.size()));
-    }
-
-    public void printComputationTimesSummary() {
-        Matrix<Long> computationTimes = this.timedManager.getComputationTimes();
-        System.out.println(computationTimes);
-    }
-
-    private double get_send_time(int num_words, boolean is_broadcast) {
-        // special case
-        if (num_words == 0) {
-            return 0.0;
-        }
-        if (is_broadcast) {
-            return this.broadcast_latency + (num_words * this.word_size / this.broadcast_bandwidth);
-        } else {
-            return this.p2p_latency + (num_words * this.word_size / this.p2p_bandwidth);
-        }
-    }
-
-    private List<List<Double>> getPointToPointCommunicationTimes() {
-        return this.timedManager.getPointToPointCommunicationTimes().stream()
-                .map(Matrix::toList)
-                // Find time it takes to do this communication from each PE
-                .map(l -> l.stream()
-                        .mapToDouble(t -> get_send_time(t, false)).boxed()
-                        // TODO: this runs out of heap space, so instead just iterate the list and write to file!
-                        // TODO: another todo is to make the TImedManager write to file every now and then such that
-                        //       the arrays don't grow massive
-                        .collect(Collectors.toList()))
-                .collect(Collectors.toList());
-    }
-
-    private List<List<Double>> getBroadcastCommunicationTimes(List<List<Integer>> broadcastCounts) {
-        return broadcastCounts.stream()
-                .map(l -> l.stream()
-                        .mapToDouble(t -> get_send_time(t, true)).boxed()
-                        .collect(Collectors.toList()))
-                .collect(Collectors.toList());
-    }
-
-    private List<Double> getComputationTimes() {
-        return this.timedManager.getComputationTimes().toList().stream()
-                .mapToDouble(Long::doubleValue).boxed()
-                .collect(Collectors.toList());
-    }
-
-    public void saveTimings(String file_basename) throws IOException {
-        Path computation_file = Paths.get(file_basename + "_computation.csv");
-        Path communication_file = Paths.get(file_basename + "_communication.csv");
-
-        // TODO: work from here, after limiting communication time output
-        List<Double> computationTimes = getComputationTimes();
-        List<List<Double>> p2pTimes = getPointToPointCommunicationTimes();
-        List<List<Double>> rowTimes = getBroadcastCommunicationTimes(this.timedManager.getRowBroadcastCommunicationTimes());
-        List<List<Double>> colTimes = getBroadcastCommunicationTimes(this.timedManager.getColBroadcastCommunicationTimes());
-
-        // create the content to write
-        List<String> computationLines = Collections.singletonList("computation,computation," +
-                computationTimes.stream().map(String::valueOf).collect(Collectors.joining(",")));
-
-        List<String> communicationLines = new ArrayList<>();
-        for (int i = 0; i < p2pTimes.size(); i++) {
-            String com_type = ((i % 2 == 0) ? "communication_before" : "communication_after");
-            communicationLines.add((i / 2) + "," + com_type + ",point_to_point, "
-                    + p2pTimes.get(i).stream()
-                    .map(String::valueOf)
-                    .collect(Collectors.joining(", ")));
-            communicationLines.add((i / 2) + "," + com_type + ",row_broadcast, "
-                    + rowTimes.get(i).stream()
-                    .map(String::valueOf)
-                    .collect(Collectors.joining(", ")) + ",".repeat(this.n * this.n - this.n));
-            communicationLines.add((i / 2) + "," + com_type + ",col_broadcast, "
-                    + colTimes.get(i).stream()
-                    .map(String::valueOf)
-                    .collect(Collectors.joining(", ")) + ",".repeat(this.n * this.n - this.n));
-        }
-
-        // write the content
-        Files.write(computation_file, computationLines, StandardCharsets.UTF_8);
-        Files.write(communication_file, communicationLines, StandardCharsets.UTF_8);
-    }
-
-    // TODO: it would be better for this class to just print out lists of numbers, one line for each computation phase
-    //       and there's separate files for each type of timing. We then do the aggregation with mean, std, the plotting
-    //       etc. in python. It can also be useful to run the algorithm many times, producing many files such that we can
-    //       average across all "phase 1"s in python when doing the analysis.
-
-    public static void main(String[] args) {
-        final int INF = Integer.MAX_VALUE;
-
-        // the graph we're working with
-        Number[][] adjacencyGrid = {
-                {0,   6,    2,   3,  INF, INF, INF},
-                {INF, 0  , INF, INF,  1 , INF, INF},
-                {INF, INF, 0  , INF, INF,  2,   1 },
-                {INF, INF, INF,  0 , INF, INF,  2 },
-                {INF, INF, INF, INF,  0 , INF, INF},
-                {INF,  1 , INF, INF, INF,  0 , INF},
-                {INF, INF, INF, INF, INF, INF,  0 },
-        };
-        Matrix<Number> adjMatrix = new Matrix<Number>(7, adjacencyGrid);
-        // setup the predecessor matrix
-        Matrix<Number> predMatrix = new Matrix<>(7);
-        for (int i = 0; i < 7; i++) {
-            for (int j = 0; j < 7; j++) {
-                if (INF == adjMatrix.get(i, j).intValue()) {
-                    predMatrix.set(i, j, j);
-                } else {
-                    predMatrix.set(i, j, i);
-                }
-
-            }
-        }
-        // and put the two as initial memory content
-        Map<String, Matrix<Number>> initialMemory = new HashMap<>();
-        initialMemory.put("A", adjMatrix);
-        initialMemory.put("B", adjMatrix);
-        initialMemory.put("P", predMatrix);
-
-        // create the timing manager
-        TimedManager timedManager;
-        try {
-            Manager manager = new Manager(7, 7, initialMemory, FoxOtto.class);
-            timedManager = new TimedManager(manager, SquareGridTopology::new);
-            timedManager.enableFoxOttoTimeAveraging(10);
-        } catch (WorkerInstantiationException e) {
-            e.printStackTrace();
-            return;
-        }
-
-        try {
-            // compute the next matrix
-            timedManager.doWork();
-        } catch (CommunicationChannelException | WorkersFailedToCompleteException e) {
-            e.printStackTrace();
-            return;
-        }
-
-        // print statistics
-        TimingAnalyser timingAnalyser = new TimingAnalyser(timedManager, TimingAnalyser.ACER_NITRO_CPU_CYCLES_PER_NANOSECOND,
-                TimingAnalyser.POINT_TO_POINT_SEND_CLOCK_CYCLES, TimingAnalyser.BROADCAST_CLOCK_CYCLES,
-                64, 64);
-
-        timingAnalyser.printComputationTimesSummary();
-//        try {
-//            timingAnalyser.saveTimings("../evaluation/timing-data/test-file");
-//        } catch (IOException e) {
-//            e.printStackTrace();
+//    private LongSummaryStatistics getStatsSummary(Matrix<Long> matrix) {
+//        return matrix.toList().stream().collect(
+//                LongSummaryStatistics::new,
+//                LongSummaryStatistics::accept,
+//                LongSummaryStatistics::combine);
+//    }
+//
+//    private double getDeviation(Matrix<? extends Number> matrix) {
+//        double sum = 0.0;
+//        double mean = matrix.toList().stream().mapToDouble(Number::doubleValue).average().orElse(-1);
+//        if (mean == -1) {
+//            throw new RuntimeException("Provided matrix is empty");
 //        }
-    }
+//        for (Number n : matrix.toList()) {
+//            sum += Math.pow(Math.abs(n.doubleValue() - mean), 2);
+//        }
+//
+//        return Math.sqrt(sum / (matrix.size() * matrix.size()));
+//    }
+//
+//    public void printComputationTimesSummary() {
+//        Matrix<Long> computationTimes = this.timedManager.getComputationTimes();
+//        System.out.println(computationTimes);
+//    }
+//
+//    private double get_send_time(int num_words, boolean is_broadcast) {
+//        // special case
+//        if (num_words == 0) {
+//            return 0.0;
+//        }
+//        if (is_broadcast) {
+//            return this.broadcast_latency + (num_words * this.word_size / this.broadcast_bandwidth);
+//        } else {
+//            return this.p2p_latency + (num_words * this.word_size / this.p2p_bandwidth);
+//        }
+//    }
+//
+//    private List<List<Double>> getPointToPointCommunicationTimes() {
+//        return this.timedManager.getPointToPointCommunicationTimes().stream()
+//                .map(Matrix::toList)
+//                // Find time it takes to do this communication from each PE
+//                .map(l -> l.stream()
+//                        .mapToDouble(t -> get_send_time(t, false)).boxed()
+//                        // TODO: this runs out of heap space, so instead just iterate the list and write to file!
+//                        // TODO: another todo is to make the TImedManager write to file every now and then such that
+//                        //       the arrays don't grow massive
+//                        .collect(Collectors.toList()))
+//                .collect(Collectors.toList());
+//    }
+//
+//    private List<List<Double>> getBroadcastCommunicationTimes(List<List<Integer>> broadcastCounts) {
+//        return broadcastCounts.stream()
+//                .map(l -> l.stream()
+//                        .mapToDouble(t -> get_send_time(t, true)).boxed()
+//                        .collect(Collectors.toList()))
+//                .collect(Collectors.toList());
+//    }
+//
+//    private List<Double> getComputationTimes() {
+//        return this.timedManager.getComputationTimes().toList().stream()
+//                .mapToDouble(Long::doubleValue).boxed()
+//                .collect(Collectors.toList());
+//    }
+//
+//    public void saveTimings(String file_basename) throws IOException {
+//        Path computation_file = Paths.get(file_basename + "_computation.csv");
+//        Path communication_file = Paths.get(file_basename + "_communication.csv");
+//
+//        // TODO: work from here, after limiting communication time output
+//        List<Double> computationTimes = getComputationTimes();
+//        List<List<Double>> p2pTimes = getPointToPointCommunicationTimes();
+//        List<List<Double>> rowTimes = getBroadcastCommunicationTimes(this.timedManager.getRowBroadcastCommunicationTimes());
+//        List<List<Double>> colTimes = getBroadcastCommunicationTimes(this.timedManager.getColBroadcastCommunicationTimes());
+//
+//        // create the content to write
+//        List<String> computationLines = Collections.singletonList("computation,computation," +
+//                computationTimes.stream().map(String::valueOf).collect(Collectors.joining(",")));
+//
+//        List<String> communicationLines = new ArrayList<>();
+//        for (int i = 0; i < p2pTimes.size(); i++) {
+//            String com_type = ((i % 2 == 0) ? "communication_before" : "communication_after");
+//            communicationLines.add((i / 2) + "," + com_type + ",point_to_point, "
+//                    + p2pTimes.get(i).stream()
+//                    .map(String::valueOf)
+//                    .collect(Collectors.joining(", ")));
+//            communicationLines.add((i / 2) + "," + com_type + ",row_broadcast, "
+//                    + rowTimes.get(i).stream()
+//                    .map(String::valueOf)
+//                    .collect(Collectors.joining(", ")) + ",".repeat(this.n * this.n - this.n));
+//            communicationLines.add((i / 2) + "," + com_type + ",col_broadcast, "
+//                    + colTimes.get(i).stream()
+//                    .map(String::valueOf)
+//                    .collect(Collectors.joining(", ")) + ",".repeat(this.n * this.n - this.n));
+//        }
+//
+//        // write the content
+//        Files.write(computation_file, computationLines, StandardCharsets.UTF_8);
+//        Files.write(communication_file, communicationLines, StandardCharsets.UTF_8);
+//    }
+//
+//    // TODO: it would be better for this class to just print out lists of numbers, one line for each computation phase
+//    //       and there's separate files for each type of timing. We then do the aggregation with mean, std, the plotting
+//    //       etc. in python. It can also be useful to run the algorithm many times, producing many files such that we can
+//    //       average across all "phase 1"s in python when doing the analysis.
+//
+//    public static void main(String[] args) {
+//        final int INF = Integer.MAX_VALUE;
+//
+//        // the graph we're working with
+//        Number[][] adjacencyGrid = {
+//                {0,   6,    2,   3,  INF, INF, INF},
+//                {INF, 0  , INF, INF,  1 , INF, INF},
+//                {INF, INF, 0  , INF, INF,  2,   1 },
+//                {INF, INF, INF,  0 , INF, INF,  2 },
+//                {INF, INF, INF, INF,  0 , INF, INF},
+//                {INF,  1 , INF, INF, INF,  0 , INF},
+//                {INF, INF, INF, INF, INF, INF,  0 },
+//        };
+//        Matrix<Number> adjMatrix = new Matrix<Number>(7, adjacencyGrid);
+//        // setup the predecessor matrix
+//        Matrix<Number> predMatrix = new Matrix<>(7);
+//        for (int i = 0; i < 7; i++) {
+//            for (int j = 0; j < 7; j++) {
+//                if (INF == adjMatrix.get(i, j).intValue()) {
+//                    predMatrix.set(i, j, j);
+//                } else {
+//                    predMatrix.set(i, j, i);
+//                }
+//
+//            }
+//        }
+//        // and put the two as initial memory content
+//        Map<String, Matrix<Number>> initialMemory = new HashMap<>();
+//        initialMemory.put("A", adjMatrix);
+//        initialMemory.put("B", adjMatrix);
+//        initialMemory.put("P", predMatrix);
+//
+//        // create the timing manager
+//        TimedManager timedManager;
+//        try {
+//            Manager manager = new Manager(7, 7, initialMemory, FoxOtto.class);
+//            timedManager = new TimedManager(manager, SquareGridTopology::new);
+//            timedManager.enableFoxOttoTimeAveraging(10);
+//        } catch (WorkerInstantiationException e) {
+//            e.printStackTrace();
+//            return;
+//        }
+//
+//        try {
+//            // compute the next matrix
+//            timedManager.doWork();
+//        } catch (CommunicationChannelException | WorkersFailedToCompleteException e) {
+//            e.printStackTrace();
+//            return;
+//        }
+//
+//        // print statistics
+//        TimingAnalyser timingAnalyser = new TimingAnalyser(timedManager, TimingAnalyser.ACER_NITRO_CPU_CYCLES_PER_NANOSECOND,
+//                TimingAnalyser.POINT_TO_POINT_SEND_CLOCK_CYCLES, TimingAnalyser.BROADCAST_CLOCK_CYCLES,
+//                64, 64);
+//
+//        timingAnalyser.printComputationTimesSummary();
+////        try {
+////            timingAnalyser.saveTimings("../evaluation/timing-data/test-file");
+////        } catch (IOException e) {
+////            e.printStackTrace();
+////        }
+//    }
 }
