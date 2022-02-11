@@ -64,13 +64,15 @@ class TimingAnalysisMemoryControllerTest {
             return;
         }
 
-        System.out.println(timedManager.getTotalExecutionTimes());
+        TimingAnalysisResult result = timedManager.getTimingAnalysisResult();
+
+        System.out.println(result.getTotalExecutionTimes());
         System.out.println("---");
-        System.out.println(timedManager.getComputationTimes());
+        System.out.println(result.getComputationTimes());
         System.out.println("---");
-        System.out.println(timedManager.getSendTimes());
+        System.out.println(result.getSendTimes());
         System.out.println("---");
-        System.out.println(timedManager.getStallTimes());
+        System.out.println(result.getStallTimes());
 
         // ASSERT
         /*
@@ -78,7 +80,7 @@ class TimingAnalysisMemoryControllerTest {
          * about 4 seconds. In the second phase, B should only stall for 1 second because it's already 1 second behind C.
          * No other workers should stall.
          */
-        Matrix<Double> stallTime = timedManager.getStallTimes();
+        Matrix<Double> stallTime = result.getStallTimes();
         for (int i = 0; i < 3; i++) {
             for (int j = 0; j < 3; j++) {
                 if (j == 2 && i != 2) continue;
@@ -89,7 +91,7 @@ class TimingAnalysisMemoryControllerTest {
         assertEquals(stallTime.get(0, 2) * 1E-9, 4, 0.3, "Worker A stalls 4 seconds");
 
         // the dot workers should finish in .2 seconds
-        Matrix<Double> totalTime = timedManager.getTotalExecutionTimes();
+        Matrix<Double> totalTime = result.getTotalExecutionTimes();
         assertEquals(totalTime.get(0, 0) * 1E-9, 0.2, 0.01);
         assertEquals(totalTime.get(2, 0) * 1E-9, 0.2, 0.01);
         assertEquals(totalTime.get(0, 1) * 1E-9, 0.2, 0.01);
@@ -129,17 +131,18 @@ class TimingAnalysisMemoryControllerTest {
             fail("Manager failed to complete execution");
             return;
         }
+        TimingAnalysisResult result = timedManager.getTimingAnalysisResult();
 
-        System.out.println(timedManager.getTotalExecutionTimes());
+        System.out.println(result.getTotalExecutionTimes());
         System.out.println("---");
-        System.out.println(timedManager.getComputationTimes());
+        System.out.println(result.getComputationTimes());
         System.out.println("---");
-        System.out.println(timedManager.getSendTimes());
+        System.out.println(result.getSendTimes());
         System.out.println("---");
-        System.out.println(timedManager.getStallTimes());
+        System.out.println(result.getStallTimes());
 
         // ASSERT
-        Matrix<Double> sendTimes = timedManager.getSendTimes();
+        Matrix<Double> sendTimes = result.getSendTimes();
         // it should take 1.5 seconds per broadcast, regardless of how much we send
         assertEquals(4.5, sendTimes.get(1, 0) * 1E-9, 0.01);
         assertEquals(4.5, sendTimes.get(2, 2) * 1E-9, 0.01);

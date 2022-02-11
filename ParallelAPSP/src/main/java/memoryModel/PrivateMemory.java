@@ -53,6 +53,10 @@ public class PrivateMemory {
         return this.getDouble(0, 0, label);
     }
 
+    public boolean contains(String label) {
+        return this.contains(0, 0, label);
+    }
+
 
     /**
      * Every value is stored in a boxed Number, regardless of its type. When getters are used, the value is casted
@@ -77,7 +81,6 @@ public class PrivateMemory {
         } else {
             this.matrixMemory.get(mi, mj).put(label, n);
         }
-
     }
 
     public Number get(int mi, int mj, String label) {
@@ -105,6 +108,14 @@ public class PrivateMemory {
 
     public int getInt(int mi, int mj, String label) {
         return this.get(mi, mj, label).intValue();
+    }
+
+    public boolean contains(int mi, int mj, String label) {
+        if (this.k == 1) {
+            return  this.singleMemory.containsKey(label);
+        } else {
+            return this.matrixMemory.get(mi, mj).containsKey(label);
+        }
     }
 }
 

@@ -64,32 +64,8 @@ public class TimedManager extends Manager {
         }
     }
 
-    public Matrix<Double> getComputationTimes() {
-        return this.timingAnalysisMemoryController.getWorkerComputationTimes();
-    }
-
-    public Matrix<Double> getTotalCommunicationTimes() {
-        Matrix<Double> communicationTimes = new Matrix<>(this.timingAnalysisMemoryController.getWorkerCommunicationTimes());
-        // add time the workers stall
-        for (int i = 0; i < this.p; i++) {
-            for (int j = 0; j < this.p; j++) {
-                communicationTimes.set(i, j, communicationTimes.get(i, j) +
-                        this.timingAnalysisMemoryController.getWorkerStallTimes().get(i, j));
-            }
-        }
-        return communicationTimes;
-    }
-
-    public Matrix<Double> getStallTimes() {
-        return this.timingAnalysisMemoryController.getWorkerStallTimes();
-    }
-
-    public Matrix<Double> getSendTimes() {
-        return this.timingAnalysisMemoryController.getWorkerCommunicationTimes();
-    }
-
-    public Matrix<Double> getTotalExecutionTimes() {
-        return this.timingAnalysisMemoryController.getTotalWorkerTimes();
+    public TimingAnalysisResult getTimingAnalysisResult() {
+        return new TimingAnalysisResult(this.timingAnalysisMemoryController);
     }
 
     public static void main(String[] args) {
@@ -126,11 +102,12 @@ public class TimedManager extends Manager {
         }
 
         System.out.println(timedManager.getResult("dist"));
-        System.out.println(timedManager.getComputationTimes());
+        TimingAnalysisResult result = timedManager.getTimingAnalysisResult();
+        System.out.println(result.getComputationTimes());
         System.out.println("---");
-        System.out.println(timedManager.getSendTimes());
+        System.out.println(result.getSendTimes());
         System.out.println("---");
-        System.out.println(timedManager.getTotalCommunicationTimes());
+        System.out.println(result.getTotalCommunicationTimes());
 
     }
 }

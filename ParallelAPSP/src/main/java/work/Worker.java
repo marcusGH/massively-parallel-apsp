@@ -108,32 +108,41 @@ public abstract class Worker implements Runnable {
      */
     abstract public void communicationAfter(int l) throws CommunicationChannelCongestionException;
 
+    // =============== Methods for reading private memory ===================
+
+    protected boolean presentInMemory(String label) {
+        return this.presentInMemory(0, 0, label);
+    }
+
+    protected boolean presentInMemory(int mi, int mj, String label) {
+        return this.privateMemory.contains(mi, mj, label);
+    }
+
     protected Number read(String label) {
         return this.readDouble(0, 0, label);
+    }
+
+    protected Number read(int mi, int mj, String label) {
+        return this.privateMemory.get(mi, mj, label);
     }
 
     protected int readInt(String label) {
         return this.readInt(0, 0, label);
     }
 
-    protected double readDouble(String label) {
-        return this.readDouble(0, 0, label);
-    }
-
-    // TODO: add try catch and send Exception from computation if e.g. get NullPointerException when reading
-    //       label that does not exist in the PrivateMemory. No longer necessary because unchecked thrown in PrivateMemory
-    //       and caught and reported in Manager!
-    protected Number read(int mi, int mj, String label) {
-        return this.privateMemory.get(mi, mj, label);
-    }
-
     protected int readInt(int mi, int mj, String label) {
         return this.read(mi, mj, label).intValue();
+    }
+
+    protected double readDouble(String label) {
+        return this.readDouble(0, 0, label);
     }
 
     protected double readDouble(int mi, int mj, String label) {
         return this.read(mi, mj, label).doubleValue();
     }
+
+    // ================ Methods for storing to private memory ==================
 
     protected void store(String label, Number value) {
         this.store(0, 0, label, value);
@@ -144,6 +153,8 @@ public abstract class Worker implements Runnable {
     public void store(int mi, int mj, String label, Number value) {
         this.privateMemory.set(mi, mj, label, value);
     }
+
+    // ================ Methods for point to point communication ================
 
     protected void send(int i, int j, Number value) throws CommunicationChannelCongestionException {
         this.memoryController.sendData(this.i, this.j,  i, j, value);
@@ -156,6 +167,8 @@ public abstract class Worker implements Runnable {
     protected void receive(int mi, int mj, String label) {
         this.memoryController.receiveData(this.i, this.j, mi, mj, label);
     }
+
+    // ================ Methods for broadcast communication ==================
 
     protected void broadcastRow(Number value) throws CommunicationChannelCongestionException {
         this.memoryController.broadcastRow(this.i, this.j, value);
@@ -181,6 +194,8 @@ public abstract class Worker implements Runnable {
         this.memoryController.receiveColBroadcast(this.i, this.j, mi, mj, label);
     }
 
+    // ================= Methods for interaction with Manager ==============
+
     Callable<Object> getInitialisationCallable() {
         return () -> {
             LOGGER.log(Level.FINER, "Worker({0}, {1}) is starting initialisation phase.", new Object[]{i, j});
@@ -189,6 +204,8 @@ public abstract class Worker implements Runnable {
         };
     }
 
+    // Must be protected such that TimedWorker in a different package can override this and decorate it
+    //   with timing analysis functionality
     protected Callable<Object> getComputationCallable(int l) {
         return () -> {
             LOGGER.log(Level.FINER, "Worker({0}, {1}) is starting computation phase {2}", new Object[]{i, j, l});
@@ -211,6 +228,12 @@ public abstract class Worker implements Runnable {
             communicationAfter(l);
             return null;
         };
+    }
+
+    // ==================== Other utilities =====================
+
+    public PrivateMemory getPrivateMemory() {
+        return privateMemory;
     }
 
     @Override
@@ -243,7 +266,4 @@ public abstract class Worker implements Runnable {
         }
     }
 
-    public PrivateMemory getPrivateMemory() {
-        return privateMemory;
-    }
 }
