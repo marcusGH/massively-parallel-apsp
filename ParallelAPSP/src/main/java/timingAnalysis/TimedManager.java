@@ -2,6 +2,7 @@ package timingAnalysis;
 
 import graphReader.GraphReader;
 import matrixMultiplication.FoxOtto;
+import matrixMultiplication.GeneralisedFoxOtto;
 import memoryModel.CommunicationChannelException;
 import memoryModel.topology.SquareGridTopology;
 import memoryModel.topology.Topology;
@@ -96,12 +97,13 @@ public class TimedManager extends Manager {
         // create the manager
         Manager manager;
         try {
-            GraphReader graphReader = new GraphReader("../datasets/7-node-example.cedge", true);
+            GraphReader graphReader = new GraphReader("../test-datasets/SF-d-40.cedge", true);
+            int n = graphReader.getNumberOfNodes();
             Matrix<Number> adjacencyMatrix = graphReader.getAdjacencyMatrix();
-            Matrix<Number> predMatrix = new Matrix<>(7, () -> 0);
-            System.out.println(adjacencyMatrix);
+            Matrix<Number> predMatrix = new Matrix<>(n, () -> 0);
+//            System.out.println(adjacencyMatrix);
             Map<String, Matrix<Number>> initialMemory = Map.of("A", adjacencyMatrix, "B", adjacencyMatrix, "P", predMatrix);
-            manager = new Manager(7, 7, initialMemory, FoxOtto.class);
+            manager = new Manager(n, n, n, initialMemory, FoxOtto.class);
         } catch (ParseException | WorkerInstantiationException e) {
             e.printStackTrace();
             return;
@@ -111,6 +113,7 @@ public class TimedManager extends Manager {
         TimedManager timedManager;
         try {
             timedManager = new TimedManager(manager, new MultiprocessorAttributes(), SquareGridTopology::new);
+            timedManager.enableFoxOttoTimeAveraging(100);
         } catch (WorkerInstantiationException e) {
             e.printStackTrace();
             return;
@@ -125,6 +128,8 @@ public class TimedManager extends Manager {
 
         System.out.println(timedManager.getResult("dist"));
         System.out.println(timedManager.getComputationTimes());
+        System.out.println("---");
+        System.out.println(timedManager.getSendTimes());
         System.out.println("---");
         System.out.println(timedManager.getTotalCommunicationTimes());
 

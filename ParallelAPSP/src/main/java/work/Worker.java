@@ -139,7 +139,9 @@ public abstract class Worker implements Runnable {
         this.store(0, 0, label, value);
     }
 
-    protected void store(int mi, int mj, String label, Number value) {
+    // must be public so that TimedWorker in timingAnalysis class can override this method using functionality of its
+    //   worker reference
+    public void store(int mi, int mj, String label, Number value) {
         this.privateMemory.set(mi, mj, label, value);
     }
 
@@ -188,7 +190,6 @@ public abstract class Worker implements Runnable {
     }
 
     protected Callable<Object> getComputationCallable(int l) {
-        // TODO: add timers
         return () -> {
             LOGGER.log(Level.FINER, "Worker({0}, {1}) is starting computation phase {2}", new Object[]{i, j, l});
             computation(l);
