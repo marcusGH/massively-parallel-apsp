@@ -33,7 +33,7 @@ import java.util.*;
  * TODO: rename this class
  *
  */
-public class CountingMemoryController extends MemoryController {
+public class TimingAnalysisMemoryController extends MemoryController {
 
     // processing element grid size
     private final int p;
@@ -69,8 +69,8 @@ public class CountingMemoryController extends MemoryController {
      * @param memoryTopology
      * @param multiprocessorAttributes
      */
-    public CountingMemoryController(MemoryController memoryController, Matrix<TimedWorker> timedWorkers,
-                                    Topology memoryTopology, MultiprocessorAttributes multiprocessorAttributes) {
+    public TimingAnalysisMemoryController(MemoryController memoryController, Matrix<TimedWorker> timedWorkers,
+                                          Topology memoryTopology, MultiprocessorAttributes multiprocessorAttributes) {
         super(memoryController);
         this.p = memoryController.getProcessingElementGridSize();
         this.timedWorkers = timedWorkers;

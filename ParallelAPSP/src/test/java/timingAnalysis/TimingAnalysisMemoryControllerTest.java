@@ -15,7 +15,7 @@ import java.util.logging.Logger;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class CountingMemoryControllerTest {
+class TimingAnalysisMemoryControllerTest {
 
     private static final Logger LOGGER = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
     private static final MultiprocessorAttributes dummyFastProcessor = new MultiprocessorAttributes(

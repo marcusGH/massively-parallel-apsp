@@ -2,7 +2,6 @@ package timingAnalysis;
 
 import graphReader.GraphReader;
 import matrixMultiplication.FoxOtto;
-import matrixMultiplication.GeneralisedFoxOtto;
 import memoryModel.CommunicationChannelException;
 import memoryModel.topology.SquareGridTopology;
 import memoryModel.topology.Topology;
@@ -19,7 +18,7 @@ public class TimedManager extends Manager {
 
     private final int p;
     private final Matrix<TimedWorker> timedWorkers;
-    private final CountingMemoryController countingMemoryController;
+    private final TimingAnalysisMemoryController timingAnalysisMemoryController;
 
     /**
      * Decorates a passed Manager object with functionality to measure the computation time and estimate the
@@ -40,10 +39,10 @@ public class TimedManager extends Manager {
         // We decorate the memory controller with timing analyses functionality
         Topology topology = memoryTopology.apply(this.p);
         this.timedWorkers = new Matrix<>(this.p);
-        this.countingMemoryController = new CountingMemoryController(manager.getMemoryController(),
+        this.timingAnalysisMemoryController = new TimingAnalysisMemoryController(manager.getMemoryController(),
                 this.timedWorkers, topology, multiprocessorAttributes);
         // then use it instead of the existing one with dynamic dispatch
-        this.setMemoryController(this.countingMemoryController);
+        this.setMemoryController(this.timingAnalysisMemoryController);
 
         // decorate all the workers with timing behaviour
         for (int i = 0; i < this.p; i++) {
@@ -66,31 +65,31 @@ public class TimedManager extends Manager {
     }
 
     public Matrix<Double> getComputationTimes() {
-        return this.countingMemoryController.getWorkerComputationTimes();
+        return this.timingAnalysisMemoryController.getWorkerComputationTimes();
     }
 
     public Matrix<Double> getTotalCommunicationTimes() {
-        Matrix<Double> communicationTimes = new Matrix<>(this.countingMemoryController.getWorkerCommunicationTimes());
+        Matrix<Double> communicationTimes = new Matrix<>(this.timingAnalysisMemoryController.getWorkerCommunicationTimes());
         // add time the workers stall
         for (int i = 0; i < this.p; i++) {
             for (int j = 0; j < this.p; j++) {
                 communicationTimes.set(i, j, communicationTimes.get(i, j) +
-                        this.countingMemoryController.getWorkerStallTimes().get(i, j));
+                        this.timingAnalysisMemoryController.getWorkerStallTimes().get(i, j));
             }
         }
         return communicationTimes;
     }
 
     public Matrix<Double> getStallTimes() {
-        return this.countingMemoryController.getWorkerStallTimes();
+        return this.timingAnalysisMemoryController.getWorkerStallTimes();
     }
 
     public Matrix<Double> getSendTimes() {
-        return this.countingMemoryController.getWorkerCommunicationTimes();
+        return this.timingAnalysisMemoryController.getWorkerCommunicationTimes();
     }
 
     public Matrix<Double> getTotalExecutionTimes() {
-        return this.countingMemoryController.getTotalWorkerTimes();
+        return this.timingAnalysisMemoryController.getTotalWorkerTimes();
     }
 
     public static void main(String[] args) {
