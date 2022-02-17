@@ -361,4 +361,14 @@ Option 2:
     from that! Generalizes well
   * For broadcasting, just assume in the skipped ones, the same submatrix uses highways!
 
+## Average degrees in road networks
+
+* SF: 2.5492238048423603
+* NA: 2.038290683851592
+* OL: 2.3046683046683047
+* cal:2.0612884834663627
+* TG: 2.614466407490555
+
+cal compressed 2.9450549450549453
+
 <!-- vim: set nospell: -->

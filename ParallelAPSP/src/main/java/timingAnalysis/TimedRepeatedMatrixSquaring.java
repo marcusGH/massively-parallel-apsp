@@ -91,7 +91,7 @@ public class TimedRepeatedMatrixSquaring extends RepeatedMatrixSquaring {
     }
 
     public static void main(String[] args) {
-        String filename = "SF-d-70";
+        String filename = "cal-compressed-random-graphs/50";
 
         GraphReader graphReader;
         try {
@@ -103,40 +103,20 @@ public class TimedRepeatedMatrixSquaring extends RepeatedMatrixSquaring {
 
         LoggerFormatter.setupLogger(LOGGER, Level.INFO);
 
-        GraphCompressor graphCompressor = new GraphCompressor(graphReader);
-        graphReader = graphCompressor.getGraphReader();
+        // Don't compress the graph
+//        GraphCompressor graphCompressor = new GraphCompressor(graphReader);
+//        graphReader = graphCompressor.getGraphReader();
 
         TimedRepeatedMatrixSquaring solver = new TimedRepeatedMatrixSquaring(graphReader,
                 4, SquareGridTopology::new, new MultiprocessorAttributes(),
                 GeneralisedFoxOtto.class, 100);
         solver.solve();
 
+//        System.out.println(solver.getShortestPath(13, 40));
+
         TimingAnalysisResult timingResult = solver.getTimingAnalysisResults();
 
         System.out.println("Computation time:\n" + timingResult.getComputationTimes());
         System.out.println("Communication time:\n" + timingResult.getTotalCommunicationTimes());
-
-        // TODO: Email overseers, asking about the success criteria regarding communication cost. Ok to discuss
-        //       why might not be that good when mapping onto to actual hardware with values, but still minimize number
-        //       of messages sent.
-
-        // TODO: Consider the case under different models of computation? SIMD vs MIMD
-
-        // TODO: Even if use data centre approach, looks like the ratio will be very poor as 2us is a lot even if
-        //       do 4 or 16 phases between each communication (still under 50% computation time).
-
-        // TODO: Is the repeated for-loop and averaging too unfair? I.e. do we store the numbers in registers or something,
-        //       causing memory lookup to be way to fast? Might be more fair to do the computation once, and then again
-        //       with the timing -> Can also be justified!
-
-//        TimingAnalyser timingAnalyser = solver.getTimings();
-//        try {
-//            timingAnalyser.saveTimings("../evaluation/timing-data/" + filename);
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-
-        // TODO TODO TODO: fix all of this
-
     }
 }

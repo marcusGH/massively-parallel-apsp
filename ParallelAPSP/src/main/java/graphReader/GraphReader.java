@@ -240,7 +240,9 @@ public class GraphReader {
     public static void main(String[] args) {
         try {
 //            GraphReader gr = new GraphReader("../datasets/small-example.cedge");
-            GraphReader gr = new GraphReader("../datasets/SF.cedge", false);
+            GraphReader gr = new GraphReader("../datasets/cal.cedge", false);
+            GraphCompressor gc = new GraphCompressor(gr);
+            gr = gc.getGraphReader();
             gr.printSummary();
             gr.onlyUseLargestConnectedComponent();
 //            System.out.println("The matrix:");
