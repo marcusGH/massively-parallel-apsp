@@ -106,7 +106,7 @@ class RepeatedMatrixSquaringTest {
             return;
         }
         // fox otto solver
-        APSPSolver matrixSolver = new RepeatedMatrixSquaring(graphReader, 23, GeneralisedFoxOtto.class);
+        APSPSolver matrixSolver = new RepeatedMatrixSquaring(graphReader, 7, GeneralisedFoxOtto.class);
         // dijkstra solver
         APSPSolver dijkstraSolver = new SerialDijkstra(graphReader);
 

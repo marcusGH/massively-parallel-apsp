@@ -31,7 +31,7 @@ def visualise_graph(g):
     )
     pos = forceatlas2.forceatlas2_networkx_layout(g, pos=None, iterations=1000)
     nx.draw_networkx_nodes(g, pos, node_size=20, node_color="blue", alpha=0.4)
-    nx.draw_networkx_edges(g, pos, edge_color="green", alpha=0.05)
+    nx.draw_networkx_edges(g, pos, edge_color="green", alpha=0.25)
     plt.axis('off')
     plt.show()
 

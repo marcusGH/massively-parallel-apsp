@@ -314,6 +314,10 @@ public class Manager {
         return this.p;
     }
 
+    public int getProblemSize() {
+        return this.n;
+    }
+
     public Worker getWorker(int i, int j) {
         return workers.get(i, j);
     }

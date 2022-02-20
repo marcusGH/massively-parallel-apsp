@@ -17,6 +17,7 @@ import java.util.function.Function;
 public class TimedManager extends Manager {
 
     private final int p;
+    private final int problemSize;
     private final Matrix<TimedWorker> timedWorkers;
     private final TimingAnalysisMemoryController timingAnalysisMemoryController;
 
@@ -35,6 +36,7 @@ public class TimedManager extends Manager {
         super(manager);
 
         this.p = manager.getProcessingElementGridSize();
+        this.problemSize = manager.getProblemSize();
 
         // We decorate the memory controller with timing analyses functionality
         Topology topology = memoryTopology.apply(this.p);
@@ -65,7 +67,7 @@ public class TimedManager extends Manager {
     }
 
     public TimingAnalysisResult getTimingAnalysisResult() {
-        return new TimingAnalysisResult(this.timingAnalysisMemoryController);
+        return new TimingAnalysisResult(this.timingAnalysisMemoryController, this.problemSize);
     }
 
     public static void main(String[] args) {

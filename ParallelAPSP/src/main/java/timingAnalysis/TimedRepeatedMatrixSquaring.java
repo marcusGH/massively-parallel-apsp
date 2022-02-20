@@ -13,6 +13,7 @@ import util.Matrix;
 import work.Manager;
 import work.WorkerInstantiationException;
 
+import java.io.IOException;
 import java.text.ParseException;
 import java.util.Map;
 import java.util.function.Function;
@@ -91,7 +92,8 @@ public class TimedRepeatedMatrixSquaring extends RepeatedMatrixSquaring {
     }
 
     public static void main(String[] args) {
-        String filename = "cal-compressed-random-graphs/50";
+        int n = 400;
+        String filename = "cal-compressed-random-graphs/" + String.valueOf(n);
 
         GraphReader graphReader;
         try {
@@ -104,19 +106,27 @@ public class TimedRepeatedMatrixSquaring extends RepeatedMatrixSquaring {
         LoggerFormatter.setupLogger(LOGGER, Level.INFO);
 
         // Don't compress the graph
-//        GraphCompressor graphCompressor = new GraphCompressor(graphReader);
-//        graphReader = graphCompressor.getGraphReader();
+        GraphCompressor graphCompressor = new GraphCompressor(graphReader);
+        graphReader = graphCompressor.getGraphReader();
 
         TimedRepeatedMatrixSquaring solver = new TimedRepeatedMatrixSquaring(graphReader,
-                4, SquareGridTopology::new, new MultiprocessorAttributes(),
-                GeneralisedFoxOtto.class, 100);
+                8, SquareGridTopology::new, new MultiprocessorAttributes(),
+                GeneralisedFoxOtto.class, 1);
         solver.solve();
 
-//        System.out.println(solver.getShortestPath(13, 40));
+//        System.out.println(solver.getShortestPath(0, 6));
+
 
         TimingAnalysisResult timingResult = solver.getTimingAnalysisResults();
 
         System.out.println("Computation time:\n" + timingResult.getComputationTimes());
         System.out.println("Communication time:\n" + timingResult.getTotalCommunicationTimes());
+
+        // save the result
+//        try {
+//            timingResult.saveResult("../evaluation/timing-data/cal-" + n + ".csv");
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
     }
 }
