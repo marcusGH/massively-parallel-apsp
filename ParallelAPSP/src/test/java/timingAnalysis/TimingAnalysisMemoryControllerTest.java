@@ -1,5 +1,7 @@
 package timingAnalysis;
 
+import graphReader.GraphReader;
+import matrixMultiplication.GeneralisedFoxOtto;
 import memoryModel.CommunicationChannelException;
 import memoryModel.topology.SquareGridTopology;
 import org.junit.jupiter.api.BeforeAll;
@@ -10,6 +12,7 @@ import util.LoggerFormatter;
 import util.Matrix;
 import work.*;
 
+import java.text.ParseException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -26,7 +29,7 @@ class TimingAnalysisMemoryControllerTest {
 
     @BeforeAll
     static void setupLogger() {
-        LoggerFormatter.setupLogger(LOGGER, Level.FINE);
+        LoggerFormatter.setupLogger(LOGGER, Level.INFO);
     }
 
     /**
@@ -151,6 +154,41 @@ class TimingAnalysisMemoryControllerTest {
         assertEquals(3.1, sendTimes.get(0, 0) * 1E-9, 0.01);
         assertEquals(3.1, sendTimes.get(0, 1) * 1E-9, 0.01);
         assertEquals(3.1, sendTimes.get(0, 2) * 1E-9, 0.01);
+    }
+
+    @Test
+    void summedTimingsAreCorrect() {
+        // SETUP
+        TimedRepeatedMatrixSquaring solver;
+        try {
+            GraphReader graphReader = new GraphReader("../test-datasets/cal-compressed-random-graphs/50.cedge", false);
+            solver = new TimedRepeatedMatrixSquaring(graphReader, 4, SquareGridTopology::new, new MultiprocessorAttributes(), GeneralisedFoxOtto.class, 10);
+        } catch (ParseException e) {
+            e.printStackTrace();
+            fail("Could not read graph");
+            return;
+        }
+
+        // ACT
+        solver.solve();
+        TimingAnalysisResult result = solver.getTimingAnalysisResults();
+        // individual timings
+        Matrix<Double> send = result.getSendTimes();
+        Matrix<Double> stall = result.getStallTimes();
+        Matrix<Double> compute = result.getComputationTimes();
+        // aggregate timings
+        Matrix<Double> totalCommunication = result.getTotalCommunicationTimes();
+        Matrix<Double> totalExecution = result.getTotalExecutionTimes();
+
+        // ASSERT
+        for (int i = 0; i < send.size(); i++) {
+            for (int j = 0; j < send.size(); j++) {
+                assertEquals(totalCommunication.get(i, j), send.get(i, j) + stall.get(i, j), 1,
+                        String.format("The communication time aggregate for PE(%d, %d) is correct", i, j));
+                assertEquals(totalExecution.get(i, j), compute.get(i, j) + totalCommunication.get(i, j), 1,
+                        String.format("The execution time aggregate for PE(%d, %d) is correct", i, j));
+            }
+        }
     }
 
 }
