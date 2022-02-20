@@ -315,4 +315,60 @@ Some suggestions from Prof R. Mullins:
 * TODO: need to implement a method to report on number of computation phases done, so that I
   can multiply by this in python when computing the communication time!
 
+# Notes from Feb 10
+
+* **Problem with generalized FoxOtto**: 
+  In the general version, we first started the multiplication by iterating from the top of the submatrix
+  (see diagram in notes for $C_{10,6}$ for instance). However, this causes problems for the predecessor
+  values because of the initial conditions. Consider the scenario for $C_{10,6}$ where want to compute
+  path 10 -> 10. Whenever we get to $k=10$, we would not assign predecessor because of exemption condition
+  (which is necessary, otherwise we get other bugs). And at this point ($k=10$) we discover path of length
+  0. However, because of the generalization, we start with $k=8$ (ref. to diagram), so we find another
+  path of longer length, and when we get to $k=10$, we optimize the path, but leave the predecessor as
+  it was for the longer path because of the exemption condition. One fix is to save the initial "dist"
+  and not use $\infty$ every time. Another option is making sure we start with $k=10$ when running algo
+  i.e. being consistent with non-general version. That way, we immediately relax distance to 0 and keep
+  the initial predecessor, this.j (or read("P") which is same thing). This is the option I went for,
+  and is the reasoning behind the `m` loop and then modifying `iter`.
+* In `CountingMemoryController`, we assume that each PE only sends data to **one** other PE, but this is
+  NOT CHECKED anywhere. However, it is enforced in underlying memory controller that each PE can only
+  receive from **one** other PE, which is not equivilant, but in _most cases_ (all PE do the same thing)
+  causes the above assumption to hold.
+
+# Notes on how to simulate data centre Feb 11
+
+We imagine p x p multiprocessors, each with k x k processing elements
+
+Option 1:
+* Simply simulate pxp PEs, and expand problem size input such that _could_
+  be distributed along k x k. Then assume perfect linear speedup of k^2 in
+  each PE because using shared memory
+* Caveat: We don't have realsitic timing on the stalls
+
+Option 2:
+* Simulate k x k processing elements. Then we modify CountingMemoryController:
+  * The flush counting functionality is only run once every 2k times (figure out how to deal with before and after)
+  * We leave the computation timers as they are because they can immediately do k phases without communnication between
+  * When we are actually doin the stall functionality, we split the _state_ into kxk submatrices, and say the sender we
+    are computing stall with respect to is e.g. min or max in the sending submatrix. We also assume sender same each 4k times,
+    so that we don't need to keep track of the sender IDs in the remaining skipped flushes. This also makes broadcast work nicely
+    as we only have PEs in kxk submatrix broadcasting at a time.
+  * Problem: For nodes in upper part of submatrix, we don't have any indication anywhere that depends on result from submatrix
+    below. We could maybe look at every send that goes across a submatrix when doing the flush at 2k, and then calculate stalls
+    for every receiver in the submatrix of the trans-processor sending. This sounds like a suitable idea.
+  * We can also just have a set of dependenceis of each PE, and when in skipped phases receive something from p', we add p' set
+    to the PE as well as p' itself. This works for point to point, and then at flush can iterate set and find all dependent submatrices
+    from that! Generalizes well
+  * For broadcasting, just assume in the skipped ones, the same submatrix uses highways!
+
+## Average degrees in road networks
+
+* SF: 2.5492238048423603
+* NA: 2.038290683851592
+* OL: 2.3046683046683047
+* cal:2.0612884834663627
+* TG: 2.614466407490555
+
+cal compressed 2.9450549450549453
+
 <!-- vim: set nospell: -->

@@ -7,6 +7,7 @@ import memoryModel.CommunicationChannelException;
 import memoryModel.topology.SquareGridTopology;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import timingAnalysis.MultiprocessorAttributes;
 import timingAnalysis.TimedManager;
 import util.LoggerFormatter;
 import util.Matrix;
@@ -72,7 +73,7 @@ class GeneralisedFoxOttoTest {
         Manager m;
         try {
             m = new Manager(8, 2,2, initialMemory, GeneralisedFoxOtto.class);
-            m = new TimedManager(m, SquareGridTopology::new);
+            m = new TimedManager(m, new MultiprocessorAttributes(), SquareGridTopology::new);
         } catch (WorkerInstantiationException e) {
             e.printStackTrace();
             fail("The manager or worker factory could not be created");

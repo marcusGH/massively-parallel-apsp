@@ -1,45 +1,7 @@
 import matplotlib.pyplot as plt
+import math
 import numpy as np
 import pandas as pd
-
-
-def read_timings2(file_basename):
-    """
-    The below method takes a long time because of the joins, so this one
-    aggregates mean communication time as it reads, allowing less flexibility
-    in exchange for faster processing
-    :param file_basename:
-    :return:
-    """
-    # read the computation file
-    compute_times_df = pd.read_csv(file_basename + "_computation.csv", sep=",", header=None)
-    # read the communication file
-    communication_times_df = pd.read_csv(file_basename + "_communication.csv", sep=",", header=None)
-
-    header_names = ["phase", "phase_name", "type"] + ["{0}".format(i) for i in
-                                                      range(communication_times_df.shape[1] - 3)]
-    compute_times_df.set_axis(header_names[1:], axis=1, inplace=True)
-    communication_times_df.set_axis(header_names, axis=1, inplace=True)
-
-    # we are only interested in the values
-    compute_times_df.drop(["phase_name", "type"], axis=1, inplace=True)
-
-    # make into numpy floats
-    for i in range(compute_times_df.shape[1] - 2):
-        compute_times_df["{0}".format(i)] = pd.to_numeric(compute_times_df["{0}".format(i)])
-        communication_times_df["{0}".format(i)] = pd.to_numeric(communication_times_df["{0}".format(i)])
-
-    # create multiindex
-    communication_multi_df = communication_times_df.reset_index() \
-        .set_index(["phase", "phase_name", "type"]).stack().unstack([1, 2])
-    # remove unneeded value that is added for some reason
-    communication_multi_df.drop('index', level=1, inplace=True)
-
-    # TODO: we are doing max() because must wait until all communication done before proceed
-    return compute_times_df.to_numpy(), \
-           (communication_multi_df["communication_before"] + communication_multi_df["communication_after"]).max(), \
-           int(np.sqrt(compute_times_df.to_numpy().shape[1]))
-
 
 def plot_performance_scaling(filenames):
     fig, axs = plt.subplots(ncols=2, figsize=(10, 5))
@@ -49,7 +11,7 @@ def plot_performance_scaling(filenames):
     err = []
 
     for i, file in enumerate(filenames):
-        compute_df, communicate_df, p = read_timings2(file)
+        compute_df, communicate_df, p = read_timings(file)
 
         compute_time = compute_df.sum()
         error_std = compute_df.std()
@@ -70,27 +32,34 @@ def plot_performance_scaling(filenames):
     plt.show()
 
 
-def read_timings(file_basename):
-    # read the computation file
-    compute_times_df = pd.read_csv(file_basename + "_computation.csv", header=None)
-    # read the communication file
-    point_to_point_df = pd.read_csv(file_basename + "_communication.csv", sep=",", header=None)
+def read_timings(filename):
+    return pd.read_csv(filename)
 
-    header_names = ["phase", "phase_name", "type"] + ["{0}".format(i) for i in range(compute_times_df.shape[1] - 3)]
-    compute_times_df.set_axis(header_names, axis=1, inplace=True)
-    point_to_point_df.set_axis(header_names, axis=1, inplace=True)
-    # combine the two dataframes vertically
-    new_df = pd.merge(compute_times_df, point_to_point_df,
-                      left_on=header_names, right_on=header_names, how='outer').set_index(["phase"]).sort_index()
-    # remove whitespace
-    new_df["phase_name"] = new_df["phase_name"].str.strip()
-    new_df["type"] = new_df["type"].str.strip()
-    # make into numpy floats
-    for i in range(compute_times_df.shape[1] - 3):
-        new_df["{0}".format(i)] = pd.to_numeric(new_df["{0}".format(i)])
-    # make multiindex
-    return new_df.reset_index().set_index(["phase", "phase_name", "type"]).stack().unstack([1, 2])
+def find_compute_ratio(df):
+    df['finish_time'] = df["computation_time"] + df['total_communication_time']
+    finish_time = max(df['finish_time'])
+    print(finish_time)
+    df['total_communication_time'] = df['total_communication_time'] + (finish_time - df['finish_time'])
 
+    communication = sum(df['total_communication_time'])
+    compute = sum(df['computation_time'])
+    return compute / (compute + communication)
+
+
+def plot_ratio_scaling(filenames):
+    fig, ax = plt.subplots(figsize=(5, 7))
+    ax.set_ylim([0, 1])
+
+    xs = []
+    ys = []
+    for f in filenames:
+        df = read_timings(f)
+        xs.append(math.sqrt(df['n'].iloc[0]))
+        ys.append(find_compute_ratio(df))
+        print(xs, ys)
+
+    ax.plot(xs, ys)
+    plt.show()
 
 def plot_ratio(timing_df):
     compute_df = timing_df["computation", "computation"]
@@ -135,7 +104,6 @@ def find_overall_ratio(timing_df):
 
 
 if __name__ == "__main__":
-    print("h")
-    df = read_timings("timing-data/test-file")
-    print("Computation to communication ratio is: {0}".format(find_overall_ratio(df).sum()))
+    global df
+    df = read_timings("timing-data/cal-50.csv")
     # plot_ratio(df)

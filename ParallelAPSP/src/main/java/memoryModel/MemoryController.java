@@ -9,6 +9,7 @@ import util.Triple;
 
 import java.util.*;
 import java.util.function.Function;
+import java.util.logging.Logger;
 
 // TODO: switch from synchronised to thread-safe queues etc.
 
@@ -44,22 +45,25 @@ import java.util.function.Function;
  * </p>
  */
 public class MemoryController {
+
+    private static final Logger LOGGER = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
+
     private int p;
-    private Matrix<PrivateMemory> privateMemories;
+    protected Matrix<PrivateMemory> privateMemories;
 
     // broadcasting
     private final List<Queue<Number>> colBroadcastData;
     private final List<Queue<Number>> rowBroadcastData;
     // IDs of the PEs using the row- and column broadcast highways
-    private final List<Optional<Pair<Integer, Integer>>> colBroadcasterID;
-    private final List<Optional<Pair<Integer, Integer>>> rowBroadcasterID;
+    protected final List<Optional<Pair<Integer, Integer>>> colBroadcasterID;
+    protected final List<Optional<Pair<Integer, Integer>>> rowBroadcasterID;
     private final Matrix<Queue<Triple<Integer, Integer, String>>> rowBroadcastReceiveArguments;
     private final Matrix<Queue<Triple<Integer, Integer, String>>> colBroadcastReceiveArguments;
 
     // point-to-point communications
     private final Matrix<Queue<Number>> sentData;
     // item (i, j) gives ID of the sender of the data destined to PE(i, j)
-    private final Matrix<Optional<Pair<Integer, Integer>>> senderToRecipientID;
+    protected final Matrix<Optional<Pair<Integer, Integer>>> senderToRecipientID;
     private final Matrix<Queue<Triple<Integer, Integer, String>>> receiveArguments;
 
     public int getProcessingElementGridSize() {
@@ -322,8 +326,14 @@ public class MemoryController {
                     Triple<Integer, Integer, String> args = rowReceiveArgumentsQueue.poll();
                     // nothing to do
                     if (value == null && args == null) continue;
+                    // there is data in the highway, but we are not interested in it
+                    if (args == null) {
+                        LOGGER.fine(String.format("Processing element PE(%d, %d) did pick up data from row broadcast away when" +
+                                " there was data available.", i, j));
+                        continue;
+                    }
                     // look for inconsistencies
-                    if (value == null || args == null) {
+                    if (value == null) {
                         throw new InconsistentCommunicationChannelUsageException("Processing element PE(" + i + ", " + j
                                 + ") did not receive as many data items as it specified it would receive through row broadcast");
                     } else {
@@ -353,8 +363,14 @@ public class MemoryController {
                     Triple<Integer, Integer, String> args = colReceiveArgumentsQueue.poll();
                     // nothing to do
                     if (value == null && args == null) continue;
+                    // there is data in the highway, but we are not interested in it
+                    if (args == null) {
+                        LOGGER.fine(String.format("Processing element PE(%d, %d) did pick up data from column broadcast away when" +
+                                " there was data available.", i, j));
+                        continue;
+                    }
                     // look for inconsistencies
-                    if (value == null || args == null) {
+                    if (value == null) {
                         throw new InconsistentCommunicationChannelUsageException("Processing element PE(" + i + ", " + j
                                 + ") did not receive as many data items as it specified it would receive through column broadcast");
                     } else {

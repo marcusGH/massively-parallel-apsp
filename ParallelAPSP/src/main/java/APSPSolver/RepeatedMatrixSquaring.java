@@ -122,6 +122,7 @@ public class RepeatedMatrixSquaring extends APSPSolver {
 
         // repeatedly square the distance- and predecessor matrix with min-plus product
         int numIterations = (int) Math.ceil(Math.log(this.n) / Math.log(2));
+        LOGGER.info("The graph size is " + this.n + " so " + numIterations + " MinPlusProduct iterations are required.");
         for (int i = 0; i < numIterations; i++) {
             // run the algorithm
             try {
@@ -139,7 +140,9 @@ public class RepeatedMatrixSquaring extends APSPSolver {
             LOGGER.fine("Distance matrix at iteration " + i + " is:\n" + distMatrix);
             predMatrix = manager.getResult("pred", true);
             LOGGER.fine("Pred matrix are iteration " + i + " is:\n" + predMatrix);
-            manager.setPrivateMemory(Map.of("A", distMatrix, "B", distMatrix, "P", predMatrix));
+            // This statement is not required because at the end of FoxOtto, the memory will already
+            //   be in the correct positions for the next execution of FoxOtto
+//            manager.setPrivateMemory(Map.of("A", distMatrix, "B", distMatrix, "P", predMatrix));
         }
 
         // log and save

@@ -48,6 +48,14 @@ public class GeneralisedFoxOtto extends MinPlusProduct {
     public void initialise() {
         for (int i2 = 0; i2 < subMatrixSize; i2++) {
             for (int j2 = 0; j2 < subMatrixSize; j2++) {
+                // This is not the first management phase, so reinitialize input with result from
+                //   previous management iteration
+                if (presentInMemory(i2, j2, "dist")) {
+                    store(i2, j2, "A", read(i2, j2, "dist"));
+                    store(i2, j2, "B", read(i2, j2, "dist"));
+                    store(i2, j2, "P", read(i2, j2, "pred"));
+                }
+
                 // running total of least distance found so far
                 store(i2, j2, "dist", Double.POSITIVE_INFINITY); // represents C[i, j]
                 // the "A" entry is never shifted, only broadcasted, so make a copy of it to prevent overwrite
