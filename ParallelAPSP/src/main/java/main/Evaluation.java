@@ -86,7 +86,7 @@ public class Evaluation {
         setupLogger();
 
         List<Integer> ns = Arrays.asList(10, 20, 30, 40, 50, 60, 70, 80, 90, 100);
-        evaluation.measureScaling(8, ns, 3);
+        evaluation.measureScaling(32, ns, 3);
 
     }
 }

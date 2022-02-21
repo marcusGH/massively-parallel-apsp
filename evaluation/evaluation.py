@@ -56,6 +56,7 @@ def read_and_compute_errors(filename):
 
     # alternatively, ...
     ratio_var = np.var(compute_times / (compute_times + communicate_times))
+    total_time_var = np.var(compute_times + communicate_times)
 
     # pack the means and stds up into a dict and return them along with an array of the
     #   timing dataframes
@@ -136,4 +137,4 @@ if __name__ == "__main__":
     # global df
     # df = read_timings("timing-data/cal-random-sandy-bridge-n-20-p-4")
     # plot_ratio(df)
-    plot_total_time_scaling("timing-data/cal-random-sandy-bridge", [i for i in range(10, 101, 10)], [4, 8])
+    plot_total_time_scaling("timing-data/cal-random-sandy-bridge", [i for i in range(10, 101, 10)], [4, 8, 32])
