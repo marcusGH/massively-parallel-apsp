@@ -13,7 +13,6 @@ import util.Matrix;
 import work.Manager;
 import work.WorkerInstantiationException;
 
-import java.io.IOException;
 import java.text.ParseException;
 import java.util.Map;
 import java.util.function.Function;
@@ -107,7 +106,7 @@ public class TimedRepeatedMatrixSquaring extends RepeatedMatrixSquaring {
 
         // Don't compress the graph
         GraphCompressor graphCompressor = new GraphCompressor(graphReader);
-        graphReader = graphCompressor.getGraphReader();
+        graphReader = graphCompressor.getCompressedGraph();
 
         TimedRepeatedMatrixSquaring solver = new TimedRepeatedMatrixSquaring(graphReader,
                 8, SquareGridTopology::new, new MultiprocessorAttributes(),

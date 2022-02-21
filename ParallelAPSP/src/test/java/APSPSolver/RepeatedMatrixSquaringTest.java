@@ -99,7 +99,7 @@ class RepeatedMatrixSquaringTest {
             graphReader = new GraphReader("../test-datasets/OL-but-smaller.cedge", false);
             // compress it
             GraphCompressor graphCompressor = new GraphCompressor(graphReader);
-            graphReader = graphCompressor.getGraphReader();
+            graphReader = graphCompressor.getCompressedGraph();
         } catch (ParseException e) {
             e.printStackTrace();
             fail("The test data could not be read");

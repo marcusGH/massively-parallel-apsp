@@ -381,6 +381,17 @@ Option 2:
     from that! Generalizes well
   * For broadcasting, just assume in the skipped ones, the same submatrix uses highways!
 
+# Notes on computing the errors in the plots Feb 21
+
+I first tried thinking of the computation time and communication time as different random variables R and S. I then thought
+that compute the error for R + S, I needed som formula on the form var(R)+var(S) + 2Cov(R, S) and to compute
+$R / (R+S)$ I needed an even more complicated formula and that wasn't even exact because ratio variance is cauchy distribution
+and that has undefined variance.
+
+However, I then realized that we are using empircal samples, so I could _just sample_ from $R / (R+S)$ by computing whatever the
+empircal value is for this, and then just compute the variance on these new samples. This is both more accurate and way easier.
+The theoretical versions aren't even necessary when we have access to "actually sampling from $X = R / (R+S)$"!
+
 ## Average degrees in road networks
 
 * SF: 2.5492238048423603

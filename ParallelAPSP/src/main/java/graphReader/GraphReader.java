@@ -21,6 +21,8 @@ public class GraphReader {
     private final int n;
     final boolean graphIsDirected;
 
+    private Map<Integer, Integer> nodeIDRemapping;
+
     public GraphReader(String filename, boolean isDirected) throws ParseException {
         this.graphIsDirected = isDirected;
 
@@ -150,10 +152,24 @@ public class GraphReader {
         for (Integer i : this.nodeIDs) {
             idMap.put(i, idMap.size());
         }
+        // save in case want to recover the mappings
+        this.nodeIDRemapping = idMap;
+
         // perform remapping
         return edges.stream().map(triple ->
                 new Triple<>(idMap.get(triple.x()), idMap.get(triple.y()), triple.z()))
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * When the graph reader is constructed, all nodes are reindexed to start from 0 and increase by 1. This method
+     * can be used to get the mapping from the node id in the graph passed in the constructor to the id in the reindexed
+     * graph.
+     * @param originalID integer id in original graph
+     * @return integer id in internally used graph
+     */
+    public int getNodeIdBeforeReIndex(int originalID) {
+        return this.nodeIDRemapping.get(originalID);
     }
 
     private Set<Integer> getNodeIDSet(List<Triple<Integer, Integer, Double>> edges) {
@@ -197,6 +213,10 @@ public class GraphReader {
         return adjList;
     }
 
+    /**
+     * If the graph contains multiple edges between the same nodes, the shortest edge is used.
+     * @return
+     */
     public Matrix<Number> getAdjacencyMatrix() {
         Matrix<Number> mat = new Matrix<>(n, () -> Double.POSITIVE_INFINITY);
         for (Triple<Integer, Integer, Double> e : edges) {
@@ -242,7 +262,7 @@ public class GraphReader {
 //            GraphReader gr = new GraphReader("../datasets/small-example.cedge");
             GraphReader gr = new GraphReader("../datasets/cal.cedge", false);
             GraphCompressor gc = new GraphCompressor(gr);
-            gr = gc.getGraphReader();
+            gr = gc.getCompressedGraph();
             gr.printSummary();
             gr.onlyUseLargestConnectedComponent();
 //            System.out.println("The matrix:");
