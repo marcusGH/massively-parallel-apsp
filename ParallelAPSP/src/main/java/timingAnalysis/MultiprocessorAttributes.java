@@ -11,6 +11,8 @@ public class MultiprocessorAttributes {
     public static final double ACER_NITRO_CPU_CYCLES_PER_NANOSECOND = 2.3; // 2.3GHz
     public static final double ACER_NITRO_CPU_CYCLES_PER_SECOND = 2_300_000_000.0;
     public static final int POINT_TO_POINT_SEND_CLOCK_CYCLES = 75;
+    public static final int SANDY_BRIDGE_CACHE_LATENCY_SEND = 107;
+    public static final int SANDY_BRIDGE_INTERCONNECT_BANDWIDTH = 32; // bytes per cycle
     public static final int BROADCAST_CLOCK_CYCLES = POINT_TO_POINT_SEND_CLOCK_CYCLES;
     public static final int DEFAULT_BANDWIDTH_PER_CYCLE = 8; // one 64 bit register per clock cycle
 

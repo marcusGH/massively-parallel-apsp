@@ -1,109 +1,139 @@
 import matplotlib.pyplot as plt
+from pathlib import Path
 import math
 import numpy as np
 import pandas as pd
 
-def plot_performance_scaling(filenames):
-    fig, axs = plt.subplots(ncols=2, figsize=(10, 5))
 
-    xs = []
-    ys = []
-    err = []
+def read_and_compute_errors(filename):
+    """
+    This method also calculates the error if there are multiple iterations of the timings.
+    :param filename: If the file is called "something-n-X-p-Y.d.csv", the parameter should be
+                     "something-n-X-p-Y" i.e. excluding the [.] and what comes after.
+    :return: a tuple of a dict and an array of dataframe. All the key-value pairs in the dict that are
+             related to the computation time, communication time and total time is **summed up over all
+             processing elements**. The finish_time key gives the time at which the multiprocessor actually
+             finishes its computation.
+    """
 
-    for i, file in enumerate(filenames):
-        compute_df, communicate_df, p = read_timings(file)
+    timing_dfs = []
+    compute_times = []
+    communicate_times = []
+    finish_times = []
+    for i in range(9999):
+        f = f"{filename}.{i}.csv"
+        if Path(f).is_file():
+            df = stall_until_last_one_finished(pd.read_csv(f))
+            timing_dfs.append(df)
+            compute_times.append(np.sum(df['computation_time'].to_numpy()))
+            communicate_times.append(np.sum(df['total_communication_time'].to_numpy()))
+            finish_times.append(np.max(df['finish_time'].to_numpy()))
+        else:
+            break
+    print(f"Found {len(timing_dfs)} timings for the specified file")
+    if len(timing_dfs) > 1:
+        print("Dropping first iteration because usually much higher than rest.")
+        timing_dfs = timing_dfs[1:]
+        compute_times = np.array(compute_times[1:])
+        communicate_times = np.array(communicate_times[1:])
 
-        compute_time = compute_df.sum()
-        error_std = compute_df.std()
-        communicate_time = (communicate_df["point_to_point"] + communicate_df["row_broadcast"] + communicate_df["col_broadcast"]) * 100  # TODO: extract data from files
+    # all this is used to approximate the error for the ratio
+    computation = np.mean(compute_times)
+    communication = np.mean(communicate_times)
+    computation_var = np.var(compute_times)
+    communication_var = np.var(communicate_times)
+    # Var(X + Y) = Var(X) + Var(Y) + 2Cov(X, Y) (see sum of correlated variables on wikipedia)
+    total_time = computation + communication
+    total_time_var = computation_var + communication_var + 2 * np.cov(communicate_times, compute_times)[1][0]
+    # Var(R / S) = (mu_R / mu_S)^2 ( Var(R)/mu_R^2 - 2 Cov(R, S) / (mu_R mu_S) + Var(S)/mu_S^2)
+    ratio = computation / total_time
+    # NOTE: the ratio is only an approximation (see https://www.stat.cmu.edu/~hseltman/files/ratio.pdf)
+    #       becuase the ratio random variable X / Y is often Cauchy and thus has undefined variance
+    ratio_var = (computation / total_time) ** 2 \
+                 * ((computation_var / (computation ** 2))
+                    - 2 * np.cov(compute_times, compute_times + communicate_times)[0][1] / (computation * total_time)
+                    + (communication_var / (communication ** 2)))
 
-        # add to plot
-        xs.append(p)
-        print("{0} err={1}".format(communicate_time + compute_time, error_std))
-        print("ratio: {0}".format(compute_time / (communicate_time + compute_time)))
-        ys.append(np.log(compute_time + communicate_time))
-        err.append(np.log(error_std))
+    # alternatively, ...
+    ratio_var = np.var(compute_times / (compute_times + communicate_times))
 
-    axs[0].set_title("Total computation and communication time for various input sizes")
-    axs[0].set_xlabel("Problem size")
-    axs[0].set_ylabel("Execution time in nanoseconds")
-    axs[0].errorbar(x=xs, y=ys, yerr=err, marker="D", markersize=6, capsize=5, elinewidth=2)
+    # pack the means and stds up into a dict and return them along with an array of the
+    #   timing dataframes
+    return {
+        'computation_time': computation,
+        'computation_err': np.sqrt(computation_var),
+        'communication_time': communication,
+        'communication_err': np.sqrt(communication_var),
+        'total_time': total_time,
+        'total_time_err': np.sqrt(total_time_var),
+        'ratio': ratio,
+        'ratio_err': np.sqrt(ratio_var),
+        'finish_time': np.mean(finish_times),
+        'finish_time_err': np.std(finish_times),
+    }, timing_dfs
 
-    plt.show()
 
-
-def read_timings(filename):
-    return pd.read_csv(filename)
-
-def find_compute_ratio(df):
+def stall_until_last_one_finished(df):
+    """
+    Returns a new dataframe with updated communication times, taking into account that all
+    PEs must stall until the last one has finished its computation.
+    :param df:
+    :return: pandas Dataframe
+    """
     df['finish_time'] = df["computation_time"] + df['total_communication_time']
     finish_time = max(df['finish_time'])
-    print(finish_time)
+    # all the processing elements must stall until the last one has finished its computation
     df['total_communication_time'] = df['total_communication_time'] + (finish_time - df['finish_time'])
 
-    communication = sum(df['total_communication_time'])
-    compute = sum(df['computation_time'])
-    return compute / (compute + communication)
+    df['finish_time'] = df['computation_time'] + df['total_communication_time']
+    return df
 
-
-def plot_ratio_scaling(filenames):
+def plot_scaling(base_path, ns, ps, y_func, y_err_func):
+    """
+    Utility function for plotting scaling with legend labels etc.
+    :param base_path: Should be on the form "somewhere/subpath" where there are files on the form
+                    "somewhere/subpath-n-X-p-Y-.d.csv"
+    :param ns:
+    :param ps:
+    :param y_func:
+    :param y_err_func:
+    :return:
+    """
     fig, ax = plt.subplots(figsize=(5, 7))
-    ax.set_ylim([0, 1])
+    for p in ps:
+        ys = []
+        err = []
+        for n in ns:
+            timings, _ = read_and_compute_errors(f"{base_path}-n-{n}-p-{p}")
+            ys.append(y_func(timings))
+            err.append(y_err_func(timings))
+        # plot scaling with errorbars
+        ax.errorbar(ns, ys, yerr=err, label=f"{p} x {p} cores", capsize=7.0, fmt='', ls='--')
+    # format plot
+    ax.legend()
+    return fig, ax
 
-    xs = []
-    ys = []
-    for f in filenames:
-        df = read_timings(f)
-        xs.append(math.sqrt(df['n'].iloc[0]))
-        ys.append(find_compute_ratio(df))
-        print(xs, ys)
-
-    ax.plot(xs, ys)
+def plot_total_time_scaling(base_path, ns, ps):
+    # nanoseconds to milliseconds
+    fig, ax = plot_scaling(base_path, ns, ps, lambda t: t['finish_time'] * 1E-6, lambda t: t['finish_time_err'] * 1E-6)
+    ax.set_yscale('log', nonpositive='clip')
+    ax.set_xlabel("Problem size in number of graph vertices")
+    ax.set_ylabel("Time (ms)")
+    ax.set_title("Total execution time")
     plt.show()
 
-def plot_ratio(timing_df):
-    compute_df = timing_df["computation", "computation"]
-    # merge the before and after data
-    communicate_df = timing_df["communication_before"] + timing_df["communication_after"]
-    # mean computation time by phase
-    compute_times = compute_df.groupby("phase").mean()
-    compute_err = compute_df.groupby("phase").std()
-    # mean communication time by phase
-    communicate_times = communicate_df.groupby("phase").mean().sum(axis=1)
 
-    stats_df = pd.concat([compute_times, communicate_times, compute_err], axis=1)
-    stats_df.columns = ["computation", "communication", "error"]
-
-    stats_df["computation_ratio"] = stats_df["computation"] / (stats_df["computation"] + stats_df["communication"])
-    stats_df["error_ratio"] = stats_df["error"] / (stats_df["computation"] + stats_df["communication"])
-
-    fig, ax = plt.subplots(figsize=(5, 4))
-    ax.set_title("Computation to communication ratio in different phases")
-    ax.set_xlabel("Phase")
-    ax.set_ylabel("Computation to communication ratio")
-    ax.set_ylim([0, 1])
-    ax.errorbar(x=stats_df["computation_ratio"].index,
-                y=stats_df["computation_ratio"], yerr=stats_df["error_ratio"],
-                marker="D", markersize=6, capsize=5, elinewidth=2)
-    # annotate the values
-    for i, v in enumerate(stats_df["computation_ratio"]):
-        ax.text(i, v - 0.05, "%.2f" % v, ha="left")
+def plot_ratio_scaling(base_path, ns, ps):
+    fig, ax = plot_scaling(base_path, ns, ps, lambda t: t['ratio'], lambda t: t['ratio_err'])
+    ax.set_xlabel("Problem size in number of graph vertices")
+    ax.set_ylabel("Parallel efficiency")
+    ax.set_ylim([0, 1.0])
+    ax.set_title("Parallel efficiency")
     plt.show()
-
-    return stats_df
-
-
-def find_overall_ratio(timing_df):
-    # all the phases happen in parallel
-    phase_agg_df = timing_df.groupby("phase").mean()
-    # find the time to compute everything
-    computation_time = phase_agg_df["computation"].sum()
-    # and total communication time
-    communication_time = phase_agg_df["communication_before"].sum() + phase_agg_df["communication_after"].sum()
-    return computation_time / (computation_time + communication_time.sum())
 
 
 if __name__ == "__main__":
-    global df
-    df = read_timings("timing-data/cal-50.csv")
+    # global df
+    # df = read_timings("timing-data/cal-random-sandy-bridge-n-20-p-4")
     # plot_ratio(df)
+    plot_total_time_scaling("timing-data/cal-random-sandy-bridge", [i for i in range(10, 101, 10)], [4, 8])

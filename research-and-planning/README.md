@@ -300,6 +300,26 @@ Some suggestions from Prof R. Mullins:
   (It's possible there's a lot of cache misses in the code, which might slow down). This method should prevent that and
   also minimize memory lookup.
 
+## Conclusions on latency constants to use for evaluation
+
+In the ring interconnect used to implement cache coherency in the Sandy Bridge microarcitecture, the data ring used
+has a bandwidth of 32 bytes per cycle. I will therefore make the assumption that when sending data from one private
+L1 cache to another through the ring interconnect (using cache coherncy protocol), this is the available bandwidth.
+
+[Source](https://en.wikichip.org/wiki/intel/microarchitectures/sandy_bridge_(client)#Ring_Interconnect)
+
+Regarding the latency of such communication, there are very many factors playing in. Will therefore use measuresement
+done by T. M., Jones, where measures that the Sandy Bridge arcitecture would in most cases use 107 clock cycles
+to send data [source](https://www.cl.cam.ac.uk/~tmj32/papers/docs/campanoni17-cacm.pdf), which is round trip time
+from private L1 to private L1. In reality, this is only the case when one of the cores _writes_ data, and in our case
+usually read-only, so would be more realistic to go to shared L2 cache, which is about 20 cycle latency RTT, but
+we are assuming only private memory in our model of computation. We will at later time model benefits of shared
+memory with our data centre model... TODO: send an email just asking if OK to assume the bandwidth thing based on
+cpuwiki? i.e. more than 1 word per cycle? Also choose to use the clock speed of my own laptop, since scaling the
+computation speed to that of another CPS would also cause the communication time to scale by the same amount, so
+ratio does not change.
+
+Also make the assumption that broadcast latency and bandwidth is the same as that for point to point communication.
 
 # Notes from February 4th
 
