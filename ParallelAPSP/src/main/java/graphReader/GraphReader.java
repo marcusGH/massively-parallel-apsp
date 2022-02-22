@@ -6,10 +6,13 @@ import util.Triple;
 import java.io.*;
 import java.text.ParseException;
 import java.util.*;
+import java.util.Map.Entry;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import util.Matrix;
+
+import javax.swing.*;
 
 /**
  * TODO: write a bit more documentation on the methods here
@@ -22,6 +25,7 @@ public class GraphReader {
     final boolean graphIsDirected;
 
     private Map<Integer, Integer> nodeIDRemapping;
+    private Map<Integer, Integer> nodeIDRemappingInverse;
 
     public GraphReader(String filename, boolean isDirected) throws ParseException {
         this.graphIsDirected = isDirected;
@@ -154,6 +158,7 @@ public class GraphReader {
         }
         // save in case want to recover the mappings
         this.nodeIDRemapping = idMap;
+        this.nodeIDRemappingInverse = idMap.entrySet().stream().collect(Collectors.toMap(Entry::getValue, Entry::getKey));
 
         // perform remapping
         return edges.stream().map(triple ->
@@ -168,8 +173,12 @@ public class GraphReader {
      * @param originalID integer id in original graph
      * @return integer id in internally used graph
      */
-    public int getNodeIdBeforeReIndex(int originalID) {
+    public int getNodeIDAfterReindex(int originalID) {
         return this.nodeIDRemapping.get(originalID);
+    }
+
+    public int getNodeIdBeforeReIndex(int newID) {
+        return this.nodeIDRemappingInverse.get(newID);
     }
 
     private Set<Integer> getNodeIDSet(List<Triple<Integer, Integer, Double>> edges) {

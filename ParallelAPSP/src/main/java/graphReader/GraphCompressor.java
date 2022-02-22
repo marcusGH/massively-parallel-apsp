@@ -20,7 +20,13 @@ public class GraphCompressor extends APSPSolver {
     private final APSPSolver solver;
     private final GraphReader compressedGraph;
 
+    // Maps from ID in original graph to list of IDs in original graph of nodes that are also
+    //   present in the compressed graph
     private Map<Integer, List<Integer>> closestNodesInCompressedGraph;
+    // Entry (u, v) maps to a list of nodes L. The edge (u, v) should be present in the compressed graph,
+    //   and list L contains all the 2-degree nodes that make a path from u to v in the original graph.
+    //   If (u, v) was an edge in the original graph, the list L is simply {u, v}.
+    private Map<Integer, Map<Integer, List<Integer>>> compressedTwoDegreePaths;
     private Set<Integer> twoDegreeNodes;
 
     // TODO: when extracting path that has been compressed, make many sets so we can map node ID to what ID it's in the
@@ -51,6 +57,23 @@ public class GraphCompressor extends APSPSolver {
      */
     public GraphCompressor(GraphReader graphReader, Function<GraphReader, ? extends APSPSolver> solverConstructor) {
         super(graphReader);
+        this.compressedTwoDegreePaths = new HashMap<>();
+
+        // we add all the edges in the original graph
+        List<List<Pair<Integer, Double>>> adjList = graphReader.getAdjacencyList();
+        for (int u = 0; u < adjList.size(); u++) {
+            // consider edge (u, v)
+            for (Pair<Integer, Double> edge : adjList.get(u)) {
+                // first time finding an edge going out of u
+                if (!this.compressedTwoDegreePaths.containsKey(u)) {
+                    this.compressedTwoDegreePaths.put(u, new HashMap<>());
+                }
+                // by default, map each edge (u, v) back to itself, but we change this mapping when compressing
+                this.compressedTwoDegreePaths.get(u).put(edge.getKey(), Arrays.asList(u, edge.getKey()));
+            }
+        }
+
+        // compress the graph, and then create the solver for it
         this.compressedGraph = removeTwoDegreeNodes(graphReader);
         this.solver = solverConstructor.apply(this.compressedGraph);
 
@@ -64,6 +87,7 @@ public class GraphCompressor extends APSPSolver {
                 this.closestNodesInCompressedGraph.put(i, Collections.singletonList(i));
             }
         }
+
     }
 
     /**
@@ -125,19 +149,20 @@ public class GraphCompressor extends APSPSolver {
 
             LOGGER.fine("GraphCompressor: Starting flood-fill from node " + n);
 
-            // set up flood-fill
-            Queue<Integer> bfsQueue = new LinkedList<>();
-            bfsQueue.add(n);
+            // set up flood-fill (we do DFS so that there's at most 2 different contiguous paths)
+            Stack<Integer> dfsQueue = new Stack<>();
+            dfsQueue.add(n);
             visited.set(n, true);
 
             // so that we can later recover paths
-            Set<Integer> removedNodes = new HashSet<>();
+            LinkedList<Integer> removedNodes = new LinkedList<>();
 
-            while (!bfsQueue.isEmpty()) {
-                int cur = bfsQueue.poll();
+            while (!dfsQueue.isEmpty()) {
+                int cur = dfsQueue.pop();
                 LOGGER.fine("GraphCompressor: Currently looking at neighbours of node " + cur);
                 // go through all 2 neighbours
                 for (Pair<Integer, Double> next : adjList.get(cur)) {
+                    LOGGER.fine("GraphCompressor:   Looking at neighbour " + next.getKey());
                     boolean removedNode;
                     // found edge node
                     if (!this.twoDegreeNodes.contains(next.getKey())) {
@@ -155,7 +180,7 @@ public class GraphCompressor extends APSPSolver {
                     else if (!visited.get(next.getKey())){
                         // add to queue
                         visited.set(next.getKey(), true);
-                        bfsQueue.add(next.getKey());
+                        dfsQueue.add(next.getKey());
                         removedNode = true;
                     }
                     // we found a node we already visited
@@ -168,7 +193,20 @@ public class GraphCompressor extends APSPSolver {
                         totalWeight += next.getValue();
                         edgeSet.remove(new Triple<>(cur, next.getKey(), next.getValue()));
                         edgeSet.remove(new Triple<>(next.getKey(), cur, next.getValue()));
-                        removedNodes.add(cur);
+                        // when starting flood fill on the source s, we will consider both edges (s, u) and (s, v)
+                        //   but we only remove node s once, so skip the second add of s
+                        if (removedNodes.size() == 1 && removedNodes.getFirst() == cur) {
+                            continue;
+                        }
+                        // we have not explored the other branch of the source node
+                        if (dfsQueue.size() == 2) {
+                            removedNodes.addLast(cur);
+                        } else if (dfsQueue.size() <= 1) {
+                            removedNodes.addFirst(cur);
+                        } else {
+                            throw new IllegalStateException("When DFSing on two-degree nodes, there should only" +
+                                    " every be at most two branches to consider.");
+                        }
                     }
                 }
             }
@@ -183,7 +221,16 @@ public class GraphCompressor extends APSPSolver {
             for (int i : removedNodes) {
                 this.closestNodesInCompressedGraph.put(i, edgeNodes);
             }
+            // for new edges, create a map to a list of all the removed edges, but first verify that the list is a path
+            for (int i = 1; i < removedNodes.size(); i++) {
+                if (!graphReader.hasEdge(removedNodes.get(i - 1), removedNodes.get(i))) {
+                    throw new IllegalStateException("The list of removed nodes should constitute a path");
+                }
+            }
+            this.compressedTwoDegreePaths.get(edgeNodes.get(0)).put(edgeNodes.get(1), removedNodes);
+            this.compressedTwoDegreePaths.get(edgeNodes.get(1)).put(edgeNodes.get(0), removedNodes);
         }
+
         LOGGER.fine("GraphCompressor compressed edge set to: " + edgeSet.toString());
 
         GraphReader newGraphReader = new GraphReader(new ArrayList<>(edgeSet), false);
@@ -272,21 +319,23 @@ public class GraphCompressor extends APSPSolver {
                 // both of these paths do not include the start and end node
                 Pair<Number, List<Integer>> pathStart = findTwoDegreePath(i, start);
                 Pair<Number, List<Integer>> pathEnd = findTwoDegreePath(end, j);
+                // the compressed graph is reindexed, so these are the IDs originally used in uncompressed graph
+                int startCompressedID = this.compressedGraph.getNodeIDAfterReindex(start);
+                int endCompressedID = this.compressedGraph.getNodeIDAfterReindex(end);
 
                 // pathLength = (distance from start to end in the compressed graph)
                 //              + (distance from i to start) + (distance from end to j)
                 double pathLength = pathStart.getKey().doubleValue() + pathEnd.getKey().doubleValue() +
-                        this.solver.getDistanceFrom(this.compressedGraph.getNodeIdBeforeReIndex(start),
-                                this.compressedGraph.getNodeIdBeforeReIndex(end)).doubleValue();
+                        this.solver.getDistanceFrom(startCompressedID, endCompressedID).doubleValue();
                 if (pathLength < shortestDist) {
                     shortestDist = pathLength;
                     shortestPath = new ArrayList<>();
                     // start path
                     shortestPath.add(i);
                     shortestPath.addAll(pathStart.getValue());
+                    LOGGER.fine("PathReconstruction: Path after start: " + shortestPath);
                     // middle path
-                    Optional<List<Integer>> middlePath = this.solver.getShortestPath(
-                            this.compressedGraph.getNodeIdBeforeReIndex(start), this.compressedGraph.getNodeIdBeforeReIndex(end));
+                    Optional<List<Integer>> middlePath = this.solver.getShortestPath(startCompressedID, endCompressedID);
                     // if the edge nodes are equal, we have a middle path of length 0 that creates a full valid path
                     if (middlePath.isEmpty() && start == end) {
                         shortestPath.add(start);
@@ -294,12 +343,29 @@ public class GraphCompressor extends APSPSolver {
                     else if (middlePath.isEmpty()) {
                         throw new IllegalStateException("There should be a path from start to end when a better distance was found");
                     } else {
-                        shortestPath.addAll(middlePath.get());
+                        // we might have an edge that was not present in the original graph, so we translate all the edges
+                        //   to either its original index edge or a list of edges in the original graph if it was compressed
+                        for (int node = 1; node < middlePath.get().size(); node++) {
+                            List<Integer> middlePathList = new ArrayList<>(middlePath.get());
+                            LOGGER.fine("PathReconstruction:   Middle path list: " + middlePathList);
+                            int beforeNode = this.compressedGraph.getNodeIdBeforeReIndex(middlePathList.get(node - 1));
+                            int afterNode = this.compressedGraph.getNodeIdBeforeReIndex(middlePathList.get(node));
+                            shortestPath.add(beforeNode);
+                            shortestPath.addAll(this.compressedTwoDegreePaths.get(beforeNode).get(afterNode));
+                            shortestPath.add(afterNode);
+                        }
                     }
+                    LOGGER.fine("PathReconstruction: Path after middle: " + shortestPath);
                     // end path
                     shortestPath.addAll(pathEnd.getValue());
                     shortestPath.add(j);
 
+                    // remove repeats
+                    Set<Integer> set = new LinkedHashSet<>(shortestPath);
+                    shortestPath.clear();
+                    shortestPath.addAll(set);
+
+                    LOGGER.fine("PathReconstruction: Complete path: " + shortestPath);
 //                    System.out.println(pathStart);
 //                    System.out.println(middlePath);
 //                    System.out.println(pathEnd);
@@ -337,7 +403,7 @@ public class GraphCompressor extends APSPSolver {
     }
 
     public static void main(String[] args) {
-        LoggerFormatter.setupLogger(LOGGER, Level.INFO);
+        LoggerFormatter.setupLogger(LOGGER, Level.FINE);
 
         GraphReader graphReader;
         try {
@@ -350,7 +416,14 @@ public class GraphCompressor extends APSPSolver {
         GraphCompressor graphCompressor = new GraphCompressor(graphReader, getCurriedFoxOttoAPSPSolverConstructor(4));
         graphCompressor.solve();
         System.out.println(graphCompressor.getCompressedGraph().getEdges());
-        System.out.println(graphCompressor.getShortestPath(2, 7));
-        System.out.println(graphCompressor.getDistanceFrom(2, 7));
+        System.out.println(graphCompressor.getShortestPath(3, 7));
+        System.out.println(graphCompressor.getDistanceFrom(3, 7));
+
+        // Current bugs:
+        // * If there are multiples of an edge, we might need to use the edge from the original graph instead of the
+        //   compressed on if it is shorter. However, this will be a pain to fix, so just assume the uncompressed edge
+        //   is shorter in those cases by creating a check for Graph::hasEdge in the middle path thing
+        // * When uncompressing the edges, the order may be reversed. To fix this, check if hasEdge start middle.get(0)
+        //   and if not, just reverse the list before adding it
     }
 }
