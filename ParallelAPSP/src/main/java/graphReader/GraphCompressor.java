@@ -20,17 +20,23 @@ public class GraphCompressor extends APSPSolver {
     private final APSPSolver solver;
     private final GraphReader compressedGraph;
 
-    // Maps from ID in original graph to list of IDs in original graph of nodes that are also
-    //   present in the compressed graph
+    /**
+     * Maps from ID in original graph to list of nodes IDs both in the original and compressed graph. The codomain
+     * of this mapping uses the original IDs, so they are not reindexed.
+     */
     private Map<Integer, List<Integer>> closestNodesInCompressedGraph;
-    // Entry (u, v) maps to a list of nodes L. The edge (u, v) should be present in the compressed graph,
-    //   and list L contains all the 2-degree nodes that make a path from u to v in the original graph.
-    //   If (u, v) was an edge in the original graph, the list L is simply {u, v}.
+    /**
+     * Entry (u, v) maps to a list of nodes L. The edge (u, v) should be present in the compressed graph,
+     * and list L contains all the 2-degree nodes that make a path from u to v in the original graph,
+     * excluding both nodes u and v.
+     * If (u, v) was an edge in the original graph, the list L is simply {}. (to be consistent with the start/end exclusion above)
+     */
     private Map<Integer, Map<Integer, List<Integer>>> compressedTwoDegreePaths;
+    /**
+     * Entry (u, v) maps to the total path length of the list of nodes L, as described in {@link #compressedTwoDegreePaths}
+     */
+    private Map<Integer, Map<Integer, Double>> compressedTwoDegreePathLengths;
     private Set<Integer> twoDegreeNodes;
-
-    // TODO: when extracting path that has been compressed, make many sets so we can map node ID to what ID it's in the
-    //       graph or what ID of the 2-edge streams it's in
 
     /**
      * The passed graphReader must have read the graph as an <strong>undirected</strong> graph. This constructor
@@ -58,6 +64,7 @@ public class GraphCompressor extends APSPSolver {
     public GraphCompressor(GraphReader graphReader, Function<GraphReader, ? extends APSPSolver> solverConstructor) {
         super(graphReader);
         this.compressedTwoDegreePaths = new HashMap<>();
+        this.compressedTwoDegreePathLengths = new HashMap<>();
 
         // we add all the edges in the original graph
         List<List<Pair<Integer, Double>>> adjList = graphReader.getAdjacencyList();
@@ -67,9 +74,12 @@ public class GraphCompressor extends APSPSolver {
                 // first time finding an edge going out of u
                 if (!this.compressedTwoDegreePaths.containsKey(u)) {
                     this.compressedTwoDegreePaths.put(u, new HashMap<>());
+                    this.compressedTwoDegreePathLengths.put(u, new HashMap<>());
                 }
                 // by default, map each edge (u, v) back to itself, but we change this mapping when compressing
-                this.compressedTwoDegreePaths.get(u).put(edge.getKey(), Arrays.asList(u, edge.getKey()));
+//                this.compressedTwoDegreePaths.get(u).put(edge.getKey(), Arrays.asList(u, edge.getKey()));
+                this.compressedTwoDegreePaths.get(u).put(edge.getKey(), Collections.emptyList()); // TODO: does this work?
+                this.compressedTwoDegreePathLengths.get(u).put(edge.getKey(), edge.getValue());
             }
         }
 
@@ -102,13 +112,37 @@ public class GraphCompressor extends APSPSolver {
     }
 
     /**
-     * Algorithm:
-     * Make a set of all nodes with degree 2
-     * Label all vertices as unvisited
-     * Do flood-fill on all such nodes, marking nodes as visited
-     * When each flood-fill ends, contract the edges and add a new big edge, and remove all the edges found
-     * If we end up with multiples edges between a pair of nodes, all the edges are stored, but all but the shortest
-     * edge will be removed later in {@link GraphReader#getAdjacencyMatrix()}.
+     * Returns a new graph reader that holds the compressed graphs, but with all of the nodes with degree 2
+     * removed (with some exceptions). There are also the following side effects: All of the following variables
+     * are populated such that shortest paths in the original graph can be reconstructed when the GraphCompressor
+     * is used as an APSPSolver:
+     * <ul>
+     *     <li> {@link #closestNodesInCompressedGraph} </li>
+     *     <li> {@link #compressedTwoDegreePathLengths}</li>
+     *     <li> {@link #compressedTwoDegreePaths} </li>
+     * </ul>
+     *
+     * <p>
+     *     <h2>The algorithm</h2>
+     *     We do a flood-fill on the set of nodes with degree 2, keeping track of which vertices that have been
+     *     visited, such that we only search through each contagious set of 2-degree nodes once. For each connected set
+     *     of 2-degree nodes, we do a DFS with additional functionality:
+     *     <ul>
+     *         <li>Every time we traverse an edge, we add its weight to an accumulator. Additionally, the edge is
+     *         marked for removal, causing it to be removed from the edgeset of the original graph. There's an
+     *         exception for Q-patterns, with more details in the code.</li>
+     *         <li>We keep track of the removed nodes in a list, such that each edge in the compressed graph map back
+     *         to a list of edges in the original graph. The {@link #compressedTwoDegreePaths} keeps track of these
+     *         mappings and {@link #compressedTwoDegreePathLengths} keeps track of the associated path length, and is
+     *         used to determine which of two possible list of edges should be used when the compressed graph has multiple
+     *         edges between one pair of nodes. Additionally, we populate the list {@code removedNodes} in such a way
+     *         that the order of nodes is the same as in the original graph, which is made feasible by using DFS instead
+     *         of BFS</li>
+     *         <li>After the DFS, we create a mapping from each of the removed vertices to their edge nodes, which are
+     *         the 3-degree nodes present in both the original- and compressed graph. We also keep a mapping from the
+     *         edge nodes to the list of {@code removedNodes} such that we can reconstruct paths later.</li>
+     *     </ul>
+     * </p>
      *
      * @return a graph reader of the compressed graph
      */
@@ -137,10 +171,12 @@ public class GraphCompressor extends APSPSolver {
         LOGGER.info("GraphCompressor starting to compress graph of size " + graphReader.getNumberOfNodes()
                 + " where there are " + this.twoDegreeNodes.size() + " nodes with degree 2");
 
+        // maps from removed nodes to list of nodes in both original and compressed graph
         this.closestNodesInCompressedGraph = new HashMap<>();
 
-        // do flood-fill on all of these nodes
+        // do flood-fill on all of the nodes with degree 2
         for (int n : this.twoDegreeNodes) {
+            // accumulate the total weight of the all the edges removed
             double totalWeight = 0.0;
             // there should only be two nodes with non-2-degree at each end of the sequence
             List<Integer> edgeNodes = new ArrayList<>(2);
@@ -164,11 +200,16 @@ public class GraphCompressor extends APSPSolver {
                 for (Pair<Integer, Double> next : adjList.get(cur)) {
                     LOGGER.fine("GraphCompressor:   Looking at neighbour " + next.getKey());
                     boolean removedNode;
-                    // found edge node
+                    // found edge node (not used before)
                     if (!this.twoDegreeNodes.contains(next.getKey())) {
-                        // we have a circle with outlier ("Q" pattern)
+                        // we have a circle with outlier ("Q" pattern):
+                        //        A ----- D ----- E . . .
+                        //        |       |
+                        //        B-------C
+                        // in that case, we want to mark both D and either A or C as edge nodes,
+                        //   and D is already an edge node so we mark A or C (whatever is cur)
                         if (edgeNodes.size() == 1 && next.getKey().equals(edgeNodes.get(0))) {
-                            // so add this node, even if it's degree is 2
+                            // add current node, even if it's degree is 2
                             edgeNodes.add(cur);
                             removedNode = false;
                         } else {
@@ -198,7 +239,15 @@ public class GraphCompressor extends APSPSolver {
                         if (removedNodes.size() == 1 && removedNodes.getFirst() == cur) {
                             continue;
                         }
-                        // we have not explored the other branch of the source node
+                        // when doing DFS on a set of nodes each with at most degree 2, we will have the following:
+                        //   o --- o --- o --- o --- o --- o
+                        //   \_____/     ^           ^
+                        //      A       source       cur
+                        //
+                        //  The size of dfsQueue will be 2 if we have not yet explored A, and size 1 if we have.
+                        //  By appending to the start or end of the list based on whether we have explored nodes A or
+                        //    not, we can reconstruct the list of removed nodes in correct order.
+                        // We have not explored the other branch of the source node (A)
                         if (dfsQueue.size() == 2) {
                             removedNodes.addLast(cur);
                         } else if (dfsQueue.size() <= 1) {
@@ -227,8 +276,23 @@ public class GraphCompressor extends APSPSolver {
                     throw new IllegalStateException("The list of removed nodes should constitute a path");
                 }
             }
-            this.compressedTwoDegreePaths.get(edgeNodes.get(0)).put(edgeNodes.get(1), removedNodes);
-            this.compressedTwoDegreePaths.get(edgeNodes.get(1)).put(edgeNodes.get(0), removedNodes);
+            // don't add the compressed path back if there is a shorter edge in the multigraph, and add one of course
+            //   we don't have this edge. We add the -\infty default so that we enter the branch of the second key does
+            //   not exist i.e. we don'thave the edge
+            if (!this.compressedTwoDegreePathLengths.containsKey(edgeNodes.get(0)) ||
+                    totalWeight < this.compressedTwoDegreePathLengths.get(edgeNodes.get(0)).getOrDefault(edgeNodes.get(1), Double.POSITIVE_INFINITY)) {
+                // add the list in the appropriate order
+                if (!removedNodes.getFirst().equals(edgeNodes.get(0))) {
+                    Collections.reverse(removedNodes);
+                }
+                this.compressedTwoDegreePaths.get(edgeNodes.get(0)).put(edgeNodes.get(1), removedNodes);
+                List<Integer> removedNodesRev = new LinkedList<>(removedNodes);
+                Collections.reverse(removedNodesRev);
+                this.compressedTwoDegreePaths.get(edgeNodes.get(1)).put(edgeNodes.get(0), removedNodesRev);
+                // keep track of the path length to avoid multi-edge graphs and make sure we only keep shortest edge
+                this.compressedTwoDegreePathLengths.get(edgeNodes.get(0)).put(edgeNodes.get(1), totalWeight);
+                this.compressedTwoDegreePathLengths.get(edgeNodes.get(1)).put(edgeNodes.get(0), totalWeight);
+            }
         }
 
         LOGGER.fine("GraphCompressor compressed edge set to: " + edgeSet.toString());
@@ -245,12 +309,13 @@ public class GraphCompressor extends APSPSolver {
     /**
      * Finds the shortest path from i to j under the assumption that a path of
      * length 0 or longer exists from i to j traversing only nodes of degree 2
-     * as intermediate nodes.
+     * as intermediate nodes. This search is done on the original graph, so original node IDs
+     * are used, not the reindexed node IDs in the compressed graph.
      *
      * @param i start node
      * @param j end node
      * @return a tuple of the length of the path and a list of nodes
-     * in the path, excluding both the start and end nodes
+     * in the path, <strong>excluding</strong> both the start and end nodes
      */
     private Pair<Number, List<Integer>> findTwoDegreePath(int i, int j) {
         if (i == j) {
@@ -304,6 +369,31 @@ public class GraphCompressor extends APSPSolver {
         return new Pair<>(dist.get(j), path);
     }
 
+    /**
+     * Returns the shortest path and its length from i to j in the original graph.
+     *
+     * <p>
+     *     <h3>The algorithm</h3>
+     *     For both i and j, we have one of two cases: The node is not in the original graph, in which case we consider
+     *     the two closest nodes to it that are both in the compressed and original graph. The other case is that it's
+     *     in the original graph, in which case we only consider the node itself. These cases are implemented in the
+     *     construction of {@link #closestNodesInCompressedGraph}.
+     * <br>
+     *     We then iterate all the cases and consider all paths on the form i -> start -> end -> j, where start and end
+     *     are the considered nodes described above such that they are in the compressed graph. We find the length of
+     *     the path and reconstruct it by using the auxiliary method {@link #findTwoDegreePath(int, int)} for paths
+     *     i -> start and end -> j, and use the state stored in {@link #compressedTwoDegreePaths} together with the
+     *     APSPSolver {@link #solver} to extrapolate the paths solved for the compressed graph onto paths in the original
+     *     graph. This is done by using all the same edges in the solver's solution, but changing the indices to those
+     *     before compression as well as expanding compressed edges to the list of nodes that were in the original graph.
+     * </p>
+     *
+     * @param i start node ID (in original graph)
+     * @param j end node ID (in original graph)
+     * @return a tuple (n, L), where n is the length of the path between i and j in the original graph, and
+     * L is the list of nodes constituting the path, on the form [i, ..., j]. We return L = Optional.empty()
+     * if no such path exists.
+     */
     private Pair<Number, Optional<List<Integer>>> getShortestDistanceAndPathAux(int i, int j) {
         if (null == this.solver) {
             throw new IllegalStateException("This method is not available if a APSPSolver has not been provided upon construction");
@@ -416,8 +506,8 @@ public class GraphCompressor extends APSPSolver {
         GraphCompressor graphCompressor = new GraphCompressor(graphReader, getCurriedFoxOttoAPSPSolverConstructor(4));
         graphCompressor.solve();
         System.out.println(graphCompressor.getCompressedGraph().getEdges());
-        System.out.println(graphCompressor.getShortestPath(3, 7));
-        System.out.println(graphCompressor.getDistanceFrom(3, 7));
+        System.out.println(graphCompressor.getShortestPath(4, 7));
+        System.out.println(graphCompressor.getDistanceFrom(4, 7));
 
         // Current bugs:
         // * If there are multiples of an edge, we might need to use the edge from the original graph instead of the
