@@ -22,7 +22,7 @@ public class Evaluation {
 
     private static final String RANDOM_GRAPH_PATH = "../test-datasets/cal-compressed-random-graphs";
     private static final String RESULT_SAVE_PATH = "../evaluation/timing-data";
-    private static final int AVG_REPETITIONS = 40;
+    private static final int AVG_REPETITIONS = 20;
     private static final Function<Integer, Topology> TOPOLOGY = SquareGridTopology::new;
     private static final Class<? extends MinPlusProduct> FOXOTTO = GeneralisedFoxOtto.class;
     private static final Logger LOGGER = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
@@ -53,7 +53,7 @@ public class Evaluation {
         // we use this one for now
         MultiprocessorAttributes multiprocessor = getSandyBridgeAttributes();
         for (int iter = 0; iter < numRepetitions; iter++) {
-            LOGGER.info(String.format("Evaluation is measuring scaling for repetition %d / %d", iter + 1, numRepetitions));
+            LOGGER.info(String.format(" === Evaluation is measuring scaling for repetition %d / %d ===\n", iter + 1, numRepetitions));
             for (int i : problemSizes) {
                 LOGGER.info(String.format("Evaluation is measuring scaling for n=%d.", i));
                 // fetch the input
@@ -85,8 +85,10 @@ public class Evaluation {
         Evaluation evaluation = new Evaluation();
         setupLogger();
 
-        List<Integer> ns = Arrays.asList(10, 20, 30, 40, 50, 60, 70, 80, 90, 100);
-        evaluation.measureScaling(32, ns, 3);
+        List<Integer> ns = Arrays.asList(10, 20, 30, 40, 50, 60, 70, 80, 90, 100,
+                150, 200, 250, 300, 350, 400, 450, 500, 550, 600, 650, 700);
+//        List<Integer> ns = Arrays.asList(700);
+        evaluation.measureScaling(16, ns, 5);
 
     }
 }

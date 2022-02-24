@@ -124,6 +124,7 @@ public class RepeatedMatrixSquaring extends APSPSolver {
         int numIterations = (int) Math.ceil(Math.log(this.n) / Math.log(2));
         LOGGER.info("The graph size is " + this.n + " so " + numIterations + " MinPlusProduct iterations are required.");
         for (int i = 0; i < numIterations; i++) {
+            LOGGER.info("Starting Manager to square the matrix (iteration " + i + " / " + numIterations + ")");
             // run the algorithm
             try {
                 manager.doWork();

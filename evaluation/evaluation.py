@@ -33,9 +33,10 @@ def read_and_compute_errors(filename):
     print(f"Found {len(timing_dfs)} timings for the specified file")
     if len(timing_dfs) > 1:
         print("Dropping first iteration because usually much higher than rest.")
-        timing_dfs = timing_dfs[1:]
-        compute_times = np.array(compute_times[1:])
-        communicate_times = np.array(communicate_times[1:])
+        timing_dfs = timing_dfs[0:]
+        compute_times = np.array(compute_times[0:])
+        communicate_times = np.array(communicate_times[0:])
+        finish_times = np.array(finish_times[0:])
 
     # all this is used to approximate the error for the ratio
     computation = np.mean(compute_times)
@@ -110,6 +111,10 @@ def plot_scaling(base_path, ns, ps, y_func, y_err_func):
             err.append(y_err_func(timings))
         # plot scaling with errorbars
         ax.errorbar(ns, ys, yerr=err, label=f"{p} x {p} cores", capsize=7.0, fmt='', ls='--')
+        # plot true scaling
+        # xspace = np.linspace(min(ns), max(ns), 1000)
+        # yspace = (xspace ** 3 * np.log(xspace)) * (ys[0] / (ns[0] ** 3 * np.log(ns[0])))
+        # ax.plot(xspace, yspace, label="n^3 log n")
     # format plot
     ax.legend()
     return fig, ax
@@ -137,4 +142,6 @@ if __name__ == "__main__":
     # global df
     # df = read_timings("timing-data/cal-random-sandy-bridge-n-20-p-4")
     # plot_ratio(df)
-    plot_total_time_scaling("timing-data/cal-random-sandy-bridge", [i for i in range(10, 101, 10)], [4, 8, 32])
+    ns = list(range(10, 101, 10)) + list(range(100, 701, 50))
+    # plot_total_time_scaling("timing-data/cal-random-sandy-bridge", ns, [16])
+    plot_ratio_scaling("timing-data/cal-random-sandy-bridge", ns, [16])
