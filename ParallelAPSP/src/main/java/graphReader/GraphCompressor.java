@@ -297,8 +297,8 @@ public class GraphCompressor extends APSPSolver {
             // don't add the compressed path back if there is a shorter edge in the multigraph, and add one of course
             //   we don't have this edge. We add the -\infty default so that we enter the branch of the second key does
             //   not exist i.e. we don'thave the edge
-            if (!this.compressedTwoDegreePathLengths.containsKey(edgeNodes.get(0)) ||
-                    totalWeight < this.compressedTwoDegreePathLengths.get(edgeNodes.get(0)).getOrDefault(edgeNodes.get(1), Double.POSITIVE_INFINITY)) {
+            if (null != this.compressedTwoDegreePathLengths && (!this.compressedTwoDegreePathLengths.containsKey(edgeNodes.get(0)) ||
+                    totalWeight < this.compressedTwoDegreePathLengths.get(edgeNodes.get(0)).getOrDefault(edgeNodes.get(1), Double.POSITIVE_INFINITY))) {
                 // add the list in the appropriate order
                 if (!removedNodes.getFirst().equals(edgeNodes.get(0))) {
                     Collections.reverse(removedNodes);
