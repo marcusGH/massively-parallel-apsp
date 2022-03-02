@@ -174,6 +174,9 @@ public class GraphReader {
      * @return integer id in internally used graph
      */
     public int getNodeIDAfterReindex(int originalID) {
+        if (!this.nodeIDRemapping.containsKey(originalID)) {
+            throw new NullPointerException(String.format("The node ID map does not have key %d, only keys: %s", originalID, this.nodeIDRemapping.keySet()));
+        }
         return this.nodeIDRemapping.get(originalID);
     }
 

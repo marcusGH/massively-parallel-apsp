@@ -36,7 +36,16 @@ public class GraphCompressor extends APSPSolver {
      * Entry (u, v) maps to the total path length of the list of nodes L, as described in {@link #compressedTwoDegreePaths}
      */
     private Map<Integer, Map<Integer, Double>> compressedTwoDegreePathLengths;
+
     private Set<Integer> twoDegreeNodes;
+
+    /**
+     * Whenever we compress a path U --- a --- b -- ... -- z --- V into an edge (U, V), the nodes {U, V} are added
+     * to this set. We need to keep track of these nodes when reconstructing two degree paths ({@link #findTwoDegreePath(int, int)}
+     * because we should not search nodes that are also in the compressed graph, and sometimes these include two degree nodes
+     * if we have a "Q"-pattern (as described in {@link #removeTwoDegreeNodes(GraphReader)}.
+     */
+    private Set<Integer> originalNodesUsedAsEdgesInCompression;
 
     /**
      * The passed graphReader must have read the graph as an <strong>undirected</strong> graph. This constructor
@@ -161,6 +170,8 @@ public class GraphCompressor extends APSPSolver {
             visited.add(false);
         }
 
+        this.originalNodesUsedAsEdgesInCompression = new HashSet<>();
+
         // now find all the nodes with just 2-degree
         this.twoDegreeNodes = new HashSet<>();
         for (int i = 0; i < graphReader.getNumberOfNodes(); i++) {
@@ -240,15 +251,17 @@ public class GraphCompressor extends APSPSolver {
                             continue;
                         }
                         // when doing DFS on a set of nodes each with at most degree 2, we will have the following:
-                        //   o --- o --- o --- o --- o --- o
+                        //   o --- o --- o --- o --- o --- R ---- ....
                         //   \_____/     ^           ^
                         //      A       source       cur
                         //
                         //  The size of dfsQueue will be 2 if we have not yet explored A, and size 1 if we have.
                         //  By appending to the start or end of the list based on whether we have explored nodes A or
                         //    not, we can reconstruct the list of removed nodes in correct order.
+                        //  There is also an edge case where R is an edge node, but we have not explored A yet, in which
+                        //    case the edgeNodes size is 1, but we should still append at the end
                         // We have not explored the other branch of the source node (A)
-                        if (dfsQueue.size() == 2) {
+                        if (dfsQueue.size() == 2 || (edgeNodes.size() == 1 && edgeNodes.get(0).equals(next.getKey()))) {
                             removedNodes.addLast(cur);
                         } else if (dfsQueue.size() <= 1) {
                             removedNodes.addFirst(cur);
@@ -263,6 +276,7 @@ public class GraphCompressor extends APSPSolver {
             // add back a longer edge to compensate for all the edges removed
             if (edgeNodes.size() == 2) {
                 edgeSet.add(new Triple<>(edgeNodes.get(0), edgeNodes.get(1), totalWeight));
+                this.originalNodesUsedAsEdgesInCompression.addAll(edgeNodes);
             } else {
                 throw new IllegalStateException("The edgeNodes list should always have 2 elements");
             }
@@ -273,6 +287,10 @@ public class GraphCompressor extends APSPSolver {
             // for new edges, create a map to a list of all the removed edges, but first verify that the list is a path
             for (int i = 1; i < removedNodes.size(); i++) {
                 if (!graphReader.hasEdge(removedNodes.get(i - 1), removedNodes.get(i))) {
+                    System.out.println(removedNodes);
+                    for (int k : removedNodes) {
+                        System.out.println(String.format("Neighbours of node %d: %s", k, adjList.get(k)));
+                    }
                     throw new IllegalStateException("The list of removed nodes should constitute a path");
                 }
             }
@@ -348,13 +366,21 @@ public class GraphCompressor extends APSPSolver {
                 }
                 // neighbour that is not visited yet (only consider two degree nodes because such a path
                 //   should exist)
-                else if (this.twoDegreeNodes.contains(next.getKey()) && !visited.contains(next.getKey())) {
+                // We also need to exclude nodes used as edge nodes during compression. This is not disjoint with the
+                //   two degree nodes because we may have a Q-pattern edge case
+                else if (this.twoDegreeNodes.contains(next.getKey()) && !visited.contains(next.getKey())
+                        && !this.originalNodesUsedAsEdgesInCompression.contains(next.getKey())) {
                     queue.add(next.getKey());
                     visited.add(next.getKey());
                     prev.put(next.getKey(), cur);
                     dist.put(next.getKey(), d);
                 }
             }
+        }
+
+        // there is no path
+        if (!prev.containsKey(j)) {
+            return new Pair<>(Integer.MAX_VALUE, Collections.emptyList());
         }
 
         // reconstruct the path
@@ -403,9 +429,22 @@ public class GraphCompressor extends APSPSolver {
         double shortestDist = Integer.MAX_VALUE;
         List<Integer> shortestPath = null;
 
+        // we have an edge case where the i and j are connected through only two degree nodes that have been removed
+        Pair<Number, List<Integer>> intermediatePath = findTwoDegreePath(i, j);
+        LOGGER.fine("PathReconstruction: Found intermediate path (" + i + ", " + j + "): " + intermediatePath);
+        if (intermediatePath.getKey().doubleValue() < shortestDist) {
+            shortestPath = new ArrayList<>();
+            shortestPath.add(i);
+            shortestPath.addAll(intermediatePath.getValue());
+            shortestPath.add(j);
+            shortestDist = intermediatePath.getKey().doubleValue();
+            LOGGER.fine("PathReconstruction: Using intermediate two-degree paths between " + i + " and " + j);
+        }
+
         // if both nodes and in the compressed graph, this only does a single iteration with start == i and end == j
         for (int start : this.closestNodesInCompressedGraph.get(i)) {
             for (int end : this.closestNodesInCompressedGraph.get(j)) {
+                LOGGER.fine("PathReconstruction: using start=" + start + " and end=" + end);
                 // both of these paths do not include the start and end node
                 Pair<Number, List<Integer>> pathStart = findTwoDegreePath(i, start);
                 Pair<Number, List<Integer>> pathEnd = findTwoDegreePath(end, j);
@@ -474,11 +513,19 @@ public class GraphCompressor extends APSPSolver {
     @Override
     public Optional<List<Integer>> getShortestPath(int i, int j) {
         Pair<Number, Optional<List<Integer>>> result = getShortestDistanceAndPathAux(i, j);
-        return result.getValue();
+        // We count a self-loop as there being no path
+        if (i == j || result.getValue().isPresent() && result.getValue().get().size() == 1) {
+            return Optional.empty();
+        } else {
+            return result.getValue();
+        }
     }
 
     @Override
     public Number getDistanceFrom(int i, int j) {
+        if (i == j) {
+            return 0.0;
+        }
         Pair<Number, Optional<List<Integer>>> result = getShortestDistanceAndPathAux(i, j);
         return result.getKey();
     }
@@ -506,8 +553,8 @@ public class GraphCompressor extends APSPSolver {
         GraphCompressor graphCompressor = new GraphCompressor(graphReader, getCurriedFoxOttoAPSPSolverConstructor(4));
         graphCompressor.solve();
         System.out.println(graphCompressor.getCompressedGraph().getEdges());
-        System.out.println(graphCompressor.getShortestPath(4, 7));
-        System.out.println(graphCompressor.getDistanceFrom(4, 7));
+        System.out.println(graphCompressor.getShortestPath(1, 7));
+        System.out.println(graphCompressor.getDistanceFrom(1, 7));
 
         // Current bugs:
         // * If there are multiples of an edge, we might need to use the edge from the original graph instead of the
