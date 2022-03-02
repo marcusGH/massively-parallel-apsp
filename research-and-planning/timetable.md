@@ -26,6 +26,8 @@ What TODO now:
 Documentation/refactoring cleanup:
 - [ ] Do more clean-up on APSPSolver and graphReader and matrixMultiplication. Mostlyu done in memoryModel, util and work.
 
+Another TODO:
+* Clean up datasets and make the part of test-datasets in the git so anyone can reproduce the tests
 
 Implementation progress:
 - [X] memoryModel

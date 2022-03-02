@@ -31,7 +31,7 @@ def read_and_compute_errors(filename):
         else:
             break
     print(f"Found {len(timing_dfs)} timings for the specified file")
-    if len(timing_dfs) > 1:
+    if len(timing_dfs) > 0:
         print("Dropping first iteration because usually much higher than rest.")
         timing_dfs = timing_dfs[0:]
         compute_times = np.array(compute_times[0:])
@@ -45,15 +45,15 @@ def read_and_compute_errors(filename):
     communication_var = np.var(communicate_times)
     # Var(X + Y) = Var(X) + Var(Y) + 2Cov(X, Y) (see sum of correlated variables on wikipedia)
     total_time = computation + communication
-    total_time_var = computation_var + communication_var + 2 * np.cov(communicate_times, compute_times)[1][0]
+    # total_time_var = computation_var + communication_var + 2 * np.cov(communicate_times, compute_times)[1][0]
     # Var(R / S) = (mu_R / mu_S)^2 ( Var(R)/mu_R^2 - 2 Cov(R, S) / (mu_R mu_S) + Var(S)/mu_S^2)
     ratio = computation / total_time
     # NOTE: the ratio is only an approximation (see https://www.stat.cmu.edu/~hseltman/files/ratio.pdf)
     #       becuase the ratio random variable X / Y is often Cauchy and thus has undefined variance
-    ratio_var = (computation / total_time) ** 2 \
-                 * ((computation_var / (computation ** 2))
-                    - 2 * np.cov(compute_times, compute_times + communicate_times)[0][1] / (computation * total_time)
-                    + (communication_var / (communication ** 2)))
+    # ratio_var = (computation / total_time) ** 2 \
+    #              * ((computation_var / (computation ** 2))
+    #                 - 2 * np.cov(compute_times, compute_times + communicate_times)[0][1] / (computation * total_time)
+    #                 + (communication_var / (communication ** 2)))
 
     # alternatively, ...
     ratio_var = np.var(compute_times / (compute_times + communicate_times))
@@ -115,6 +115,16 @@ def plot_scaling(base_path, ns, ps, y_func, y_err_func):
         # xspace = np.linspace(min(ns), max(ns), 1000)
         # yspace = (xspace ** 3 * np.log(xspace)) * (ys[0] / (ns[0] ** 3 * np.log(ns[0])))
         # ax.plot(xspace, yspace, label="n^3 log n")
+
+        # ys = []
+        # err = []
+        # # ignore later TODO: remove this
+        # for n in ns:
+        #     timings, _ = read_and_compute_errors(f"{base_path}-5-repeats-n-{n}-p-{p}")
+        #     ys.append(y_func(timings))
+        #     err.append(y_err_func(timings))
+        # # plot scaling with errorbars
+        # ax.errorbar(ns, ys, yerr=err, label=f"{p} x {p} cores", capsize=7.0, fmt='', ls='--')
     # format plot
     ax.legend()
     return fig, ax
@@ -143,5 +153,5 @@ if __name__ == "__main__":
     # df = read_timings("timing-data/cal-random-sandy-bridge-n-20-p-4")
     # plot_ratio(df)
     ns = list(range(10, 101, 10)) + list(range(100, 701, 50))
-    # plot_total_time_scaling("timing-data/cal-random-sandy-bridge", ns, [16])
-    plot_ratio_scaling("timing-data/cal-random-sandy-bridge", ns, [16])
+    plot_total_time_scaling("timing-data/cal-random-sandy-bridge", ns, [8])
+    # plot_ratio_scaling("timing-data/cal-random-sandy-bridge", ns, [8, 16, 32])
