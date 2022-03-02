@@ -137,10 +137,10 @@ public class RepeatedMatrixSquaring extends APSPSolver {
             // TODO: this can be removed if we modify the initialisation step in FoxOtto
 
             // prepare for the next iteration by updating the input to what the result from the previous iteration was
-            distMatrix = manager.getResult("dist");
-            LOGGER.fine("Distance matrix at iteration " + i + " is:\n" + distMatrix);
-            predMatrix = manager.getResult("pred", true);
-            LOGGER.fine("Pred matrix are iteration " + i + " is:\n" + predMatrix);
+//            distMatrix = manager.getResult("dist");
+//            LOGGER.fine("Distance matrix at iteration " + i + " is:\n" + distMatrix);
+//            predMatrix = manager.getResult("pred", true);
+//            LOGGER.fine("Pred matrix are iteration " + i + " is:\n" + predMatrix);
             // This statement is not required because at the end of FoxOtto, the memory will already
             //   be in the correct positions for the next execution of FoxOtto
 //            manager.setPrivateMemory(Map.of("A", distMatrix, "B", distMatrix, "P", predMatrix));
