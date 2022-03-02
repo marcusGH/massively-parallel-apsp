@@ -14,7 +14,10 @@
 
 # Build files
 build/*
-build/
+
+# Template figure files
+figs/diagram.*
+figs/cuarms.*
 
 ## Intermediate documents:
 *.dvi
