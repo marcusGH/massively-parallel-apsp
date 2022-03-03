@@ -1,6 +1,15 @@
 # Timetable
 
-What TODO now:
+Current TODOs:
+- [ ] Clean up datasets and make the part of test-datasets in the git so anyone
+      can reproduce the tests
+- [X] Make performance plots more tidy
+- [X] Do the bin plot
+- [ ] Evaluation: Make branch to speed up serial simulation, then do more measurements
+- [ ] Evaluation: Finish `main::Evaluation` for California road network, and run for different `p`
+- [ ] Dissertation: Setup latex file structure, prepare relevant packages (see imperial site)
+
+Past TODOs:
 * **Allow MIMD execution, communication stalls**:
   * All this can be done by modifying `CountingMemoryController`
   * We keep a matrix for each PE that counts the time in ns they are _currently at_
@@ -25,9 +34,6 @@ What TODO now:
 
 Documentation/refactoring cleanup:
 - [ ] Do more clean-up on APSPSolver and graphReader and matrixMultiplication. Mostlyu done in memoryModel, util and work.
-
-Another TODO:
-* Clean up datasets and make the part of test-datasets in the git so anyone can reproduce the tests
 
 Implementation progress:
 - [X] memoryModel
