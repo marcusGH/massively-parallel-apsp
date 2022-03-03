@@ -3,6 +3,7 @@
 \usepackage[pdfborder={0 0 0}]{hyperref}    % turns references into hyperlinks
 \usepackage[margin=25mm]{geometry}  % adjusts page layout
 \usepackage{graphicx}  % allows inclusion of PDF, PNG and JPG images
+\usepackage{subfigure}
 \usepackage{verbatim}
 \usepackage{docmute}   % only needed to allow inclusion of proposal.tex
 
@@ -13,6 +14,7 @@
 
 \renewcommand{\baselinestretch}{1.1}    % adjust line spacing to make
                                         % more readable
+
 
 \begin{document}
 
@@ -359,6 +361,35 @@ examples. The second figure was drawn using \texttt{xfig} and exported in
 \caption{Example diagram drawn using \texttt{xfig}}
 \label{xfig}
 \end{figure}
+
+% Example figure
+\begin{figure}
+\begin{center}
+    \includegraphics[scale=1]{figs/plots/example1.pdf}
+\end{center}
+\caption{Example plot from python}
+\label{fig:example1}
+\end{figure}
+
+% Another example figure
+\begin{figure}%
+    \hfill
+    \subfigure[Title A]{\includegraphics{figs/plots/example2.pdf}}
+    \hfill
+    \subfigure[Title B]{\includegraphics{figs/plots/example2.pdf}}
+    \hfill
+    \caption{Title for both}
+\end{figure}
+
+% THird example figure
+\begin{figure}
+    \begin{center}
+        \includegraphics[scale=1]{figs/plots/example3.pdf}
+    \end{center}
+    \caption{Example plot from python}
+    \label{fig:example3}
+\end{figure}
+
 
 
 \chapter{Evaluation}

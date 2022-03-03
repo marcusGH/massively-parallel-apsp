@@ -1,2 +1,4 @@
 timing-data/*
 *plot.png
+plots/*.pdf
+!plots/
