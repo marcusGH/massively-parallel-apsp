@@ -1,0 +1,56 @@
+% We use a custom preamble file to organise all the
+%   packages and their configurations
+\ProvidesPackage{diss}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%             Useful packages                            %%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\usepackage[subpreambles=true]{standalone} 
+\usepackage{import}
+
+% Useful math packages
+\usepackage{amsmath}
+\usepackage{amssymb}
+% Pseudo-code
+\usepackage[linesnumbered,ruled]{algorithm2e}
+
+
+
+\usepackage[pdfborder={0 0 0}]{hyperref}    % turns references into hyperlinks
+\usepackage[margin=25mm]{geometry}  % adjusts page layout
+\usepackage{graphicx}  % allows inclusion of PDF, PNG and JPG images
+\usepackage{subfigure}
+\usepackage{verbatim}
+\usepackage{docmute}   % only needed to allow inclusion of proposal.tex
+
+% For handling multiple files
+\usepackage{subfiles}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%               Other configurations                     %%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% \renewcommand{\baselinestretch}{1.1}    % adjust line spacing to make
+%                                         % more readable
+% Use the setspace package instead because it only affects text
+\usepackage{setspace} 
+\onehalfspacing
+\raggedbottom                           % try to avoid widows and orphans
+
+\sloppy
+\clubpenalty1000%
+\widowpenalty1000%
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%                 Definitions                            %%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\def\authorname{Marcus A.\ K.\ September\xspace}
+\def\authorcollege{Clare College\xspace}
+\def\authoremail{maks2@cam.ac.uk}
+\def\dissertationtitle{A parallel algorithm for all-pairs shortest paths that minimises data movement}
+\def\originator{Dr J.\ Modi}
+\def\supervisor{Dr J.\ Modi}
+\def\dos{Prof L.\ C.\ Paulson}
