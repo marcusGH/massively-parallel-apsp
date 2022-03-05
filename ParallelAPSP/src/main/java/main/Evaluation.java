@@ -1,5 +1,6 @@
 package main;
 
+import graphReader.GraphCompressor;
 import graphReader.GraphReader;
 import matrixMultiplication.GeneralisedFoxOtto;
 import matrixMultiplication.MinPlusProduct;
@@ -22,7 +23,7 @@ public class Evaluation {
 
     private static final String RANDOM_GRAPH_PATH = "../test-datasets/cal-compressed-random-graphs";
     private static final String RESULT_SAVE_PATH = "../evaluation/timing-data";
-    private static final int AVG_REPETITIONS = 5;
+    private static final int AVG_REPETITIONS = 1;
     private static final Function<Integer, Topology> TOPOLOGY = SquareGridTopology::new;
     private static final Class<? extends MinPlusProduct> FOXOTTO = GeneralisedFoxOtto.class;
     private static final Logger LOGGER = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
@@ -50,7 +51,7 @@ public class Evaluation {
      * @param problemSizes a list of problem sizes (in number of nodes)
      */
     public void measureScaling(int p, List<Integer> problemSizes, int numRepetitions) {
-        int ITER_OFFSET = 0;
+        int ITER_OFFSET = 1;
 
         // we use this one for now
         MultiprocessorAttributes multiprocessor = getSandyBridgeAttributes();
@@ -83,12 +84,35 @@ public class Evaluation {
         }
     }
 
-    public void measureCalNetworkExecutionTimes(int p, int numRepetitions) {
+    public void measureCalRoadNetworkExecutionTimes(int p, int numRepetitions) {
         int ITER_OFFSET = 0;
 
         MultiprocessorAttributes multiprocessor = getSandyBridgeAttributes();
+        GraphReader cal;
+        try {
+            cal = new GraphReader("../datasets/cal.cedge", false);
+        } catch (ParseException e) {
+            e.printStackTrace();
+            return;
+        }
+        // compress the graph
+        GraphCompressor calCompressed = new GraphCompressor(cal);
+        TimedRepeatedMatrixSquaring solver = new TimedRepeatedMatrixSquaring(calCompressed.getCompressedGraph(), p, TOPOLOGY, multiprocessor, FOXOTTO, AVG_REPETITIONS);
+
         for (int i = ITER_OFFSET; i < numRepetitions; i++) {
-            // TODO: implement this: Run on california road network after compressing it
+            LOGGER.info(String.format("\n === Evaluation is measuring california road execution time for repetition %d / %d ===\n", i + 1, numRepetitions));
+
+            // solve
+            solver.solve();
+
+            // save the result
+            String filename = String.format("%s/cal-real-sandy-bridge/cal-real-sandy-bridge-p-%d.%d.csv", RESULT_SAVE_PATH, p, i);
+            try {
+                solver.getTimingAnalysisResults().saveResult(filename);
+            } catch (IOException e) {
+                e.printStackTrace();
+                return;
+            }
         }
     }
 
@@ -99,7 +123,8 @@ public class Evaluation {
         List<Integer> ns = Arrays.asList(10, 20, 30, 40, 50, 60, 70, 80, 90, 100,
                 150, 200, 250, 300, 350, 400, 450, 500, 550, 600, 650, 700);
 //        List<Integer> ns = Arrays.asList(700);
-//        evaluation.measureScaling(128, ns, 4);
+//        evaluation.measureScaling(1, ns, 4);
+        evaluation.measureCalRoadNetworkExecutionTimes(4, 5);
 
     }
 }
