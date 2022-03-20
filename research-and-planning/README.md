@@ -402,4 +402,10 @@ The theoretical versions aren't even necessary when we have access to "actually 
 
 cal compressed 2.9450549450549453
 
+## Evaluation log
+
+Friday 11.march, running 8 x 8 again starting from iteration
+
+
+
 <!-- vim: set nospell: -->

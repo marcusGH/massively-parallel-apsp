@@ -21,7 +21,22 @@ Contains:
 
 ### Preparation
 
+ _Clear motivation, justifying potential benefits of success._
+ _Good or excellent requirements analysis; justified and documented selection of_
+   _suitable tools; good engineering approach._
+ _Clear presentation of challenging background material covering a range of_
+   _computer science topics beyond Part IB._
+
 _describes work undertaken before code was written_ -> 26% of marks
+
+The idea with the preparation is honing in **what** is it you finally set out on doing,
+and why you ended up doing that (refining proposal). This also includes
+**requirements analysis**: What should the multiprocessor simulation be able to do etc.
+
+The reader will not like pulling things out of thin air, so in this chapter, I should
+explain the _whys_, such as: I used the following model for communication and this
+is suitable because X.
+
 
 Work items
 * how was proposal further refined and clarified?
@@ -41,11 +56,23 @@ _coherent discussion of the problems and sensible planning._
 
 ### Implementation
 
+ _Contribution to the field._
+ _Application of extra-curricular reading and original interpretation of_
+   _previous work from academia or industry._
+ _Challenging goals and substantial deliverables with excellent selection and_
+   _application of appropriate mathematical, scientific and/or engineering_
+   _techniques._
+ _Clear and justified repository overview._
+ _At most minor faults in execution or understanding._
+
 _describes software produced_ -> 40% of marks
 
 Good stuff:
 * Design strategies that looked ahead to testing stage:
   * _Self: e.g. modular Java code, test-driven developement, interface/API predefined_
+* Do top-down description of the components:
+  * The main packages of program, and how interact
+  * Description of how they each work, and why and how
 
 _Seek evidence of skill, clear thinking and common sense. Consider_
 _how much work was carried out and take into account how challenging this was._
