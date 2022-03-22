@@ -2,44 +2,48 @@
 
 ## Preparation
 
-_Clear motivation, justifying potential benefits of success._
-_Good or excellent requirements analysis; justified and documented selection of_
-  _suitable tools; good engineering approach._
-_Clear presentation of challenging background material covering a range of_
-  _computer science topics beyond Part IB._
+Subsections (~2500 words):
+* Parallel computing (distributed memory model, communication, SIMD, MIMD, evaluating a parallel algorithm, ratio)
+* APSP algorithm:
+  * Dijkstra not well suited for parallelism, distribute work reference above, matrix multiplication highly parallel,
+  * FoxOtto and Canon's algorithm are examples
+* Requirements analysis (referencing theory above when writing this)
+* Choice of tools
+  * Professional approach, version control, correctness testing, CI etc.
+* Starting point
+* Implementation approach (??)
+* Software engineering
+* Conclusion
 
-The idea with the preparation is honing in **what** is it you finally set out on doing,
-and why you ended up doing that (refining proposal). This also includes
-**requirements analysis**: What should the multiprocessor simulation be able to do etc.
-
-The reader will not like pulling things out of thin air, so in this chapter, I should
-explain the _whys_, such as: I used the following model for communication and this
-is suitable because X.
-
-Items to write about:
-* The real-world datasets
-* Random graph generation, and parameter choice
+Items to write about....
 * Requirements for the multiprocessor simulation:
   * Referencing goal of measuring parallel efficiency
 * Choice of programming language:
   * Benefits of modularity etc.
 * More items? .....
 
+###    Requirements analysis
+
+TODO: ...
+
 ## Implementation
 
-Do top-down description of the components:
-* The main packages of program, and how interact
-* Description of how they each work, and why and how
+Subsections (~4500 words):
+* Graph datasets:
+  * Real-world datasets
+  * The input with `graphReader` package
+  * Random graphs, parameter choice ref. to California
+* Multiprocessor simulation:
+  * The inter-core communication (`memoryModel` package)
+  * The manager (`work` package)
+  * The timing analysis (`timingAnalysis` package)
+* Main algorithm:
+  * Fox-Otto (`matrixMultiplication` package)
+  * Repeated matrix squaring (`APSPSolver` package)
+* Graph compression
+  *  `graphReader` package additional class
 
-The components:
-* Professional approach, version control, correctness testing, CI etc.
-* The inter-core communication (`memoryModel` package)
-* The manager (`work` package)
-* The matrix multiplication (`matrixMultiplication` package)
-* The APSP driver (`APSPSolver` package)
-* The input (`graphReader` package)
-* The timing analysis (`timingAnalysis` package)
-* The graph compression algorithm (also `graphReader` package)
+_TODO: clean up below subsubsections, to be updated with new ToC_
 
 ### Prof. Approach
 ### Inter-core communication
@@ -70,7 +74,30 @@ Also a section for the expected asymptotic speed-up referencing random graph gen
 
 ## Evaluations
 
-The components:
+  Want to demonstrate the following are met:
+  • Implemented an algorithm based on matrix multiplication that can find the length of the
+    shortest path between all pairs of nodes in a graph, and it is able to give the list of nodes
+    that make up such paths.
+  • Parallelised the matrix multiplication routine of the algorithm to run on a simulated mas-
+    sively parallel processor, where each processing element can send data to each other through
+    simulated interconnects.
+  • The parallel matrix multiplication routine is optimised to minimise the amount of data move-
+    ment between processing elements, which is done by using techniques such as Fox-Otto’s
+    algorithm.
+  • The evaluation of the algorithm demonstrates that parallel computation gives a high parallel
+    efficiency for solving APSP
+
+Subsections (~2000 words):
+* Overall results (reference extensions done and not done?)
+* Testing (unit tests. etc.)
+  * Covers the correctness and criteria (1) above
+  * Unit tests also cover point (2)
+* Timing analysis (rename)?:
+  * Various plots
+  * This should show point (3) above
+  * Also shows (4), by refering to how efficiency and ratio relate (or look at timing of serial algorithm ... and see multiplicative increase in performance as increase p)
+
+The components (~2000 words):
 * Plots:
   * Parallel efficiency
   * Sensitivity analysis on communication time
