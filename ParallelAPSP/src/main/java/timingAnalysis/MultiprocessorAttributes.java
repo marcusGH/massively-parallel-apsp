@@ -42,6 +42,23 @@ public class MultiprocessorAttributes {
         this.broadcast_bandwidth = broadcast_bandwidth_bytes_per_cycle * cpu_cps;
     }
 
+    /**
+     * All times are measured in <strong>seconds</strong>.
+     * @param p2p_latency
+     * @param broadcast_latency
+     * @param p2p_bandwidth bytes per second
+     * @param broadcast_bandwidth bytes per second
+     */
+    public MultiprocessorAttributes(double p2p_latency, double broadcast_latency,
+                                    double p2p_bandwidth, double broadcast_bandwidth) {
+        // latency
+        this.broadcast_latency = broadcast_latency;
+        this.p2p_latency = p2p_latency;
+        // bandwidth
+        this.p2p_bandwidth = p2p_bandwidth;
+        this.broadcast_bandwidth = broadcast_bandwidth;
+    }
+
     public MultiprocessorAttributes() {
         this(ACER_NITRO_CPU_CYCLES_PER_SECOND, POINT_TO_POINT_SEND_CLOCK_CYCLES, BROADCAST_CLOCK_CYCLES,
                 DEFAULT_BANDWIDTH_PER_CYCLE, DEFAULT_BANDWIDTH_PER_CYCLE);

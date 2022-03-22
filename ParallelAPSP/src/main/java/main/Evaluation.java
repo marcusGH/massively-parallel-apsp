@@ -23,7 +23,7 @@ public class Evaluation {
 
     private static final String RANDOM_GRAPH_PATH = "../test-datasets/cal-compressed-random-graphs";
     private static final String RESULT_SAVE_PATH = "../evaluation/timing-data";
-    private static final int AVG_REPETITIONS = 1;
+    private static final int AVG_REPETITIONS = 5;
     private static final Function<Integer, Topology> TOPOLOGY = SquareGridTopology::new;
     private static final Class<? extends MinPlusProduct> FOXOTTO = GeneralisedFoxOtto.class;
     private static final Logger LOGGER = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
@@ -41,6 +41,17 @@ public class Evaluation {
                 MultiprocessorAttributes.SANDY_BRIDGE_INTERCONNECT_BANDWIDTH);
     }
 
+    public MultiprocessorAttributes getSunwayLightAttributes() {
+        // The MPE/CPE chip is connected via a network-on-chip (NoC) and the system interface (SI) is
+        // used to connect the system outside of the node. The SI is a standard PCIe interface. The
+        // bidirectional bandwidth is 16 GB/s with a latency around 1 us.
+
+        // we only send in one direction, so use at most half the bandwidth available at most
+        double bytes_in_GB = Math.pow(2, 30); // 1_073_741_824
+        return new MultiprocessorAttributes(1E-6, 1E-6,
+                8 * bytes_in_GB, 8 * bytes_in_GB);
+    }
+
     public GraphReader getGraph(int size) throws ParseException {
         return new GraphReader(String.format("%s/%d.cedge", RANDOM_GRAPH_PATH, size), false);
     }
@@ -51,10 +62,10 @@ public class Evaluation {
      * @param problemSizes a list of problem sizes (in number of nodes)
      */
     public void measureScaling(int p, List<Integer> problemSizes, int numRepetitions) {
-        int ITER_OFFSET = 1;
+        int ITER_OFFSET = 0;
 
         // we use this one for now
-        MultiprocessorAttributes multiprocessor = getSandyBridgeAttributes();
+        MultiprocessorAttributes multiprocessor = getSunwayLightAttributes();
         for (int iter = ITER_OFFSET; iter < numRepetitions; iter++) {
             LOGGER.info(String.format(" === Evaluation is measuring scaling for repetition %d / %d ===\n", iter + 1, numRepetitions));
             for (int i : problemSizes) {
@@ -73,7 +84,7 @@ public class Evaluation {
                 solver.solve();
 
                 // then save the result
-                String filename = String.format("%s/cal-random-sandy-bridge-5-repeats-n-%d-p-%d.%d.csv", RESULT_SAVE_PATH, i, p, iter);
+                String filename = String.format("%s/cal-random-sunway-light-5-repeats-n-%d-p-%d.%d.csv", RESULT_SAVE_PATH, i, p, iter);
                 try {
                     solver.getTimingAnalysisResults().saveResult(filename);
                 } catch (IOException e) {
@@ -123,8 +134,10 @@ public class Evaluation {
         List<Integer> ns = Arrays.asList(10, 20, 30, 40, 50, 60, 70, 80, 90, 100,
                 150, 200, 250, 300, 350, 400, 450, 500, 550, 600, 650, 700);
 //        List<Integer> ns = Arrays.asList(700);
-//        evaluation.measureScaling(1, ns, 4);
-        evaluation.measureCalRoadNetworkExecutionTimes(4, 5);
+        evaluation.measureScaling(16, ns, 4);
+//        evaluation.measureCalRoadNetworkExecutionTimes(128, 5);
+        // TODO:
+        //    serial for both cal and random
 
     }
 }
