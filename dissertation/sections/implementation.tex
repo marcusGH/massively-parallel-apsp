@@ -1,6 +1,8 @@
 \documentclass[../diss.tex]{subfiles}
 \chapter{Implementation}
 
+% NOTE: Multiprocessor => shared memory. Use term "parallel computer" instead
+
 This chapter is empty, except for the inkscape figure shown in \autoref{fig:inkscape}.
 
 \begin{figure}
@@ -13,3 +15,48 @@ This chapter is empty, except for the inkscape figure shown in \autoref{fig:inks
 \label{fig:inkscape}
 \end{figure}
 
+Also, the introduction should go here.
+
+% Graph datasets
+% Graph datasets {{{
+\section{Graph datasets}%
+\label{sec:Graph datasets}
+
+% }}}
+
+% Simulation of a distributed memory multiprocessor:
+% * Executor service and why
+% * Diagram of how work is simulated (blocks, 8 at a time)
+% * Timing analysis, and how MIMD was able to be simulated:
+%   * Explain wrapper, how done timing, repetition of computation, possible because of work
+%     management, which gives good error bars
+% Simulation of a distributed memory multiprocessor {{{
+\section{Simulation of a distributed memory multiprocessor}%
+\label{sec:Simulation of a distributed memory multiprocessor}
+
+% }}}
+
+% APSP via repeated matrix-squaring
+% * Can abbriviate as MatSquare or something
+% * Explain FoxOtto (explain predecessor functionality and edge-case,
+%   generalized version, pseudo-code, diagram of memory movement can go in preparation)
+% * Explain driver code, and its complexity?
+% APSP via repeated matrix-squaring {{{
+\section{APSP via repeated matrix-squaring}%
+\label{sec:APSP via repeated matrix-squaring}
+
+The \emph{\acl{MatSquare}} algorithm, which I will abbreviate as \emph{\acs{MatSquare}},
+is an algorithm. \acused{MatSquare}
+By using \ac{MatSquare}, we can ...
+% }}}
+
+% Graph compression:
+% * The algorithm for this, and explain all the edge cases.
+% * Also a section for the expected asymptotic speed-up referencing random graph generation
+% Graph compression {{{
+\section{Graph compression}%
+\label{sec:Graph compression}
+
+% }}}
+
+% vim: foldmethod=marker

@@ -68,8 +68,15 @@ extent for a comparable purpose.
 
 \listoffigures
 
-% TODO: might delete this if there's not many acronyms used
-% \printglossary[type=\acronymtype] % Needs different compilation, and can't be bothered
+%%%%%%%%%%%%%%%%%%%%%  Acronyms %%%%%%%%%%%%%%%%%%%%%
+\newpage % TODO: Is it okay to put this in the proforma? Or put in appendix?
+\section*{Acronyms and abbreviations}%
+\label{sec:Acronyms and abbreviations}
+
+\begin{acronym}
+    \acro{APSP}[APSP]{\emph{All-Pairs Shortest Paths}}
+    \acro{MatSquare}[MatSquare]{APSP via repeated matrix-squaring}
+\end{acronym}
 
 \newpage
 \section*{Acknowledgements}

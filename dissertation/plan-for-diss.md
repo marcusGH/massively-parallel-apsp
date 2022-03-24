@@ -15,16 +15,33 @@ Subsections (~2500 words):
 * Software engineering
 * Conclusion
 
-Items to write about....
-* Requirements for the multiprocessor simulation:
-  * Referencing goal of measuring parallel efficiency
-* Choice of programming language:
-  * Benefits of modularity etc.
-* More items? .....
-
 ###    Requirements analysis
 
-TODO: ...
+Multiprocessor simulation:
+* Can configure processing element grid size $p$, and the interconnect topology
+* (Can pass `Matrix` of input data, and automatically distributed over PEs)
+* Simple interface with sufficient expressive power; Can run arbitrary "work"
+  description on the form $(i, j, l)$, express all required algorithms on this
+  form
+  * Prepeation, read on parallel algortihm like FW, cannon, foxOtto, on the special form, so suitable interface
+  * Very neat interface for specifying work
+  * Allows multiple different algorithms to easily be tested when framework finished
+* Simulates key characteristics of multiprocessor
+  * Distributed memory model, no shared memory
+  * Message passing
+  * MIMD, where each PE runs independently of others, so stalling may happen when sending messages (extension?)
+* Can measure computation time and estimated communication time, based on above characteristics
+  * Used to find communication-computation ratio which can be used for evaluation
+* Efficient; Uses parallelism in simulation as well
+
+Input data:
+* Can obtain graphs with similar properties, but of different sizes in terms of nodes
+  * For evaluating the performance scaling
+
+APSP algorithm:
+* Computes distance and predecessor matrices by describing "work" using above interface
+* Can use these matrices to create a list of nodes for any shortest path
+* Can compute the matrices when using fewer processing elements than problem size (extension)
 
 ## Implementation
 
@@ -42,35 +59,6 @@ Subsections (~4500 words):
   * Repeated matrix squaring (`APSPSolver` package)
 * Graph compression
   *  `graphReader` package additional class
-
-_TODO: clean up below subsubsections, to be updated with new ToC_
-
-### Prof. Approach
-### Inter-core communication
-### Work management
-Using executor service and why, diagram of how threads are used
-
-### Matrix multiplication
-
-All the details on FoxOtto here, with diagrams for the memory movement, and also
-pseudo code on basic and(?) generalized version. Also predecessor matrix and edge case.
-
-### APSP driver
-
-Idea behind repeated matrix squaring, why $O(n^3 \log n)$
-
-### Input
-### Timing analysis
-
-Explain wrapper, how done timing, repetition of computation, possible because of work
-management, which gives good error bars
-
-### Graph compression
-
-The algorithm for this, and explain all the edge cases.
-
-Also a section for the expected asymptotic speed-up referencing random graph generation
-
 
 ## Evaluations
 

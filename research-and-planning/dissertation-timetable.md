@@ -1,29 +1,29 @@
 # Timetable and progression tracker for dissertation writing
 
 _Check in on this tracker **often**_
-* Latest check-in date: 19.03
+* Latest check-in date: 24.03
 
 ## Exams
 
 We are here marker: `-HERE-`
 
-| Month | Week | Notes                       |
-|-------|------|-----------------------------|
-| March | 1    | x                           |
-| March | 2    | x                           |
-| March | 3    | -HERE-                      |
-| March | 4    | First draft done            |
-| April | 1    | Complete draft by 31.03     |
-| April | 2    |                             |
-| April | 3    | Implement revision feedback |
-| April | 4    | DONE: WHOLE DISS            |
-| May   | 1    | TERM START                  |
-| May   | 2    |                             |
-| May   | 3    |                             |
-| May   | 4    |                             |
-| May   | 5    |                             |
-| June  | 1    |                             |
-| June  | 2    | EXAMS                       |
+| Month | Week | Notes                                        |
+|-------|------|----------------------------------------------|
+| March | 1    | x                                            |
+| March | 2    | x                                            |
+| March | 3    | x                                            |
+| March | 4    | -HERE: Uni text done, diss start            |
+| April | 1    | Complete draft by 31.03                      |
+| April | 2    |                                              |
+| April | 3    | First draft done, and sent for feedback      |
+| April | 4    | _waiting for feedback_                       |
+| May   | 1    | TERM START, implement feedback               |
+| May   | 2    |                                              |
+| May   | 3    | FINAL DEADLINE                               |
+| May   | 4    |                                              |
+| May   | 5    |                                              |
+| June  | 1    |                                              |
+| June  | 2    | EXAMS                                        |
 
 _Each week belongs to the month that the Sunday is on_
 
