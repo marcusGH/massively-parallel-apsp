@@ -3,38 +3,150 @@
 
 Introduction goes here.
 
-% Parallel computing:
-% * Distributed memory model and alternative
-% * Communication?
+% Parallel computing (400 words?):
 % * Flynn's taxonomy
+% * Distributed memory model and alternative, Communication?
+% * Massively parallel systems: Talk about supercomputers, grid computing,
+%   sunway etc.
 % * Evaluating a parallel algorithm, efficiency, communication-computation ratio
 % Parallel computing {{{
 \section{Parallel computing}%
 \label{sec:Parallel computing}
-Hey
+
+Parallel systems can be classified according to several different attributes.
+Here, I will ...
+
+\subsection{Flynn's taxonomy}%
+\label{sub:Flynn's taxonomy}
+
+One way to classify parallel systems, is to look at how many streams of data
+there are and how many sets of instructions the computer is operating with.
+% What is a "stream" of data?
+
+\begin{itemize}
+    \item \ac{SISD} -- This is the same as sequential
+        execution.
+    \item \ac{MISD} -- Here, multiple sets of
+        instructions are executed on the same input data. There are very few
+        systems using this type of parallelism.
+    \item \ac{SIMD} -- With this scheme, we apply
+        the same set of operations to multiple sets of data simultaneously.
+    \item \ac{MIMD} -- This is the most common
+        type of parallelism in hardware. Multiple sets of instructions, possibly
+        different, are applied to multiple sets of data at the same time.
+\end{itemize}
+
+Parallel systems typically use either \ac{SIMD} or \ac{MIMD}, where \ac{SIMD}
+is common in \acp{GPU} and \ac{MIMD} is more often seen in systems where the
+computation is spread among \acp{CPU}.
+
+%There are also hybrid categories such as SPMD, relevant for supercomputer...
+
+\subsection{Memory and communication}%
+\label{sub:Memory and communication}
+
+We can also classify parallel systems by how the memory is laid out. In systems
+that use \textit{distributed memory}, each processor has its own private memory.
+If communication between processors is required, there will be an interconnection
+between the \acp{PE} that allows message passing. One common approach is an
+interconnect network that can be arranged in a plethora of different
+\textit{topologies}. If the topology is not fully-connected, the messages need
+to be routed. A common network arrangement is the 2D Lattice Mesh, where there are
+$n^2$ \acp{PE} connected to each of their four orthogonal neighbours and there
+are cyclic connection that wrap around the edges.
+In \textit{shared memory} systems, all the processors have access to a shared
+address space. Multiple  \acp{PE} can communicate by reading and writing
+to the same segment of memory, and locking mechanisms can be implemented to
+prevent race conditions. % Fact check?
+
+\subsection{Something something classes MPP and others}%
+\label{sub:Something something classes MPP and others}
+
+By looking at the extent to which the system supports parallelism and at the
+physical distance between the \acp{PE}, we create further classifications.
+In \textit{multi-core processors}, we refer to the \acp{PE} as \textit{cores}
+and have several of them on the same chip. The cores execute in \ac{MIMD}-fashion
+and there are typically both local memory for each core as well as some shared
+memory between cores, that can be used for communication.
+In \acp{MPP}, we often have many thousands of processors, interconnected through
+a specialised network. An example is the Sunway TaihuLight supercomputer
+% TODO: reference....
+
+\subsection{Evaluating performance}%
+\label{sub:Evaluating performance}
+
+A simple performance metric is the elapsed time, which works well when comparing
+two different computers. However, it is not very useful when evaluating how 
+efficiently
+an algorithm exploits the parallelism available on a given system. For this,
+the \textit{speed-up} is more useful:
+\begin{equation}
+    S_p = \frac{T_1}{T_p},
+\end{equation}
+where $T_1$ is the required time to solve the problem on a single
+processor and $T_p$ is the elapsed time when executing the parallel algorithm
+on $p$ processors.
+
+Another useful metric is the \textit{parallel efficiency}, which is defined as
+\begin{equation}
+    \varepsilon = \frac{T_1}{p T_p} = \frac{S_p}{p}.
+\end{equation}
+The parallel efficiency ranges from 0 to 1, where $\varepsilon  =1$, means
+we have a perfect linear speed-up where no
+computation power is wasted when executing the algorithm on our parallel system.
+
+Both of these metrics do not take into account the speed-up lost from the algorithm
+having a serial part that cannot be parallelised. To incorporate this,
+Amdahl's law or Gustafson's law have been  \citep{parallelPerformance}.
+However, the parallel algorithms developed in this project to solve \ac{APSP}
+have a negligible serial part if we ignore the time required to read the input
+and print the result. I will therefore not use these laws in evaluation.
+
+In practice,
+% TODO: write from here, about communication and computation ratio, time where
+%  no useful work is done, stalling, waiting for data etc., SIMD masked computation
+
+
+
+
 
 % }}}
 
-% APSP algorithm:
+% APSP algorithm (400 words?):
 % * Mention known algorithms like Dijkstra, Floyd-Warshall, not very parallisable
 % * MatMul highly parallisable and can be used
 % * Repeated matrix squaring
 % * Fox otto and Cannon's algorithm
-% *
+% * Some more words here
 % APSP algorithm {{{
 \section{APSP algorithm}%
 \label{sec:APSP algorithm}
 This section is empty
 % }}}
 
-% Requirements analysis
+% Parallel simulation (200-300 words?):
+% * Having review above algorithm and hardware for parallel computing, decide
+%   what "model of computation" to use.
+% * Don't have access to this, and don't want to use GPU because ...
+% * List all the assumptions made, e.g. message passing because FoxOtto ...
+% * Why MIMD:
+%    * SIMD is the most suitable for _standard_ MatMul because repeated operation
+%    However, we are using a modification of that where also computation for
+%    predecessor pointer, and done over min-plus semiring, so none of that
+%    functionality peformed if don't branch. With SIMD, we mask instruction if have
+%    branches, which wastes computation. More room for gain if assume MIMD
+%    * Additionally, MIMD most common in message passing systems, and SIMD systems
+%    like GPUs typically use shared-memory, not distributed.
+%    * (Also possible extensions, like FW, ...?) <- not very good argument
+
+% Requirements analysis (500 words)
 % Requirements analysis {{{
 \section{Requirements analysis}%
 \label{sec:Requirements analysis}
 
 % }}}
 
-% Choice of tools
+% Choice of tools (200 words)
 % * Java, OOP, modularity benefits
 % * GitHub, CI to check builds when push
 % * JUnit4, unit testing framework for Java
@@ -42,10 +154,10 @@ This section is empty
 % Choice of tools {{{
 \section{Choice of tools}%
 \label{sec:Choice of tools}
-    
+
 % }}}
 
-% Starting point
+% Starting point (100 words)
 % * ?
 % Starting point {{{
 \section{Starting point}%
@@ -54,7 +166,7 @@ This section is empty
 % }}}
 
 
-% High-level implementation overview
+% High-level implementation overview (100???)
 % * Diagram of key components and reference these in section below
 % High-level implementation overview {{{
 \section{High-level implementation overview}%
@@ -63,7 +175,7 @@ This section is empty
 % }}}
 
 
-% Software engineering
+% Software engineering (200?)
 % Software engineering {{{
 \section{Software engineering}%
 \label{sec:Software engineering}

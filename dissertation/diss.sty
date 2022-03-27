@@ -16,6 +16,8 @@
 \usepackage[linesnumbered,ruled]{algorithm2e}
 % Nice tables
 \usepackage{booktabs}
+% citations
+\usepackage[round]{natbib} 
 
 
 \usepackage[margin=25mm]{geometry}  % adjusts page layout
@@ -24,12 +26,26 @@
 \usepackage{verbatim}
 \usepackage{docmute}   % only needed to allow inclusion of proposal.tex
 
+\usepackage{parskip} 
+
 \usepackage[pdfborder={0 0 0}]{hyperref}    % turns references into hyperlinks
 
 % For handling multiple files
 \usepackage{subfiles}
 % Acronyms
-\usepackage[]{acronym} 
+\usepackage{acronym} 
+% Allow both upper- and lower case acronyms:
+%  https://tex.stackexchange.com/questions/70875/how-to-render-individual-acronyms-in-lower-case-when-used-inline-but-mixed-case
+%  Usage:
+%    \acro{DC}{\LU{D}{d}irect current}
+%    \ac{DC} \AC{DC}
+\usepackage{etoolbox}
+\makeatletter
+\newif\if@in@acrolist
+\AtBeginEnvironment{acronym}{\@in@acrolisttrue}
+\newrobustcmd{\LU}[2]{\if@in@acrolist#1\else#2\fi}
+\newcommand{\ACF}[1]{{\@in@acrolisttrue\acf{#1}}}
+\makeatother
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%               Other configurations                     %%%%
@@ -41,7 +57,7 @@
 % Use the setspace package instead because it only affects text
 \usepackage{setspace} 
 \onehalfspacing
-% Makes text nicer to read
+% % Makes text nicer to read
 \usepackage[activate={true,nocompatibility}, % > activate protrusion and expansion
     final,          % > enable microtype; use "draft" to disable
     tracking=true,  % v
