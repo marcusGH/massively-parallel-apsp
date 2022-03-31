@@ -1,3 +1,4 @@
+%! TEX root = diss.tex
 \documentclass[../diss.tex]{subfiles}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Proforma, table of contents and list of figures
@@ -18,10 +19,16 @@
         Supervisor:         & Dr Markus Kuhn                    \\
     \end{tabular}
 }
+%TC:ignore
 \footnotetext[1]{This word count was computed
-    by \texttt{detex diss.tex | tr -cd '0-9A-Za-z $\tt\backslash$n' | wc -w}
+    %by \texttt{detex diss.tex | tr -cd '0-9A-Za-z $\tt\backslash$n' | wc -w}
+    by \Verb£echo "$(head -n 4 diss.tex) $(tail -n +3 -q \£
+
+    \Verb£sections/*.tex) $(tail diss.tex -n +5 -q)" | texcount -total£
+    i.e. by concatenating the subfiles and using \TeX count.
 }
 \stepcounter{footnote}
+%TC:endignore
 
 
 \section*{Original Aims of the Project}
@@ -76,6 +83,7 @@ extent for a comparable purpose.
 % TODO: move acronyms to subfile
 \begin{acronym}
     \acro{APSP}[APSP]{\emph{All-Pairs Shortest Paths}}
+    \acro{SSSP}{\emph{Single-source shortest paths}}
     \acro{MatSquare}[MatSquare]{APSP via repeated matrix-squaring}
     \acro{SISD}[SISD]{Single-instruction-single-data}
     \acro{MISD}[MISD]{Multiple-instruction-single-data}

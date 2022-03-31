@@ -18,6 +18,9 @@
 \usepackage{booktabs}
 % citations
 \usepackage[round]{natbib} 
+% for verbatim in footnotes
+\usepackage{fancyvrb} 
+\VerbatimFootnotes
 
 
 \usepackage[margin=25mm]{geometry}  % adjusts page layout
@@ -29,8 +32,6 @@
 \usepackage{docmute}   % only needed to allow inclusion of proposal.tex
 
 \usepackage{parskip} 
-
-\usepackage[pdfborder={0 0 0}]{hyperref}    % turns references into hyperlinks
 
 % For handling multiple files
 \usepackage{subfiles}
@@ -48,6 +49,8 @@
 \newrobustcmd{\LU}[2]{\if@in@acrolist#1\else#2\fi}
 \newcommand{\ACF}[1]{{\@in@acrolisttrue\acf{#1}}}
 \makeatother
+
+\usepackage[pdfborder={0 0 0}]{hyperref}    % turns references into hyperlinks
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%               Other configurations                     %%%%
@@ -75,7 +78,6 @@
 \sloppy
 \clubpenalty1000%
 \widowpenalty1000%
-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%                 Definitions                            %%%%

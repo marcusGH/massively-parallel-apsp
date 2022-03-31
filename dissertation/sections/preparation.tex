@@ -1,3 +1,4 @@
+%! TEX root = diss.tex
 \documentclass[../diss.tex]{subfiles}
 \chapter{Preparation}
 
@@ -97,17 +98,34 @@ computation power is wasted when executing the algorithm on our parallel system.
 
 Both of these metrics do not take into account the speed-up lost from the algorithm
 having a serial part that cannot be parallelised. To incorporate this,
-Amdahl's law or Gustafson's law have been  \citep{parallelPerformance}.
+Amdahl's law or Gustafson's law have been used  \citep{parallelPerformance}.
 However, the parallel algorithms developed in this project to solve \ac{APSP}
 have a negligible serial part if we ignore the time required to read the input
 and print the result. I will therefore not use these laws in evaluation.
 
-In practice,
-% TODO: write from here, about communication and computation ratio, time where
+In practice, what prevents linear speed-up is the \textit{communication cost} the
+algorithm incurs while running on the parallel system. This can include both
+\acp{PE} needing to idle while they wait for data to be ready or they are
+waiting for some data to be transferred. % TODO: aren't these the same?
+Another metric is therefore the ratio between computation and communication,
+where a high ratio means we use our resources efficiently. We let
+$T_p = \frac{T_{communication}+T_{computation}}{p}$, where $T_p$ is the time spent
+on executing the parallel algorithm, where the sum of the costs are split up
+into communication and computation costs. To execute a similar algorithm on a serial machine, we would avoid all the communication cost, but would still need to
+do all the computation, so $T_1=T_{computation}$\footnote{
+    This is assuming we are not using a completely different algorithm
+    when solving the problem serially.
+}.
+We can relate this with the parallel
+efficiency:
+\begin{equation}
+    \varepsilon = \frac{T_1}{p T_p} = \frac{T_{computation}}{T_{computation}+T_{communication}}
+\end{equation}
+It is also easier to measure this ratio.
+
+% TODO: All of the above is very poorly worded. Redo this!
+% DONE: write from here, about communication and computation ratio, time where
 %  no useful work is done, stalling, waiting for data etc., SIMD masked computation
-
-
-
 
 
 % }}}
@@ -121,7 +139,63 @@ In practice,
 % APSP algorithm {{{
 \section{APSP algorithm}%
 \label{sec:APSP algorithm}
-This section is empty
+
+We consider a graph $G=(V,E,w)$, where we have a set $V$ of $n$ vertices and a set
+$E$ of edges and each edge $e \in E$ has a non-negative weight $w(e)$ assigned
+to it. The \ac{APSP} problem concerns finding the \textit{shortest path} between
+each pair of vertices.
+% TODO: one more sentence about text to come...
+
+\subsection{Parallelisation}%
+\label{sub:Parallelisation}
+
+There are many widely-used algorithms for efficiently solving the
+\ac{SSSP} problem, such as Dijkstra's algorithm, Bellman-Ford and A$^*$-search.
+If we have fewer than $n$ \acp{PE}, a trivial parallelisation for solving \ac{APSP}
+is to run one of these algorithms on each \ac{PE}, distributing the sources.
+% TODO: rephrase
+However, this approach does not use our parallel resources efficiently if we have
+more than $n$ \acp{PE}. To exploit this, we must either consider other algorithms
+or parallelise parts of the \ac{SSSP} computation in one of these algorithms.
+Parallel versions of these algorithms have been developed in the past,
+% TODO: citation needed
+but they incur a significant overhead. I have therefore decided to use a new
+algorithm based on matrix multiplication, a highly paralleliseable task,
+instead.
+
+
+\subsection{Repeated matrix squaring}%
+\label{sub:Repeated matrix squaring}
+
+Matrix multiplication usually happens over the \textit{semiring}\footnote{See
+appendix \autoref{sec:Abstract algebra}.} $(\mathbb{R},+,\cdot)$.
+However, by replacing addition with multiplication and  multiplication by the
+$\min$-operator, giving the semiring $(\mathbb{R}\cup\{\infty\},\cdot,\min)$.
+This operation is known as the distance product, and by repeatedly computing it
+for the weight matrix, we can find the length of shortest paths. If $W$ is
+an $|V| \times |V|$ matrix, and $W_{ij}=w(e_{ij})$, the entries in $W^k$ are
+distances between vertices in the graph $G$ using paths of length $k$.
+If we add a self-loop to each vertex with weight 0, and compute $W^n$, the matrix
+will contain the shortest-distances between all pairs of nodes that are of length
+at most $n$, i.e. the shortest path (because it cannot be longer).
+We can compute this matrix by squaring $W$ $\lceil \log_2 n \rceil$ times. This
+% TODO: explain abbreviation better
+is the idea behind our \ac{MatSquare} algorithm. We also need to modify this
+algorithm to also keep track of the edges used in the shortest path, but more
+details of this will be explain in \autoref{sec:APSP via repeated matrix-squaring}.
+% TODO: rephrase this paragraph, it does not read well.
+
+\subsection{Fox-Otto's technique}%
+\label{sub:Fox-Otto's technique}
+
+In \cite{fox}, they describe a technique for multiplying two matrices on a
+parallel distributed-memory system, such that the amount of communication is
+minimized. This is a suitable technique as we maximise our parallel efficiency
+by minimising the communication. If we are computing $C=A \times B$, we
+can visualise the memory movement ....
+
+% TODO: diagram...
+
 % }}}
 
 % Parallel simulation (200-300 words?):
@@ -138,6 +212,62 @@ This section is empty
 %    * Additionally, MIMD most common in message passing systems, and SIMD systems
 %    like GPUs typically use shared-memory, not distributed.
 %    * (Also possible extensions, like FW, ...?) <- not very good argument
+% Parallel simulation {{{
+\section{Parallel architecture assumptions}%
+\label{sec:Parallel architecture assumptions}
+
+
+% Note: The idea behind this section is tying everything together, **why**
+%   have we made all these decisions on our parallel system...
+
+Having reviewed some of the different classes of parallel systems, as well as
+the general idea behind our \ac{APSP} algorithm, we now review the assumptions
+I have made about the parallel system I will be developing an algorithm for.
+Regardless of system, it should have a configurable number of \acp{PE}, and
+this number can be very high as we might want to evaluate performance with
+many. % TODO: rephrase
+
+\paragraph{Memory model}%
+\label{par:Memory model}
+
+I assume a fully-distributed memory model, where each \ac{PE} has its own private
+memory and no address space is shared between different \acp{PE}. To allow
+coordination, a message-passing interface is also assumed. This model scales well
+with a very large number of \acp{PE}, compared with shared-memory systems where
+the memory system becomes a bottleneck when the number of \acp{PE} that share
+the same memory are in the 1000s.
+
+\paragraph{MIMD execution}%
+\label{par:MIMD execution}
+I also assume that each \ac{PE} runs independently of the others, so their
+computation might not be synchronised even if they all execute the same algorithm.
+I have decided to assume this model of execution over \ac{SIMD} for the
+following reasons:
+\begin{itemize}
+    \item In distributed-memory systems with message passing, \ac{MIMD} is the
+        most common, whereas \ac{SIMD} is most-often seen in shared-memory
+        systems.
+        % TODO: for this to make sense, add details on masking and on predecessor
+        %    above in prepearation
+    \item With \ac{SIMD}, if two or more \acp{PE} take different branches,
+        computation is masked with \texttt{NOP}-instructions. This wastes
+        computation resources, and is difficult to simulate. In standard
+        matrix multiplication, there are no branches, but we are implementing
+        a alternative matrix multiplication algorithm for the
+        $(\mathbb{R},\cdot,\min)$ semiring, where we also have computation for
+        finding the predecessors. This introduces possibly large branches into
+        our inner-loop.
+    \item If simulated, this model gives the programmer more flexibility...
+        % TODO: really?
+\end{itemize}
+
+% TODO: work from here. What assumptions are next?
+
+% }}}
+
+
+
+% TODO: do this next, leading to reqAnal, no do the APSP first...
 
 % Requirements analysis (500 words)
 % Requirements analysis {{{
