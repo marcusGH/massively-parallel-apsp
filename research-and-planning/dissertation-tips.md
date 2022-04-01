@@ -37,7 +37,6 @@ The reader will not like pulling things out of thin air, so in this chapter, I s
 explain the _whys_, such as: I used the following model for communication and this
 is suitable because X.
 
-
 Work items
 * how was proposal further refined and clarified?
 * describe algorithms/theories that required understanding
@@ -47,8 +46,6 @@ Important aspects
   * Requirements analysis
   * High-level design planning
   * _Planning for extensions when creating modules e.g. Topology creator_
-  * % TODO: review SwSecEng briefly to get survey of such techniques
-  * ...
 
 _Consider how well the candidate understood the task_
 _and analysed it. Give credit for a good introduction to the technical background, a_

@@ -1,22 +1,32 @@
-\documentclass{article}
-\usepackage{parskip,xspace}
-\usepackage{geometry,array} 
-\usepackage{natbib}
-\usepackage[colorlinks,citecolor=red,urlcolor=blue,bookmarks=false,hypertexnames=true]{hyperref} 
-\usepackage{longtable} 
-\usepackage{setspace} \onehalfspacing
+% Do not load all of these if compiled as part of the main dissertation document
+\def\mode{StandardMode}
+\ifdefined\ifSubfilesClassLoaded\def\mode{SubfileMode}\fi
+\def\SubfileMode{%
+    \documentclass[../dissertation/diss.tex]{subfiles}
+}
+\def\StandardMode{%
+    \documentclass{article}
+    \usepackage{parskip,xspace}
+    \usepackage{geometry,array} 
+    \usepackage{natbib}
+    \usepackage[colorlinks,citecolor=red,urlcolor=blue,bookmarks=false,hypertexnames=true]{hyperref} 
+    \usepackage{longtable} 
+    \usepackage{setspace} \onehalfspacing
 
 
-\def\authorname{Marcus A.\ K.\ September\xspace}
-\def\authorcollege{Clare College\xspace}
-\def\authoremail{maks2@cam.ac.uk}
-\def\dissertationtitle{A parallel algorithm for all-pairs shortest paths that minimises data movement}
+    \def\authorname{Marcus A.\ K.\ September\xspace}
+    \def\authorcollege{Clare College\xspace}
+    \def\authoremail{maks2@cam.ac.uk}
+    \def\dissertationtitle{A parallel algorithm for all-pairs shortest paths that minimises data movement}
+}
+\csname\mode\endcsname
+
 \title{
     {\large Part II Computer Science Project Proposal} \\~\\
-    \dissertationtitle}
+\dissertationtitle}
 \author{
     \authorname, \authorcollege \\~\\
-    Originator: Dr J. Modi \\ }
+Originator: Dr J. Modi \\ }
 
 \begin{document}
 \maketitle

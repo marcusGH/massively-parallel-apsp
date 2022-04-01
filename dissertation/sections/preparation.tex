@@ -235,7 +235,9 @@ memory and no address space is shared between different \acp{PE}. To allow
 coordination, a message-passing interface is also assumed. This model scales well
 with a very large number of \acp{PE}, compared with shared-memory systems where
 the memory system becomes a bottleneck when the number of \acp{PE} that share
-the same memory are in the 1000s.
+the same memory are in the 1000s. I also assume that each \ac{PE} has sufficient
+private memory to store the data it will be working on, but I will not abuse this
+to store a copy of the input on each \ac{PE}.
 
 \paragraph{MIMD execution}%
 \label{par:MIMD execution}
@@ -261,7 +263,21 @@ following reasons:
         % TODO: really?
 \end{itemize}
 
-% TODO: work from here. What assumptions are next?
+\paragraph{Message passing}%
+\label{par:Message passing}
+The \acp{PE} are interconnected through point-to-point links, arranged in
+some fully-connected network topology. I will assume the \acp{PE} are laid
+out in a square lattice arrangement because the problem of matrix multiplication
+maps nicely to this. Additionally, the Fox-Otto algorithm assumes row-broadcast
+highways, so I will also assume these are available. Further, I will assume that
+each broadcast-highway as well as each point-to-point link can only be used to
+carry one message at a time. The messages are also delivered \textit{in-order}.
+
+The time it takes to send a message $m$ from \ac{PE} $i$ to \ac{PE} $j$ only
+depends on the size of $m$, the latency and bandwidth of the links, and the
+value of some fixed function $d(i,j)$, that depends on the interconnect topology.
+I will also assume the latency and bandwidth are the same for all messages sent.
+I also assume some fixed latency and bandwidth for the broadcasting.
 
 % }}}
 
@@ -274,6 +290,66 @@ following reasons:
 \section{Requirements analysis}%
 \label{sec:Requirements analysis}
 
+Introduction. 
+
+\paragraph{Parallel arcitecture simulation framework?}%
+\label{par:Parallel arcitecture simulation framework?}
+
+Since I do not have access to a physical system fitting the
+properties described in \autoref{sec:Parallel architecture assumptions},
+I will simulate one. The main requirements of this is:
+\begin{itemize}
+    \item Configurable number of \acp{PE} and topology
+    \item Simulation exploits inherent parallelism on system it is executed on,
+        such that it's as efficient as possible
+    \item There is a simple, yet expressive, interface for describing the
+        computation to be performed at each \ac{PE}, where the programmer has
+        access to methods such as \texttt{send}, \texttt{receive},
+        \texttt{broadcastRow} etc., and can retrieve its position in the grid with
+        \texttt{i} and \texttt{j}. 
+        % ?
+        With such an interface, other algorithms like parallel Floyd-Warshall
+        can also be implemented.
+    \item There is an interface for distributing input data among the \acp{PE}
+        as well as retrieving the result.
+    \item The computation time is measured during \ac{PE} execution, and
+        communication time is estimated according to the message passing model in 
+        the assumed architecture.
+    % TODO: add something more about how should comply with assumed arch?
+\end{itemize}
+
+\paragraph{Graph datasets}%
+\label{par:Graph datasets}
+
+To evaluate the performance scaling of our algorithms, we will need a large set
+of different input graphs, covering a sufficiently large space of sizes. Ideally,
+these graphs should have similar characteristics as well as resemble real-world
+graphs like road networks as this is a primary usage of our \ac{APSP} algorithm.
+
+\paragraph{APSP algorithm}%
+\label{par:APSP algorithm}
+
+We can summarise the requirements of this component as:
+\begin{itemize}
+    \item Given an input graph $G$, it can compute the shortest paths between
+        each pair of nodes in $V$. This computation is done by using the
+        interface for the parallel architecture simulation.
+    \item After this computation, each path $i \rightsquigarrow j$ can be
+        reconstructed.
+    \item This computation can also happen when the parallel arcitecture is
+        configured to have fewer \acp{PE} than there are vertices in the
+        graph (extension).
+\end{itemize}
+
+\paragraph{Graph compressor (extension)}%
+\label{par:Graph compressor}
+
+The input graph can be passed to this module and a new ``equivalent'', but with
+all the 2-degree-nodes removed is returned. Additionally, after solving
+\ac{APSP} on this compressed graph, we can pass the solution back to the
+graph compressor to reconstruct \ac{APSP} solutions on the original graph.
+% TODO: rephrase...
+
 % }}}
 
 % Choice of tools (200 words)
@@ -285,6 +361,11 @@ following reasons:
 \section{Choice of tools}%
 \label{sec:Choice of tools}
 
+\subsection{Programming languages and libraries}%
+\label{sub:Programming languages and libraries}
+
+% TODO: work from here: Write about OOP because simulation with many componetns, modularisation, Thread API, something ...
+
 % }}}
 
 % Starting point (100 words)
@@ -292,6 +373,28 @@ following reasons:
 % Starting point {{{
 \section{Starting point}%
 \label{sec:Starting point}
+
+\begin{table}[h]
+\begin{center}
+    \begin{tabular}{p{200pt}|p{230pt}}
+        \textbf{Course} & \textbf{Relevance} \\
+        \hline
+        Object-Oriented Programming (OOP) & Principles behind
+        writing OOP code and managing a large codebase \\
+        Further Java & Some experience writing parallel programs \\
+        Concurrent and Distributed Systems & Knowledge of concurrency concepts \\
+        Computer Design & Knowledge of parallel systems \\
+        Algorithms & Serial route-planning algorithms \\
+    \end{tabular}
+\end{center}
+\caption{Courses from the Tripos and their relevance to my project.}
+\label{tab:courses}
+\end{table}
+
+Many courses from the Computer Science Tripos have been useful for my project,
+as seen in \autoref{tab:courses}. The unit of assessment, Advanced Data Science,
+has also been applicable when managing and visualising the timing data gathered
+for the evaluation.
 
 % }}}
 

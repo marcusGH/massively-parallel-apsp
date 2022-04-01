@@ -1,7 +1,7 @@
 # Timetable and progression tracker for dissertation writing
 
 _Check in on this tracker **often**_
-* Latest check-in date: 24.03
+* Latest check-in date: 31.03
 
 ## Exams
 
