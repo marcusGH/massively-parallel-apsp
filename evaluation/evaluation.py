@@ -18,7 +18,7 @@ tex_fonts = {
     # Make the legend/label fonts a little smaller
     "legend.fontsize": 8,
     "legend.title_fontsize": 10,
-    "xtick.labelsize": 8,
+    "xtick.labelsize": 8, # 8 at full scale
     "ytick.labelsize": 8
 }
 plt.rcParams.update(tex_fonts)
@@ -343,15 +343,23 @@ def plot_ratio_bucket(base_path, ns, ps):
                     classes[class_id]['col'].append(f"C{col_id}")
                 else:
                     break
-    fig, ax = plt.subplots(figsize=set_size())
+    fig, ax = plt.subplots(figsize=set_size(fraction=0.5, ratio=1.5))
     # setup the plot
     ax.set_xscale('log', nonpositive='clip')
-    ax.set_xlabel("submatrix size per procesing element")
-    ax.set_ylabel("Parallel efficinecy")
-    ax.set_title("Parallel efficiency for different submatrix sizes")
+    ax.set_xlabel("sub-matrix size",fontsize=10)
+    ax.set_ylabel("Computation ratio",fontsize=10)
+    #ax.set_title("Computation ratio for different sub-matrix sizes", fontsize=10)
+    ax.set_ylim([0,1])
+    ax.set_yticks([0,.1,.2,.3,.4,.5,.6,.7,.8,.9,1])
+    ax.grid(True)
+
+    ax.set_xticks([1,2,5,10] + [20,50,100,200]) #list(range(10,201,10)))
+    # ax.tick_params(axis='x', labelrotation=-45)
+    ax.get_xaxis().set_major_formatter(matplotlib.ticker.ScalarFormatter())
+
     # scatter for the different multiprocessor classes
     for mpc in classes:
-        ax.scatter(mpc['xs'], mpc['ys'], c=mpc['col'], s=8, marker='x',
+        ax.scatter(mpc['xs'], mpc['ys'], c=mpc['col'], s=4, marker='x',
                    label=f"{mpc['p']} x {mpc['p']}",
                    alpha=0.5, edgecolors='none')
     # produce a legend
@@ -373,7 +381,8 @@ def plot_ratio_bucket(base_path, ns, ps):
     ax.plot(xs2, ys2, zorder=-8)
     # error behind scatter
     ax.fill_between(xs2, ys2 - err, ys2 + err, zorder=-10, alpha=0.3)
-    #fig.savefig('plots/example1.pdf', format='pdf', bbox_inches='tight')
+    fig.tight_layout(pad=0.3)
+    fig.savefig('plots/ratio-bucket-taihu-half-scale.pdf', format='pdf', bbox_inches='tight')
     plt.show()
     
 def plot_cal():
@@ -469,5 +478,5 @@ if __name__ == "__main__":
     taihu = "timing-data/cal-random-sunway-light/cal-random-sunway-light-5-repeats"
     sandy = "timing-data/cal-random-sandy-bridge/cal-random-sandy-bridge-5-repeats"
     #plot_total_time_scaling("timing-data/cal-random-sunway-light/cal-random-sunway-light-5-repeats", ns, [4, 8, 16, 32, 64, 128])
-    plot_ratio_scaling(taihu, ns, [16, 32, 64, 128])
-    #plot_ratio_bucket("timing-data/cal-random-sandy-bridge/cal-random-sandy-bridge-5-repeats", ns, [4, 8, 16, 32, 64, 128])
+    #plot_ratio_scaling(taihu, ns, [16, 32, 64, 128])
+    plot_ratio_bucket(taihu, ns, [4, 8, 16, 32, 64, 128])
