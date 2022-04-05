@@ -1,7 +1,7 @@
 # Timetable and progression tracker for dissertation writing
 
 _Check in on this tracker **often**_
-* Latest check-in date: 31.03
+* Latest check-in date: 04.04
 
 ## Exams
 
@@ -12,9 +12,9 @@ We are here marker: `-HERE-`
 | March | 1    | x                                            |
 | March | 2    | x                                            |
 | March | 3    | x                                            |
-| March | 4    | -HERE: Uni text done, diss start            |
-| April | 1    | Complete draft by 31.03                      |
-| April | 2    |                                              |
+| March | 4    | x                                            |
+| April | 1    | x                                            |
+| April | 2    | -Here-                                       |
 | April | 3    | First draft done, and sent for feedback      |
 | April | 4    | _waiting for feedback_                       |
 | May   | 1    | TERM START, implement feedback               |
@@ -30,11 +30,27 @@ _Each week belongs to the month that the Sunday is on_
 Exams are June 8 and June 10
 
 TODO to plan:
-* Read 2 distincted past dissertation from archive, comparing to grading scheme as you read
-* Start fleshing out points to include, and need to do for prep as well because requirements
-  analysis should be refered to and justified in the implementation phase, for instance
-* After this, can start writing some points
+* Review what plots I have w.r.t. evaluation (do on Tuesday)
+* Plan points/sections for implementation chapter
+* Continue planning points for APSP subchapter
+* Go through design decision diary and add points as fit
+* Also go through notebook and add points as see fit
 
-- [ ] Look at multiprocessor planning markdown to felsh out ReqAnal section
+* More measurements for generous latency (200ms, around equator)
+  and average UK broadband speed https://www.itpro.co.uk/network-internet/broadband/360866/uk-broadband-speeds-ninth-slowest-in-europe
+
+## Current status
+
+Introduction:
+
+Preperation:
+* Written 0th draft (not even read over once)
+* At 2400 words (allotted 2500, so may shorten it somewhat)
+
+Implementation:
+
+Evaluation:
+
+Conclusion:
 
 % vim: set nospell :

@@ -282,9 +282,6 @@ I also assume some fixed latency and bandwidth for the broadcasting.
 % }}}
 
 
-
-% TODO: do this next, leading to reqAnal, no do the APSP first...
-
 % Requirements analysis (500 words)
 % Requirements analysis {{{
 \section{Requirements analysis}%
@@ -326,6 +323,10 @@ of different input graphs, covering a sufficiently large space of sizes. Ideally
 these graphs should have similar characteristics as well as resemble real-world
 graphs like road networks as this is a primary usage of our \ac{APSP} algorithm.
 
+We also need a \textit{graph input} component that can read the graphs from file
+and transform them into a suitable format to pass as input to the \ac{APSP}
+algorithm.
+
 \paragraph{APSP algorithm}%
 \label{par:APSP algorithm}
 
@@ -364,12 +365,38 @@ graph compressor to reconstruct \ac{APSP} solutions on the original graph.
 \subsection{Programming languages and libraries}%
 \label{sub:Programming languages and libraries}
 
-% TODO: work from here: Write about OOP because simulation with many componetns, modularisation, Thread API, something ...
+I chose Java for the implementation of the components of the project. The parallel
+simulation has many modules that interact with each other, and implementation
+is more manageable if these can be developed in isolation, abstracting away
+their functionality. Additionally, code-reuse and dynamic polymorphism will be
+important when implementing different algorithms for the parallel system's
+interface. As such, and object-oriented language like Java, which makes following
+these principles easier, is suitable. Additionally, Java is well-suited for
+creating concurrent programs as it has built-in primitives for synchronisation as
+well as classes for managing a large number of concurrent threads.
+
+For testing, I use JUnit\footnote{\url{https://junit.org}}, which is a testing
+framework for the \ac{JVM}. Since the code is modularised, this will allow me to
+create well-organised unit tests for the different modules.
+
+For plotting my evaluation results, I use python and modules like \texttt{pandas}
+and \texttt{matplotlib}.
+
+\subsection{Development, testing and revision control}%
+\label{sub:Development, testing and revision control}
+
+% TODO: finish this subsection
+revision control with \texttt{git} and GitHub, development, testing and evaluation
+on my own laptop with specs ...
+
+Intellij IDE for Java,
+
+github workflows, build my project every time I commit to \texttt{main} branch,
+to make sure code always in a valid state.
 
 % }}}
 
 % Starting point (100 words)
-% * ?
 % Starting point {{{
 \section{Starting point}%
 \label{sec:Starting point}
@@ -399,29 +426,71 @@ for the evaluation.
 % }}}
 
 
-% High-level implementation overview (100???)
-% * Diagram of key components and reference these in section below
-% High-level implementation overview {{{
-\section{High-level implementation overview}%
-\label{sec:High-level implementation overview}
-
-% }}}
-
-
 % Software engineering (200?)
 % Software engineering {{{
 \section{Software engineering}%
 \label{sec:Software engineering}
 
-Combination of iterative development model and incremental development models,
-% TODO: what is iteratively developed and what is incrementally developed?
+% TODO: disctintion between graph reader, and concept of input graphs is not
+%    very clear in both above reqAnal and the diagram!
+\begin{figure}
+\begin{center}
+    \includegraphics[scale=1]{figs/component-overview.pdf}
+\end{center}
+\caption{High-level overview of the implementation}
+\label{fig:component-overview}
+\end{figure}
 
-classes, modularisation, encapsulation, immutability,
-access control
+In \autoref{fig:component-overview}, we see the high-level structure of the
+implementation. This matches the requirements laid out in
+\autoref{sec:Requirements analysis}; The requirements in each group can also be
+associated with individual components. For example, allowing descriptions of
+computation comes from the \texttt{Worker} interface, while access to communication
+methods come from implementation of the communication manager. This sets up clear
+work items and achievements to aim for during implementation.
 
-documentation following JavaDocs? standard, coherent coding style used,
-assertion and exceptions, unit tests for specific modules, and to test basic
-interaction
+I developed the parallel system simulation using the \textit{incremental build
+model}. The simulator is very modular and the component dependencies form a
+% TODO: acronym: DAG
+directed acyclic graph, so implementation could happen by developing one module at
+a time, and incrementally expanding the simulator.
+I started implementation with the \texttt{Worker} and its private memory,
+and tested its independent execution using various test-sub-classes. I then moved
+onto incorporating communication methods such as \texttt{send} and
+\texttt{broadcastRow} with the communication manager, which I tested using more
+sub-classes of the \texttt{Worker} interface. After this, managing several workers
+at a time, and handling their automatic creation, was implemented with the
+\texttt{Manager} class and the worker factory, respectively. Then I incorporated
+the communication manager. The functionality for timing the execution is
+implemented using the \textit{decorator} pattern, so this could incrementally
+be developed at any time after the parallel system simulation was done.
+
+The higher-level components such as the simulation, the \ac{APSP} solver and
+the input graph module were implemented according to the
+\textit{iterative development model}. These components were fairly independent
+as we could use a serial matrix multiplication algorithm instead of running code
+on the parallel system. This allowed me to focus on one component at a time, as
+well as separate testing.
+
+% Incrementally make
+% * parallel system simulation
+% * dependencies one-directional, so can make one component at a time, made sure
+%   to make clear interfaces such that when developing another module on top, only
+%   need to think about interaction
+% * Clear modularisation, so focus on one worker first, then develop communication
+%   between them, then create manager to handle the execution and communication,
+%   then build test workers classes, and then make repeated use the worker
+% Iteratively:
+% * The input graphs, graph reader seperate from simulation, additionally, can
+%   detach MatSquare by using serial matrix multiplication routine instead of
+%   manager
+
+I followed proper software engineering techniques during development. Encapsulation and
+modularisation were widely used and realised through use of immutability, access control
+mechanisms and packaging my code. I also wrote exceptions and assertions throughout my
+code where it was appropriate. I also used a coherent coding style and documented both
+my methods and classes according to the Javadoc\footnote{\url{https://www.oracle.com/java/technologies/javase/javadoc-tool.html}} standard. The various components were also
+unit-tested.
 
 % }}}
 
