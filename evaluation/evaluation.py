@@ -273,11 +273,32 @@ def plot_total_time_scaling(base_path, ns, ps):
     plt.show()
 
 
+from matplotlib.ticker import NullFormatter, FixedLocator
+
 def plot_ratio_scaling(base_path, ns, ps):
     fig, ax = plot_scaling(base_path, ns, ps, lambda t: t['ratio'], lambda t: t['ratio_err'])
+    # temp
+    # fig, ax = plt.subplots(figsize=set_size(fraction=1.0))
+    # x = np.linspace(0, 100, 1000)
+    # y = x / 115 + 0.1
+    # ax.plot(x, y)
     ax.set_xlabel("Problem size", fontsize=8)
     ax.set_ylabel("Parallel efficiency", fontsize=8)
-    ax.set_ylim([0.0, 1.0])
+    # ax.set_ylim([0.0, 1.0])
+    small = 1.
+    # ax.set_yscale("function", functions=(lambda x: np.log(small - x), lambda x: -np.exp(x) + small))
+    #ax.set_yscale('functionlog',  functions=(lambda x: small - x, lambda x: -x + small))
+    def forward(x):
+        return x ** 5
+    def backward(x):
+        return np.clip(x, 0, 1) ** (1/5)
+    ax.set_yscale('function', functions=(forward, backward))
+    ax.set_yticks([0.0, .5, .6, .7, .8, .9, 1])
+    # ax.yaxis.set_major_locator(FixedLocator(np.arange(0, 1, 0.2) ** 2))
+    # ax.yaxis.set_major_locator(FixedLocator(np.arange(0, 1, 0.2)))
+    #ax.set_yscale('log')
+    ax.grid(True)
+    #ax.set_yticks([1-1/2, 1-1/4, 1-1/8, 1-1/16, 1], [1-1/2, 1-1/4, 1-1/8, 1-1/16, 1])
     ax.set_xlim([0, 710])
     ax.set_xticks(list(range(0,701,100)))
     ax.set_title("Parallel efficiency", fontsize=12)
@@ -445,6 +466,8 @@ if __name__ == "__main__":
     # df = read_timings("timing-data/cal-random-sandy-bridge-n-20-p-4")
     # plot_ratio(df)
     ns = list(range(10, 101, 10)) + list(range(100, 701, 50))
-    plot_total_time_scaling("timing-data/cal-random-sunway-light/cal-random-sunway-light-5-repeats", ns, [4, 8, 16, 32, 64, 128])
-    #plot_ratio_scaling("timing-data/cal-random-sandy-bridge/cal-random-sandy-bridge-5-repeats", ns, [4, 8, 16, 32, 64, 128])
+    taihu = "timing-data/cal-random-sunway-light/cal-random-sunway-light-5-repeats"
+    sandy = "timing-data/cal-random-sandy-bridge/cal-random-sandy-bridge-5-repeats"
+    #plot_total_time_scaling("timing-data/cal-random-sunway-light/cal-random-sunway-light-5-repeats", ns, [4, 8, 16, 32, 64, 128])
+    plot_ratio_scaling(taihu, ns, [16, 32, 64, 128])
     #plot_ratio_bucket("timing-data/cal-random-sandy-bridge/cal-random-sandy-bridge-5-repeats", ns, [4, 8, 16, 32, 64, 128])
