@@ -88,6 +88,9 @@ public class Manager {
             this.setPrivateMemory(initialMemoryContent);
         }
 
+        // TODO: refactor to make privateMemoryMatrix be local variable, and don't use as field
+        //       also consider not referecing PrivateMemory at all, but set the worker's memory after created
+
         this.memoryController = new MemoryController(this.p, this.privateMemoryMatrix);
 
         // set up the worker factory

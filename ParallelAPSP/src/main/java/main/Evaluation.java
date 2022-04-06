@@ -52,6 +52,16 @@ public class Evaluation {
                 8 * bytes_in_GB, 8 * bytes_in_GB);
     }
 
+    public MultiprocessorAttributes getInternetAttributes() {
+        // Latency: 30ms or less for regional round trips within Europe.
+        // Bandwidth: The regional average speed of 90.56Mbps makes it the fastest of the 13 global regions overall.0
+        double bytes_in_Mb = Math.pow(2, 20) / 8; // Megabit / 8 = MegaByte
+        double latency = 30 * 1E-3; // 30 ms
+        double bandwidth = 90 * bytes_in_Mb;
+        return new MultiprocessorAttributes(latency, latency, bandwidth, bandwidth);
+
+    }
+
     public GraphReader getGraph(int size) throws ParseException {
         return new GraphReader(String.format("%s/%d.cedge", RANDOM_GRAPH_PATH, size), false);
     }
@@ -65,7 +75,7 @@ public class Evaluation {
         int ITER_OFFSET = 0;
 
         // we use this one for now
-        MultiprocessorAttributes multiprocessor = getSunwayLightAttributes();
+        MultiprocessorAttributes multiprocessor = getInternetAttributes();
         for (int iter = ITER_OFFSET; iter < numRepetitions; iter++) {
             LOGGER.info(String.format(" === Evaluation is measuring scaling for repetition %d / %d ===\n", iter + 1, numRepetitions));
             for (int i : problemSizes) {
@@ -84,7 +94,7 @@ public class Evaluation {
                 solver.solve();
 
                 // then save the result
-                String filename = String.format("%s/cal-random-sunway-light-5-repeats-n-%d-p-%d.%d.csv", RESULT_SAVE_PATH, i, p, iter);
+                String filename = String.format("%s/cal-random-internet-3-repeats-n-%d-p-%d.%d.csv", RESULT_SAVE_PATH, i, p, iter);
                 try {
                     solver.getTimingAnalysisResults().saveResult(filename);
                 } catch (IOException e) {
@@ -134,7 +144,7 @@ public class Evaluation {
         List<Integer> ns = Arrays.asList(10, 20, 30, 40, 50, 60, 70, 80, 90, 100,
                 150, 200, 250, 300, 350, 400, 450, 500, 550, 600, 650, 700);
 //        List<Integer> ns = Arrays.asList(700);
-        evaluation.measureScaling(16, ns, 4);
+        evaluation.measureScaling(8, ns, 3);
 //        evaluation.measureCalRoadNetworkExecutionTimes(128, 5);
         // TODO:
         //    serial for both cal and random
