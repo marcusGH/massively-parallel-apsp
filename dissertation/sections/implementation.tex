@@ -27,6 +27,7 @@
 %   *  python library used
 % * Graph reader
 %   * adjacency matrix and also neighbourhood list for Dijkstra's algorithm
+% * TODO: mention networkx as well as GraphReader class
 % Graph datasets {{{
 \section{Graph datasets}%
 \label{sec:Graph datasets}
@@ -157,6 +158,35 @@ correspond to their weight\footnotemark.}%
 % Simulation of a distributed memory multiprocessor {{{
 \section{Simulation of a distributed memory multiprocessor}%
 \label{sec:Simulation of a distributed memory multiprocessor}
+
+% TODO: add comment that Manager runs whatever methods on the worker objects it has
+% TODO: also add number annotations, showing how many of each they have
+% TODO: shorten width of ComMan, so that can have some blue on the side
+\begin{figure}[h]
+\begin{center}
+    \includegraphics[scale=1]{figs/parallel-system-simulation.pdf}
+\end{center}
+\caption{A overview of the classes and their interaction in simulator.}
+\label{fig:parallel-system-overview}
+\end{figure}
+
+In \autoref{fig:parallel-system-overview}, we see an overview of the main components
+of the simulator, and how they interact. The \texttt{Manager} constructs the specified
+number of \texttt{Worker}s based on some provided subtype e.g.~\texttt{FoxOtto}, using
+a \texttt{WorkerFactory}. When \texttt{doWork()} is called, it will then run the
+\texttt{Worker}s through all of their communication- and computation-phases, and
+\texttt{flush()} the effects of their communication after each phase, which is done
+using the \texttt{CommunicationManager}. The \texttt{Worker} is an abstract class
+and provides a simple yet expressive interface for algorithms ....
+
+\subsection{Memory model}%
+\label{sub:Memory model}
+
+We have
+
+
+
+
 
 % }}}
 
