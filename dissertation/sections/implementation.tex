@@ -15,7 +15,7 @@
 % * _Intrdc the different components, and then start going into detail in ind. subsecs_
 
 % Some "practices used/software dev.? chapter":
-% * Weekly meetings, log book, 
+% * Weekly meetings, log book,
 
 % Graph datasets:
 % * California road networks:
@@ -51,14 +51,16 @@ I chose to use Erd{\"o}s-Renyi graphs because they have previously been used in
 evaluation of \ac{APSP} algorithms.
 % TODO: cite https://core.ac.uk/download/pdf/81103122.pdf
 %            https://www.researchgate.net/publication/47842024_A_Parallelization_of_Dijkstra%27s_Shortest_Path_Algorithm
-I have tried to fit the parameters as closely to the real-world graph datasets as possible. There are many characteristics of a graph, such as vertex- and edge-connectivity,
-betweenness centrality, clustering coefficient, and average distances. However,
-trying to generate new graphs with similar values for all of these metrics quickly
-becomes a difficult problem. I have therefore only tried to replicate the metric,
-\textit{average vertex degree}, which should have some correlation to the mentioned
-metrics. I also want the random graphs to be fully-connected, as most road-networks
-are. In the $G(n,p)$ random-graph model, the graph is constructed by starting with a
-set of $n$ vertices, and then independently include every possible edge $e$ with
+I have tried to fit the parameters as closely to the real-world graph datasets
+as possible. There are many characteristics of a graph, such as vertex- and
+edge-connectivity, betweenness centrality, clustering coefficient, and average
+distances. However, trying to generate new graphs with similar values for all
+of these metrics quickly becomes a difficult problem. I have therefore only
+tried to replicate the metric, \textit{average vertex degree}, which should
+have some correlation to the mentioned metrics. I also want the random graphs
+to be fully-connected, as most road-networks are. In the $G(n,p)$ random-graph
+model, the graph is constructed by starting with a set of $n$ vertices, and
+then independently include every possible edge $e$ with
 % (TODO: citation???)
 probability $p$. This makes the edges follow the binomial distribution:
 \begin{equation}
@@ -66,17 +68,19 @@ probability $p$. This makes the edges follow the binomial distribution:
 \end{equation}
 with the average degree being $(n-1)p$. However, by instead starting with a
 \textit{circular graph} and including each remaining edge independently with
-probability 
+probability
 \begin{equation}
     p=\frac{\textrm{desired average degree} - 2}{n - 3},
 \end{equation}
 we get a fully-connected graph where the average degree is as desired.
 % TODO: proof in appendix...
-I chose the desired average degree based on the Californian road-network, which is
-2.061. However, since we will be using the compressed graph (see \autoref{sec:Graph compression}), I used the average vertex degree of the compressed California graph instead,
-which was 2.945. In \autoref{fig:example-graph-random}, I have plotted an
-example graph generated through this method. I then generated ? graphs of various
-sizes, from 10 nodes to 700 nodes for use in evaluation. %TODO: how many?
+I chose the desired average degree based on the Californian road-network, which
+is 2.061. However, since we will be using the compressed graph (see
+\autoref{sec:Graph compression}), I used the average vertex degree of the
+compressed California graph instead, which was 2.945. In
+\autoref{fig:example-graph-random}, I have plotted an example graph generated
+through this method. I then generated ? graphs of various sizes, from 10 nodes
+to 700 nodes for use in evaluation. %TODO: how many?
 
 \begin{table}
     \centering
@@ -106,13 +110,12 @@ sizes, from 10 nodes to 700 nodes for use in evaluation. %TODO: how many?
     \includegraphics[scale=.7]{figs/plots/example-graph.eps}
 \end{center}
 \caption[Caption]{A visualisation of a graph generated with the modified
-    Erd{\"o}s-Renyi model. The graph has $n=60$ vertices, and the length of the edges
-correspond to their weight\footnotemark.}%
+Erd{\"o}s-Renyi model. The graph has $n=60$ vertices, and the length of the
+edges correspond to their weight\footnotemark[3].}%
 \label{fig:example-graph-random}%
 \end{figure}
 
-\addtocounter{footnote}{-1}
-\footnotetext{The graph was visualised using the \texttt{ForceAtlas2} library in python. See TODO}
+\footnotetext[3]{The graph was visualised using the \texttt{ForceAtlas2} library in python. See TODO}
 
 % \begin{algorithm}
 %     \caption{Fully-connected random graph with specific average degree}%
@@ -142,13 +145,6 @@ correspond to their weight\footnotemark.}%
 % * Memory model (?)
 %   * explain design decision behind Map : (label : String) -> (value : Number)
 %   * ...
-% * Work management
-%   * _By now, reader should know communication manager modifies memory when flush_
-%   * Diagram of how work is simulated in parallel fashion, 8 blocks at a time
-%   * Use Java's executor service to avoid thread management overhead
-% * Worker factory
-%   * Use of reflection, so can allow arbitrary description to be passed and can still
-%     crete the new worker objects that can be managed
 % * Timing analysis
 %   * implemented as decorators for the system simulation
 %   * Explain equations for how MIMD simulated (stalling bc. wait, latency+bandwidth etc.
@@ -158,6 +154,21 @@ correspond to their weight\footnotemark.}%
 % Simulation of a distributed memory multiprocessor {{{
 \section{Simulation of a distributed memory multiprocessor}%
 \label{sec:Simulation of a distributed memory multiprocessor}
+
+% TODO: Introduction, here we want to present the reader with the four phases and
+%  the **interface** we want to create, as if reader sees diagram first, will
+%  have no idea _what_ the communicationBefore, etc. is and why it's there
+% * The parallel algorithms, including possible extensions, can be split into
+%   3/4 phases
+% * Doing this also has many benefits (TODO: go through diary and find
+%   the benefits)
+% * The diagram with parallel communicationBefore, then memory flush, sync barrier,
+%   followed by another repeated execution, that diagram goes here and is
+%   refered to
+
+% In this "introduction 2" chapter, we explain the diagram...
+\subsection{Overview of components}%
+\label{sub:Overview of components}
 
 % TODO: add comment that Manager runs whatever methods on the worker objects it has
 % TODO: also add number annotations, showing how many of each they have
@@ -170,19 +181,139 @@ correspond to their weight\footnotemark.}%
 \label{fig:parallel-system-overview}
 \end{figure}
 
-In \autoref{fig:parallel-system-overview}, we see an overview of the main components
-of the simulator, and how they interact. The \texttt{Manager} constructs the specified
-number of \texttt{Worker}s based on some provided subtype e.g.~\texttt{FoxOtto}, using
-a \texttt{WorkerFactory}. When \texttt{doWork()} is called, it will then run the
-\texttt{Worker}s through all of their communication- and computation-phases, and
-\texttt{flush()} the effects of their communication after each phase, which is done
-using the \texttt{CommunicationManager}. The \texttt{Worker} is an abstract class
+In \autoref{fig:parallel-system-overview}, we see an overview of the main
+components of the simulator, and how they interact. The \texttt{Manager}
+constructs the specified number of \texttt{Worker}s based on some provided
+subtype e.g.~\texttt{FoxOtto}, using a \texttt{WorkerFactory}. When
+\texttt{doWork()} is called, it will then run the \texttt{Worker}s through all
+of their communication- and computation-phases, and \texttt{flush()} the
+effects of their communication after each phase, which is done using the
+\texttt{CommunicationManager}. The \texttt{Worker} is an abstract class
 and provides a simple yet expressive interface for algorithms ....
+
+% Work management points:
+% * Diagram of how work is simulated in parallel fashion, 8 blocks at a time
+% * Use Java's executor service to avoid thread management overhead
+% * Briefly remind about interace, and communication method using one object
+% * Manager explain, from construction, to how doWork works, to getResult, also
+%   allowing reuse of workers, which is nice ...
+% * Worker factory
+%   * Use of reflection, so can allow arbitrary description to be passed and
+%     can still
+%     crete the new worker objects that can be managed
+\subsection{Work management}%
+\label{sub:Work management}
+
+Introduction where interleave the below stuff on how doWork works...
+% TODO: write that next ^^
+
+When investigating the different algorithms, as well as possible extension like
+Floyd-Warshall, I realised that they all had clear distinctions between when the
+\acp{PE} were doing computation and when they were communicating. This made
+forcing such a distinction in the interface not induce a reduction in
+flexibility. Instead of providing an abstract method \texttt{work}, where the
+programmer would themself create a \texttt{for}-loop and combine communication
+and computation, we provide the four methods shown in \autoref{fig:parallel-system-overview} and execute them as shown in \autoref{alg:execution-order}.
+
+\begin{wrapfigure}{l}{0.5\textwidth}
+\begin{minipage}{0.5\textwidth}
+    \begin{algorithm}[H]
+    \caption{Execution of phases of some worker id $(i,j)$}%
+    \label{alg:execution-order}
+
+worker.initialisation();
+
+\SetKwComment{Comment}{/* }{ */}
+\For{$l = 0 \dots \textrm{number of phases} -1$}{
+    \texttt{worker.communicationBefore($l$)}
+
+    \texttt{worker.computation($l$)}
+
+    \texttt{worker.communicationAfter($l$)}
+
+}
+\end{algorithm}
+\end{minipage}
+\end{wrapfigure}
+
+There are many benefits to this approach. TODO: what are the benefits? % TODO: ?
+
+Dividing up the execution tasks allows them to be represented as independent
+\texttt{Callable}s, which can be passed to a Java \texttt{ExecutorService}
+object. This will create a fixed number of threads, which I have specified to
+be 16 because that is how many threads my laptop can simultaneously execute,
+that will all the subtasks, 16 at a time. As the communication is done through
+the \texttt{CommunicationManager}, we need to call \texttt{flush()} after all
+of the \acp{PE} have completed their communication subtask at some iteration.
+All in all, the execution can be visualised in
+\autoref{fig:work-management-blocks}.
+
+% TODO: alternative diagram:
+%   very small blocks with different colours, and the colours indicate whether it's
+%   initilisatin, comBefore, compu, etc., and text inside is just e.g. "(0,0)"...
+\begin{figure}
+\begin{center}
+    \includegraphics[scale=1]{figs/work-management-blocks.pdf}
+\end{center}
+\caption{Example of multithreading when simulating a 4 processing elements on
+a host computer with 2 cores.}
+\label{fig:work-management-blocks}
+\end{figure}
+
+
 
 \subsection{Memory model}%
 \label{sub:Memory model}
 
-We have
+% Explains string label access
+Memory is accessed through string labels. The communication
+Each \ac{PE} has its own local memory, represented by a \texttt{PrivateMemory}
+object. To make access as easy to use as possible for the programmer, access
+is done through string labels. For example, a \ac{PE} can store some values
+at location \texttt{"A"} and then retrieve it with the same label later,
+additionally, for \acp{PE} handling a non $1\times 1$-sub-matrix, the
+local memory is arranged in a matrix where the \ac{PE} can for instance store
+values at location \texttt{(1,4,"A")} to associate it with some result related
+to for example $C_{5,9}$.
+% TODO: explain better above
+
+% Communication
+Introduction. To send for example data with point-to-point connections, both
+the sender and recipient must call \texttt{sendData} and \texttt{receiveData},
+respectively. The \texttt{receiveData(i, j, label)} method does not return a
+value, but instead causes the recipient's memory at label \texttt{label} to be
+set to whatever value was received. This change does not happen until
+\texttt{CommunicationManager::flush()} is called, which happens in the
+synchronisation phase in ?.% TODO: reference
+During the flushing all the sent data is matched up with corresponding calls
+to \texttt{receiveData}, and the private memories of all the recipient is
+modified by the \texttt{CommunicationManager}.
+An obvious alternative to this approach is making the \texttt{receiveData} method
+return the actual number received, which can be done by putting the recipient
+Thread to sleep until another thread has sent it data. My approach has the
+following benefits and drawbacks:
+\begin{itemize}
+    \item[+] Separating the computation and communication gives implicit thread
+        synchronisation, which allows using fewer \texttt{Thread}s, causing
+        less overhead (see ) % TODO: reference manager
+    \item[+] Measuring the computation time for evaluation is a lot simpler
+    \item[$-$] Computation must be interleaved with a communication phase and
+        we get less flexibility for algorithms where these two phases cannot
+        be cleanly seperated
+    \item[$-$] The \texttt{receiveData} method not returning anything is not
+        an intuitive abstractions, but rather requires the programmer to know
+        slightly more about the implementation of the \texttt{CommunicationManager}
+\end{itemize}
+% TODO: write something about how ties ties in with seperating the phases?
+
+The main benefits are making the work management simpler, and setting up for
+more accurate evaluation. The first drawback is not relevant for the algorithms
+I have used. % TODO: ?
+
+
+
+
+
 
 
 
@@ -210,7 +341,7 @@ By using \ac{MatSquare}, we can ...
 
 
 % Notes from reserach-and-planning diary:
-% **Problem with generalized FoxOtto**: 
+% **Problem with generalized FoxOtto**:
 % In the general version, we first started the multiplication by iterating from
 % the top of the submatrix (see diagram in notes for $C_{10,6}$ for instance).
 % However, this causes problems for the predecessor values because of the initial
