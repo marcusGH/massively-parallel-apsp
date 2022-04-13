@@ -406,6 +406,4 @@ cal compressed 2.9450549450549453
 
 Friday 11.march, running 8 x 8 again starting from iteration
 
-
-
 <!-- vim: set nospell: -->

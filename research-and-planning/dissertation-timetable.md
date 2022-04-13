@@ -30,14 +30,26 @@ _Each week belongs to the month that the Sunday is on_
 Exams are June 8 and June 10
 
 TODO to plan:
-* Review what plots I have w.r.t. evaluation (do on Tuesday)
-* Plan points/sections for implementation chapter
 * Continue planning points for APSP subchapter
-* Go through design decision diary and add points as fit
-* Also go through notebook and add points as see fit
+- [o] Go through design decision diary and add points as fit
+- [o] Also go through notebook and add points as see fit
+* In researchAndPlanning/Readme.md, there are still references/notes for eval and intro,
+  that I should go through when writing those chapters...
 
 * More measurements for generous latency (200ms, around equator)
   and average UK broadband speed https://www.itpro.co.uk/network-internet/broadband/360866/uk-broadband-speeds-ninth-slowest-in-europe
+
+TODO refactors:
+* Rename MemoryController -> CommunicationManager
+* Worker::initialise -> Worker::initialisation
+* TimingMemoryController -> TimedCommunicationManager
+
+Writing TODO:
+* Implementation:Memory model:
+  * Clean-up, removing stuff said in above subsection
+* TimingAnalysis:
+  * Create diagram? (necessary?)
+  * Write about decorator
 
 ## Current status
 
