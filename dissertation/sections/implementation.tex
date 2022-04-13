@@ -140,8 +140,6 @@ edges correspond to their weight\footnotemark[3].}%
 % Simulation of a distributed memory multiprocessor:
 % * Introduction:
 % *   Overview of the components in bigger UML diagram, and comments on their interaction
-% * TODO: create the above diagram first, and then realise what **more than below**
-%         aspects to explain...
 % * Memory model (?)
 %   * explain design decision behind Map : (label : String) -> (value : Number)
 %   * ...
@@ -204,16 +202,30 @@ and provides a simple yet expressive interface for algorithms ....
 \subsection{Work management}%
 \label{sub:Work management}
 
-Introduction where interleave the below stuff on how doWork works...
-% TODO: write that next ^^
+When constructing the \texttt{Manager}, we specify the number of \acp{PE},
+their initial memory content, and what computation they should do in each phase,
+which is done by specifying the class of some implementation of
+\texttt{\textit{Worker}}. When calling \texttt{doWork()} on the manager, it will
+then run all the workers through a specified number of phases, where there is
+3 subphases in each phase. Looking at a single worker in isolation, the execution
+can be seen in \autoref{alg:execution-order}. However, these tasks are simulated
+in parallel, and we must run the same subphase of all the workers before moving
+onto the next because of data dependencies. This parallel execution order is
+visualised in \autoref{fig:work-management-blocks}. After this is done, we can
+call \texttt{getResult(label)} to extract the result by combing the
+private memory of each worker into a matrix.
 
-When investigating the different algorithms, as well as possible extension like
-Floyd-Warshall, I realised that they all had clear distinctions between when the
-\acp{PE} were doing computation and when they were communicating. This made
-forcing such a distinction in the interface not induce a reduction in
-flexibility. Instead of providing an abstract method \texttt{work}, where the
-programmer would themself create a \texttt{for}-loop and combine communication
-and computation, we provide the four methods shown in \autoref{fig:parallel-system-overview} and execute them as shown in \autoref{alg:execution-order}.
+The worker done by each \ac{PE} is specified in subphases.  When investigating
+the different algorithms, as well as possible extension like Floyd-Warshall, I
+realised that they all had clear distinctions between when the \acp{PE} were
+doing computation and when they were communicating. This made forcing such a
+distinction in the interface not induce a reduction in flexibility. Instead of
+providing an abstract method \texttt{work}, where the programmer would themself
+create a \texttt{for}-loop and combine communication and computation, we
+provide the four methods shown in \autoref{fig:parallel-system-overview} and
+execute them as shown in \autoref{alg:execution-order}.
+
+% TODO: can the above two paragraphs be combined somehow?
 
 \begin{wrapfigure}{l}{0.5\textwidth}
 \begin{minipage}{0.5\textwidth}
@@ -236,17 +248,26 @@ worker.initialisation();
 \end{minipage}
 \end{wrapfigure}
 
-There are many benefits to this approach. TODO: what are the benefits? % TODO: ?
-
-Dividing up the execution tasks allows them to be represented as independent
-\texttt{Callable}s, which can be passed to a Java \texttt{ExecutorService}
-object. This will create a fixed number of threads, which I have specified to
-be 16 because that is how many threads my laptop can simultaneously execute,
-that will all the subtasks, 16 at a time. As the communication is done through
-the \texttt{CommunicationManager}, we need to call \texttt{flush()} after all
-of the \acp{PE} have completed their communication subtask at some iteration.
-All in all, the execution can be visualised in
-\autoref{fig:work-management-blocks}.
+Splitting up the work phases allows them to be represented as independent
+\texttt{Callable} tasks, which has many benefits. Firstly, it allows managing
+the workers using higher-level constructs like a Java \texttt{ExecutorService}
+rather than using Java \texttt{Thread}. We can submit all the $p^2$ tasks in a
+subphase to the executor service, and it will complete all of them without ever
+spawning more than 16\footnote{This number is configurable, but since my Laptop
+can execute 16 threads simultaneously, this was the optimal number} threads,
+which avoids a lot of overhead. Additionally, as I will explain further in the
+memory model, the side-effects of communication only happen when
+\texttt{CommunicationManager::flush} is called, so there are no data
+dependencies between \acp{PE} within a subphase, only between two different
+subphases. Therefore I do not need locking mechanisms inside the
+\texttt{\textit{Worker}}, but can instead implicitly implement them by
+executing them in the order shown in \autoref{fig:work-management-blocks}.  The
+third benefit is allowing repeated execution of the same work, which gives a
+more accurate timing estimate.
+% TODO: mention additional benefit: Easy to handle exceptions thrown by workers
+%       and report them back to the caller while cleanly stopping all threads,
+%       which makes development of the algortihms a lot easier, because can e.g.
+%       see if receive's and send's are mismatched
 
 % TODO: alternative diagram:
 %   very small blocks with different colours, and the colours indicate whether it's
@@ -260,7 +281,14 @@ a host computer with 2 cores.}
 \label{fig:work-management-blocks}
 \end{figure}
 
-
+The \texttt{WorkerFactory} uses Java's reflection API to create instances of
+any implementation of the \texttt{\textit{Worker}} interface. When constructing
+this factory, by provide a \texttt{Class} object of for instance the
+\texttt{FoxOtto} implementation. It can then infer the appropriate constructor
+at runtime and create $p^2$ \texttt{FoxOtto}-workers, without there being need
+for a dedicated Fox-Otto worker factory. This simplifies the parallel programming
+interface as implementing \texttt{\textit{Worker}} is all that is needed to
+add an additional parallel algorithm to the system.
 
 \subsection{Memory model}%
 \label{sub:Memory model}
@@ -310,14 +338,86 @@ The main benefits are making the work management simpler, and setting up for
 more accurate evaluation. The first drawback is not relevant for the algorithms
 I have used. % TODO: ?
 
+\subsection{Estimating computation and communication times}%
+\label{sub:Estimating computation and communication times}
 
+% TODO: don't know what to name a ssub here...
 
+% The points to introduce this sub section with are:
+* Diagram of how communication causes stalls, counted as comTime:
+  * Split up phases into the 3 things, and can use arrow to indicate which PE
+    is sending to what, and assumption on if send-before, no delay to start
+    next phase...
+* What is measured as computation time
+* The equation for estimating communication, latency + bandwitdh * w, and
+  the assumptions made behind this
 
+\subsubsection{The \texttt{timingAnalysis} package}
 
+The functionality for measuring the computation time of each \ac{PE} and
+estimating the communication time required for message-passing is implemented
+using the \textit{decorator} pattern. In \autoref{fig:timing-analysis-overview},
+we see an overview of the components of the \texttt{timingAnalysis} package,
+where the green classes are implemented using decoration: They extend the
+base class and only override methods related to timing, and use a reference to
+the base object to perform the original functionality in addition to the added
+timing analysis.
 
+% TODO: blue background for what is part of the package....
+\begin{figure}
+\begin{center}
+    \includegraphics[scale=1]{figs/timing-analysis-overview.pdf}
+\end{center}
+\caption{A overview of the components of the \texttt{timingAnalysis} package.
+Note that the \texttt{GeneralisedFoxOtto} and the \texttt{RepeatedMatrixSquaring}
+classes are not part of this package. Additionally, the green class diagrams with
+a yellow class inside it are short-hands for the decorator-pattern, where the
+outer class extends the yellow inner one and contains a reference to it.}
+\label{fig:timing-analysis-overview}
+\end{figure}
 
+% TODO: work from here, and write first paragraph with stuff, then about
+%  TimedManager and TimedWorker in one par, then move onto below the advantages..
+To explain:
+* In multiprocessorAttributes, can specify constants to use (ref equations)
+* These are used when computing message passing time in TimedComMan
+* In that class, maintain a matrix of the simulated real-time of all the \acp{PE}
+    and at each \texttt{flush()}, we update these based on stalling required
+    by the senders (as explained above...)
+* when the send or broadcast methods are called, we keep count of the number of
+  bytes sent, reset on flush, combine all in same packet possible, so programmer
+  don't need to worry about this. After this, do original functionality by
+  using held reference
+* In TimedManager, we decorate all the workers by constructing TimedWorker on them,
+  and we replace the Manager's existing \texttt{Matrix<Worker>} with these
+  using dynamic dispatch. TM also decorates the ComMan from the original Manager
+* In the TimedWorker, we use Java's \texttt{ThreadMXBean} to find the CPU time
+  each Worker spend on the CPU while running their \texttt{computation(phase :
+  int)} We also use a clever trick to minimize other effects, repeat computation
+  and take their average, not in cache, disable writes during this, so always
+  same branch, etc.
 
+Points to write in some last paragraph on why this good idea:
+* By seperating the timing functionality, we make implementation easier and
+  modularise further. When timing the program complete seperate task, so first
+  focus on simulating processor, then focus on how to time this simulation. The
+  distinction between SIMD and MIMD will also just be present here, so could
+  for instance extend further with new decorator for SIMD
+* Also follow principle of each class doing one thing, so additional functionality
+  for e.g. repeated execution not mixed with the standard worker behaivour
+* The interaction between the components above are not all explicitly redone in
+  the decorators, but are instead present from the components underneath. For
+  instance manager, just decorates all the workers the manager already have
+  created with the WorkerFactory
+* How MIMD works, the stalling time etc., explained with a diagram...
 
+Components:
+* MultiprocessorAttributes
+* TimedManager
+* TimedRepeatedMatrixSquaring
+* TimedWorker
+* TimingAnalysisCommunicationManager
+* TimingAnalysisResult
 
 % }}}
 
