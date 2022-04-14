@@ -227,15 +227,15 @@ execute them as shown in \autoref{alg:execution-order}.
 
 % TODO: can the above two paragraphs be combined somehow?
 
-\begin{wrapfigure}{l}{0.5\textwidth}
-\begin{minipage}{0.5\textwidth}
-    \begin{algorithm}[H]
-    \caption{Execution of phases of some worker id $(i,j)$}%
+\begin{wrapfigure}{l}{0.53\textwidth}
+\begin{minipage}{0.53\textwidth}
+\begin{algorithm}[H]
+    \caption{Execution of PE($i,j$)}%
     \label{alg:execution-order}
 
-worker.initialisation();
+    $\texttt{worker.initialisation()}$\;
 
-\SetKwComment{Comment}{/* }{ */}
+% \SetKwComment{Comment}{/* }{ */}
 \For{$l = 0 \dots \textrm{number of phases} -1$}{
     \texttt{worker.communicationBefore($l$)}
 
@@ -352,6 +352,52 @@ I have used. % TODO: ?
 * The equation for estimating communication, latency + bandwitdh * w, and
   the assumptions made behind this
 
+We can measure the computation time directly. By taking the difference
+between the CPU time before and after the computation phase, we get a measure
+for how long a certain subphase took to compute, stopping the clock whenever
+we enter a communication phase. We also want to minimize the
+effect of running this in a simulated environment, compared to on a real
+parallel system, where we would have dedicated private memory for each \ac{PE}.
+% TODO: better word?
+Possible effects might include the JVM suddenly performing garbage collection or
+the \ac{PE}'s private memory is not in cache. To combat this, we want to repeat
+each phase several times and take their average computation time.
+
+The communication time is estimated with a theoretical model. The time it takes
+to send a $s$-byte message can be modelled with $t=\alpha+\beta\cdot s$, which
+is a model that has been used in other work that ... % TODO: find reference in notebook
+To simplify our model, I assume that the constants $\alpha$ and $\beta$ are fixed
+for all point-to-point links. Incorporating our interconnect topology, if the
+shortest distance between two nodes $i$ and $j$ is $\delta(i,j)$, then the time
+it takes to send a message $m$ from node $i$ to $j$ is
+\begin{equation}%
+\label{eq:send-time}
+    t(i,j,m) \triangleq
+    \delta(i,j) \cdot (\alpha + \beta \cdot \textrm{size}(m)).
+\end{equation}
+Since each \ac{PE} executes independently, if recipient $j$ awaits data from
+sender $i$ at some time, but the sender has not reached the appropriate
+communication phase by this time, the recipient must stall until $i$ is ready
+and has sent the data. To model this, let $T^{(n)}_i$ be the simulated time at
+which \ac{PE} $i$ starts executing phase $n$. I make the simplifying assumption
+that if the recipient has received all the data it expected by the time it reaches
+the corresponding communication phase, it can immediately start the next phase
+after sending off the data it needs to send. With this in mind, if \ac{PE}
+$i$ is receiving data from a set of sender \acp{PE} $S$ and sending data to
+a set of receivers $R$ at communication phase $n$, which starts at time
+$T^{(n)}_i$, then the next phase starts at
+\begin{equation}%
+\label{eq:communication}
+    T^{(n+1)}_i = \max\left(
+        \overbrace{T^{(n)}_i + \sum_{(j,m) \in R} t(i,j,m)}
+        ^{\textrm{All necessary data has already arrived}}
+    , \underbrace{\max_{(j,m) \in S} \left(T^{(n)}_j + t(j,i,m)\right)}
+    _{\textrm{PE } i \textrm{ must stall until data has arrived}}
+\right).
+\end{equation}
+This start time and how it is affected by late senders can be visualised in
+figure % TODO: reference that figure
+
 \subsubsection{The \texttt{timingAnalysis} package}
 
 The functionality for measuring the computation time of each \ac{PE} and
@@ -364,6 +410,7 @@ the base object to perform the original functionality in addition to the added
 timing analysis.
 
 % TODO: blue background for what is part of the package....
+% TODO: refactor Topology into this package, and include in diagram
 \begin{figure}
 \begin{center}
     \includegraphics[scale=1]{figs/timing-analysis-overview.pdf}
@@ -376,48 +423,125 @@ outer class extends the yellow inner one and contains a reference to it.}
 \label{fig:timing-analysis-overview}
 \end{figure}
 
-% TODO: work from here, and write first paragraph with stuff, then about
-%  TimedManager and TimedWorker in one par, then move onto below the advantages..
-To explain:
-* In multiprocessorAttributes, can specify constants to use (ref equations)
-* These are used when computing message passing time in TimedComMan
-* In that class, maintain a matrix of the simulated real-time of all the \acp{PE}
-    and at each \texttt{flush()}, we update these based on stalling required
-    by the senders (as explained above...)
-* when the send or broadcast methods are called, we keep count of the number of
-  bytes sent, reset on flush, combine all in same packet possible, so programmer
-  don't need to worry about this. After this, do original functionality by
-  using held reference
-* In TimedManager, we decorate all the workers by constructing TimedWorker on them,
-  and we replace the Manager's existing \texttt{Matrix<Worker>} with these
-  using dynamic dispatch. TM also decorates the ComMan from the original Manager
-* In the TimedWorker, we use Java's \texttt{ThreadMXBean} to find the CPU time
-  each Worker spend on the CPU while running their \texttt{computation(phase :
-  int)} We also use a clever trick to minimize other effects, repeat computation
-  and take their average, not in cache, disable writes during this, so always
-  same branch, etc.
+% To explain:
+% * In multiprocessorAttributes, can specify constants to use (ref equations)
+% * These are used when computing message passing time in TimedComMan
+% * In that class, maintain a matrix of the simulated real-time of all the \acp{PE}
+%     and at each \texttt{flush()}, we update these based on stalling required
+%     by the senders (as explained above...)
+% * when the send or broadcast methods are called, we keep count of the number of
+%   bytes sent, reset on flush, combine all in same packet possible, so programmer
+%   don't need to worry about this. After this, do original functionality by
+%   using held reference
+% * In TimedManager, we decorate all the workers by constructing TimedWorker on them,
+%   and we replace the Manager's existing \texttt{Matrix<Worker>} with these
+%   using dynamic dispatch. TM also decorates the ComMan from the original Manager
+% * In the TimedWorker, we use Java's \texttt{ThreadMXBean} to find the CPU time
+%   each Worker spend on the CPU while running their \texttt{computation(phase :
+%   int)} We also use a clever trick to minimize other effects, repeat computation
+%   and take their average, not in cache, disable writes during this, so always
+%   same branch, etc.
 
-Points to write in some last paragraph on why this good idea:
-* By seperating the timing functionality, we make implementation easier and
-  modularise further. When timing the program complete seperate task, so first
-  focus on simulating processor, then focus on how to time this simulation. The
-  distinction between SIMD and MIMD will also just be present here, so could
-  for instance extend further with new decorator for SIMD
-* Also follow principle of each class doing one thing, so additional functionality
-  for e.g. repeated execution not mixed with the standard worker behaivour
-* The interaction between the components above are not all explicitly redone in
-  the decorators, but are instead present from the components underneath. For
-  instance manager, just decorates all the workers the manager already have
-  created with the WorkerFactory
-* How MIMD works, the stalling time etc., explained with a diagram...
+% TODO: \usepackage[nameinlink,noabbrev]{cleverref} after hyperref, and
+%       use \Cref for capitals, \cref for lowercase!
+The \texttt{MultiprocessorAttributes} class is used to store what constants we
+assume for the message-passing latency and bandwidth, $\alpha$ and $\beta$,
+both for point-to-point messages and for broadcasting. We also implement the
+$\delta$ function using the \texttt{Topology} interface. Together, these two
+classes are used to implement the function in \autoref{eq:send-time}, used
+whenever we compute the time it takes to send a message in
+\texttt{TimedCommunicationManager}.
 
-Components:
-* MultiprocessorAttributes
-* TimedManager
-* TimedRepeatedMatrixSquaring
-* TimedWorker
-* TimingAnalysisCommunicationManager
-* TimingAnalysisResult
+The main timing simulation functionality happens in
+\texttt{TimedCommunicationManager}. Here, we maintain a matrix of the simulated
+times of each \ac{PE}, starting with $T^{(0)}_{(i,j)}$ for each of the $p^2$
+\acp{PE}.  % TODO: more writing from here ....
+We then update these times whenever we advance from phase $(n)$ to phase $(n+1)$,
+with different rules depending on whether we have a communication phase or
+a computation phase. For computation phases, we simply increment the time with
+the measurement from the \texttt{TimedWorker}. For the communication phases,
+we use the formula in \autoref{eq:communication}, where we build up the sets
+$S$ and $R$ through decoration of the methods \texttt{sendData},
+\texttt{broadcastRow}, etc. We also only evaluate this formula when executing
+the decorated \texttt{flush()} method at the end of each communication phase.
+We also have separate counters for how much of this simulated execution has been
+used for communication, counting both time to send data and stalling until data
+is ready.
+
+\begin{wrapfigure}{l}{0.45\textwidth}
+    \begin{minipage}{0.45\textwidth}
+        \begin{algorithm}[H]
+            \caption{Measuring computation time in \texttt{TimedWorker}}%
+            \label{alg:timed-worker}
+            \KwData{Phase number $l$, \textit{num.~repeats}}
+            \KwResult{Computation time $t$}
+
+            \SetKwComment{Comment}{/* }{ */}
+
+            % \Comment*[l]{Set worker to read only}
+            \tcc{Enable read-only}
+
+            \texttt{computation($l$)}\;
+
+            $t_0 \gets \textit{current thread CPU time }$\;
+
+            \For{$i = 0 \dots \textrm{num. repeats} - 1$}{
+                \texttt{computation($l$)}\;
+            }
+
+            $t \gets \frac{\textit{current thread CPU time } -\,t_0}{\textit{num.
+            repeats}}$
+
+            \tcc{Disable read-only}
+
+            \texttt{computation($l$)}\;
+        \end{algorithm}
+    \end{minipage}
+\end{wrapfigure}
+
+In \texttt{TimedWorker}, we use a clever trick to get more accurate measures
+for the computation time, as shown in \ref{alg:timed-worker}. The read-only
+mode makes all side-effects of call to \texttt{Worker::store} be ignored.
+This is necessary to ensure the computation always follows the same control
+flow.  By running the unit of computation once before starting the timing, 
+the effects of cache misses are minimized as the used data will be in cache by
+the time we get to the first timed \texttt{computation($l$)}. We also do several
+runs and average these to reduce the effect of short-time execution
+differences on the host system.  % TODO: such as???
+
+% Points to write in some last paragraph on why this good idea:
+% * By seperating the timing functionality, we make implementation easier and
+%   modularise further. When timing the program complete seperate task, so first
+%   focus on simulating processor, then focus on how to time this simulation. The
+%   distinction between SIMD and MIMD will also just be present here, so could
+%   for instance extend further with new decorator for SIMD
+% * Also follow principle of each class doing one thing, so additional functionality
+%   for e.g. repeated execution not mixed with the standard worker behaivour
+% * The interaction between the components above are not all explicitly redone in
+%   the decorators, but are instead present from the components underneath. For
+%   instance manager, just decorates all the workers the manager already have
+%   created with the WorkerFactory
+% * How MIMD works, the stalling time etc., explained with a diagram...
+
+There are several benefits to separating the timing functionality from the main
+functionality of the work management and memory model components, as I have
+done. Firstly, it makes the program more modular, which makes implementation
+easier as I could focus on fewer things at a time. It also allows the main
+components to be further decorated with other timing behaviour, for example to
+simulate SIMD without modifying existing code. In
+\autoref{fig:timing-analysis-overview}, it looks like I am creating a whole new
+layer of classes and interactions, but most of these are already implemented in
+the basae components, and the interactions do not need to be reimplemented in
+the decorators. % TODO: Some of this is a bit fluffy, and can probably be reduced
+
+% Components:
+% * Topology
+% * MultiprocessorAttributes
+% * TimedManager
+% * TimedRepeatedMatrixSquaring
+% * TimedWorker
+% * TimingAnalysisCommunicationManager
+% * TimingAnalysisResult
 
 % }}}
 
