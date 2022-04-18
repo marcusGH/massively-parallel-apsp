@@ -1,0 +1,141 @@
+%% Creator: Inkscape inkscape 0.92.3, www.inkscape.org
+%% PDF/EPS/PS + LaTeX output extension by Johan Engelen, 2010
+%% Accompanies image file 'fox-otto-diagram.pdf' (pdf, eps, ps)
+%%
+%% To include the image in your LaTeX document, write
+%%   \input{<filename>.pdf_tex}
+%%  instead of
+%%   \includegraphics{<filename>.pdf}
+%% To scale the image, write
+%%   \def\svgwidth{<desired width>}
+%%   \input{<filename>.pdf_tex}
+%%  instead of
+%%   \includegraphics[width=<desired width>]{<filename>.pdf}
+%%
+%% Images with a different path to the parent latex file can
+%% be accessed with the `import' package (which may need to be
+%% installed) using
+%%   \usepackage{import}
+%% in the preamble, and then including the image with
+%%   \import{<path to file>}{<filename>.pdf_tex}
+%% Alternatively, one can specify
+%%   \graphicspath{{<path to file>/}}
+%% 
+%% For more information, please see info/svg-inkscape on CTAN:
+%%   http://tug.ctan.org/tex-archive/info/svg-inkscape
+%%
+\begingroup%
+  \makeatletter%
+  \providecommand\color[2][]{%
+    \errmessage{(Inkscape) Color is used for the text in Inkscape, but the package 'color.sty' is not loaded}%
+    \renewcommand\color[2][]{}%
+  }%
+  \providecommand\transparent[1]{%
+    \errmessage{(Inkscape) Transparency is used (non-zero) for the text in Inkscape, but the package 'transparent.sty' is not loaded}%
+    \renewcommand\transparent[1]{}%
+  }%
+  \providecommand\rotatebox[2]{#2}%
+  \newcommand*\fsize{\dimexpr\f@size pt\relax}%
+  \newcommand*\lineheight[1]{\fontsize{\fsize}{#1\fsize}\selectfont}%
+  \ifx\svgwidth\undefined%
+    \setlength{\unitlength}{190.47000122bp}%
+    \ifx\svgscale\undefined%
+      \relax%
+    \else%
+      \setlength{\unitlength}{\unitlength * \real{\svgscale}}%
+    \fi%
+  \else%
+    \setlength{\unitlength}{\svgwidth}%
+  \fi%
+  \global\let\svgwidth\undefined%
+  \global\let\svgscale\undefined%
+  \makeatother%
+  \begin{picture}(1,1.3511646)%
+    \lineheight{1}%
+    \setlength\tabcolsep{0pt}%
+    \put(0,0){\includegraphics[width=\unitlength,page=1]{fox-otto-diagram.pdf}}%
+    \put(0.34601143,0.32104431){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}$\widehat{A_{0,2}}$\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=2]{fox-otto-diagram.pdf}}%
+    \put(0.10877549,0.19601294){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}$\widehat{A_{1,0}}$\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=3]{fox-otto-diagram.pdf}}%
+    \put(0.22739345,0.07739496){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}$\widehat{A_{2,1}}$\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=4]{fox-otto-diagram.pdf}}%
+    \put(0.86689199,0.07735771){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}$\widehat{B_{1,2}}$\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=5]{fox-otto-diagram.pdf}}%
+    \put(0.62965631,0.31459368){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}$\widehat{B_{2,0}}$\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=6]{fox-otto-diagram.pdf}}%
+    \put(0.74827412,0.1959757){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}$\widehat{B_{0,1}}$\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=7]{fox-otto-diagram.pdf}}%
+    \put(0.74827423,0.31459368){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}$\widehat{B_{2,1}}$\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=8]{fox-otto-diagram.pdf}}%
+    \put(0.8668921,0.31459368){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}$\widehat{B_{2,2}}$\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=9]{fox-otto-diagram.pdf}}%
+    \put(0.62965619,0.1959757){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}$\widehat{B_{0,0}}$\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=10]{fox-otto-diagram.pdf}}%
+    \put(0.86689199,0.1959757){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}$\widehat{B_{0,2}}$\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=11]{fox-otto-diagram.pdf}}%
+    \put(0.74827412,0.07735771){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}$\widehat{B_{1,1}}$\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=12]{fox-otto-diagram.pdf}}%
+    \put(0.62965619,0.07735771){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}$\widehat{B_{1,0}}$\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=13]{fox-otto-diagram.pdf}}%
+    \put(0.50850738,0.34471586){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}\rotatebox{270}{Computation...}\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=14]{fox-otto-diagram.pdf}}%
+    \put(0.34601143,0.64393363){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}$\widehat{A_{1,2}}$\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=15]{fox-otto-diagram.pdf}}%
+    \put(0.10877549,0.51890339){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}$\widehat{A_{2,0}}$\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=16]{fox-otto-diagram.pdf}}%
+    \put(0.22739345,0.7625482){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}$\widehat{A_{0,1}}$\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=17]{fox-otto-diagram.pdf}}%
+    \put(0.86689199,0.51837882){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}$\widehat{B_{0,2}}$\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=18]{fox-otto-diagram.pdf}}%
+    \put(0.62965631,0.75561047){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}$\widehat{B_{1,0}}$\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=19]{fox-otto-diagram.pdf}}%
+    \put(0.74827412,0.63699589){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}$\widehat{B_{2,1}}$\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=20]{fox-otto-diagram.pdf}}%
+    \put(0.74827423,0.75561047){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}$\widehat{B_{1,1}}$\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=21]{fox-otto-diagram.pdf}}%
+    \put(0.8668921,0.75561047){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}$\widehat{B_{1,2}}$\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=22]{fox-otto-diagram.pdf}}%
+    \put(0.62965619,0.63699589){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}$\widehat{B_{2,0}}$\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=23]{fox-otto-diagram.pdf}}%
+    \put(0.86689199,0.63699589){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}$\widehat{B_{2,2}}$\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=24]{fox-otto-diagram.pdf}}%
+    \put(0.74827412,0.51837882){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}$\widehat{B_{0,1}}$\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=25]{fox-otto-diagram.pdf}}%
+    \put(0.62965619,0.51837882){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}$\widehat{B_{0,0}}$\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=26]{fox-otto-diagram.pdf}}%
+    \put(0.50850738,0.78573174){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}\rotatebox{270}{Computation...}\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=27]{fox-otto-diagram.pdf}}%
+    \put(0.34601143,0.95893962){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}$\widehat{A_{2,2}}$\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=28]{fox-otto-diagram.pdf}}%
+    \put(0.10877549,1.19616877){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}$\widehat{A_{0,0}}$\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=29]{fox-otto-diagram.pdf}}%
+    \put(0.22739345,1.07755419){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}$\widehat{A_{1,1}}$\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=30]{fox-otto-diagram.pdf}}%
+    \put(0.86689199,0.95938971){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}$\widehat{B_{2,2}}$\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=31]{fox-otto-diagram.pdf}}%
+    \put(0.62965631,1.19661886){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}$\widehat{B_{0,0}}$\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=32]{fox-otto-diagram.pdf}}%
+    \put(0.74827412,1.07800428){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}$\widehat{B_{1,1}}$\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=33]{fox-otto-diagram.pdf}}%
+    \put(0.74827423,1.19661886){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}$\widehat{B_{0,1}}$\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=34]{fox-otto-diagram.pdf}}%
+    \put(0.8668921,1.19661886){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}$\widehat{B_{0,2}}$\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=35]{fox-otto-diagram.pdf}}%
+    \put(0.62965619,1.07800428){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}$\widehat{B_{1,0}}$\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=36]{fox-otto-diagram.pdf}}%
+    \put(0.86689199,1.07800428){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}$\widehat{B_{1,2}}$\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=37]{fox-otto-diagram.pdf}}%
+    \put(0.74827412,0.95938971){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}$\widehat{B_{2,1}}$\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=38]{fox-otto-diagram.pdf}}%
+    \put(0.62965619,0.95938971){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}$\widehat{B_{2,0}}$\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=39]{fox-otto-diagram.pdf}}%
+    \put(0.50850738,1.22674013){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}\rotatebox{270}{Computation...}\end{tabular}}}}%
+    \put(0.05627484,1.31269142){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}Communication before\end{tabular}}}}%
+    \put(0.5909998,1.31104708){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}Communication after\end{tabular}}}}%
+    \put(0.01400871,1.03072454){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}\rotatebox{90}{Phase 0}\end{tabular}}}}%
+    \put(0.01414357,0.58850328){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}\rotatebox{90}{Phase 1}\end{tabular}}}}%
+    \put(0.01273728,0.10866166){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}\rotatebox{90}{Phase $p-1$}\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=40]{fox-otto-diagram.pdf}}%
+  \end{picture}%
+\endgroup%

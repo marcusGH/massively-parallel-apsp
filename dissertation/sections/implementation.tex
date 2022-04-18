@@ -556,13 +556,215 @@ the decorators. % TODO: Some of this is a bit fluffy, and can probably be reduce
 % * As explain, also use a simple graph as an example, going through as you do the
 %   general explanation
 % APSP via repeated matrix-squaring {{{
+\newpage % TODO: fix this later
 \section{APSP via repeated matrix-squaring}%
 \label{sec:APSP via repeated matrix-squaring}
 
+% TODO: Introduction paragraph
 The \emph{\acl{MatSquare}} algorithm, which I will abbreviate as \emph{\acs{MatSquare}},
 is an algorithm. \acused{MatSquare}
 By using \ac{MatSquare}, we can ...
 
+\begin{wrapfigure}{r}{0.55\textwidth}
+    \begin{minipage}{0.55\textwidth}
+        \vspace{-18pt}
+        \begin{algorithm}[H]
+            \caption{MatSquare}%
+            \label{alg:matsquare}
+            \SetKwInOut{Input}{Input}
+            \SetKwInOut{Result}{Result}
+
+            \Input{Adjacency matrix $W$}
+            \Result{Distance matrix $M_{dist}$, Predecessor matrix $M_{pred}$}
+
+            $M_{dist} \gets W$\;
+
+            $M_{pred} \gets n \times n \textrm{ matrix}$\;
+
+            \For{$(i,j) \in V^2$}{
+                $M_{pred}[i,j] \gets i \textbf{ if } W_{i,j} < \infty
+                \textbf{ else } j$\;
+            }
+
+            \tcp{Repeated squaring}
+            \For{$x = 1 \dots \lceil \log_2 n \rceil$}{
+                $M_{dist} \gets M_{dist} \otimes M_{dist}$\;
+                $W \gets \textrm{witness matrix for above } \otimes$\;
+                \For{$(i,j)\in V^2$}{
+                    \If{$W_{i,j} \neq j$}{
+                        $M_{pred}[i,j] \gets M_{pred}[W_{i,j}, j]$\;
+                    }
+                }
+            }
+        \end{algorithm}
+        \vspace{-30pt}
+    \end{minipage}
+\end{wrapfigure}
+
+To explain shortest paths are computed, we require two key definitions.
+\begin{definition}
+    A distance matrix $M_{dist}$ is a  $n \times n$ matrix, whose $(i,j)$
+    entry is the length of a shortest path $i \rightsquigarrow j$ in graph
+    $G=(V,E,W)$.
+\end{definition}
+% \begin{definition}
+%     A matrix $M_{dist}^{(x)}$ is a $n \times n$ matrix where for all $0 \leq i,j<n$,
+%     entry $M_{dist}^{(x)}[i,j]$ is the length of a shortest path $i
+%     \rightsquigarrow j$, of at most length $x$, in graph $G$.
+%     Matrix $M_{dist}^{(n)}$ is then a distance matrix.
+% \end{definition}
+
+\begin{definition}
+    A predecessor matrix $M_{pred}$ is a $n \times n$ matrix, whose $(i,j)$
+    entry is the immediate prior node to $j$ in a shortest path $i
+    \rightsquigarrow j$.
+\end{definition}
+
+We also refer to $M_{dist}^{(x)}$ and $M_{pred}^{(x)}$ as the corresponding
+matrices, but only considering paths of length \textit{at most} $x$. This then
+gives that $M_{dist}^{(n)}$ and $M_{pred}^{(n)}$ are distance and predecessor
+matrices, respectively\footnote{As long as the graph $G$ does not have negative
+cycles}.
+
+
+% TODO: keep writing here, using these four definitions..., defining W as the
+%   adjecancy thing as well, and going into squaring... (also creating TODOs
+%   of proofs to put in appendix...)
+The goal of the \ac{MatSquare} algorithm is to compute the distance- and
+predecessor matrix. If we let $W$ be the adjacency matrix for graph $G$,
+and set $W_{i,i} \leftarrow 0$ for each $0 \leq i < n$, we notice that
+it fits the definition of $M_{dist}^{(1)}$. Additionally, computing the
+distance product between two matrices $M_{dist}^{(x)}$ and $M_{dist}^{(y)}$ gives
+a matrix $M_{dist}^{(x+y)}$ containing distances shortest paths of length at most
+$x+y$. As such, one way to compute the distance matrix is
+\begin{equation}
+    M_{dist}=M_{dist}^{(n)}=
+    \underbrace{M_{dist}^{(1)} \otimes \cdots \otimes M^{(1)}_{dist}}_{n-1 \textrm{ times}}
+    =
+    \underbrace{W \otimes \cdots \otimes W}_{n-1 \textrm{ times}}
+\end{equation}
+However, we can reduce the number of distance product matrix multiplications
+from $\Theta(n)$ to $\Theta(\log n)$ by squaring $W$ $\lceil \log n \rceil$
+times, which is what I have done in \autoref{alg:matsquare}.
+
+To compute the predecessor matrix, we keep track of which intermediate vertex
+we use whenever we computer a distance product. When computing
+$M_{i,j}=\min_{0 \leq k < n}(M_{i,k}+M_{k,j})$ as part of the distance product
+$\otimes$, we refer to the used intermediate vertex as the witness for $w_{i,j}$.
+\begin{definition}
+    A witness matrix $W$ for a distance product $M \otimes M'$
+    is a $n \times n$ matrix, where
+    \begin{equation}
+        w_{i,j}=\argmin_{0 \leq k < n} ( M_{i,k} + M'_{k,j})
+    \end{equation}
+\end{definition}
+If find that $i \rightsquigarrow k \rightsquigarrow j$ is the next best path,
+we use the predecessor from the path $k \rightsquigarrow j$, as long as this
+path is not of length 0. This is what happens on lines 10 -- 12 in
+\autoref{alg:matsquare}.
+
+% TODO: read through all of the above, and add signposts including: "We
+% implement this in driver code, and use manager to compute \otimes, distance
+% product, and don't directly compute witness matrix, but same semantics....
+
+% Define pred.matrix, distance matrix, after squaring $x$ times, why log n ceil
+% squarings necessary. Explain that create Manager/Worker that implement this
+% operation, so in driver code, we simply (1) prepare initial memory (2) run
+% the PEs ceil times, and mem Movement such a way, no need to reset memory
+% because if dist, pred in memory, assigns to "A", "B" and "P"...
+% ^ could have pseuocode for this part?
+
+\begin{wrapfigure}{r}{0.42\textwidth}
+    \centering
+    \fontsize{7pt}{7pt}
+    \vspace{-10pt}
+    \import{figs/}{fox-otto-diagram.pdf_tex}%
+    \caption{Message-passing pattern used in the Fox-Otto technique.}%
+    \label{fig:fox}
+\end{wrapfigure}
+
+% Introduce FoxOtto as a technique for memory movement, not a specific algo.
+% Diagram of how memory moves, wrap on side to save space. Algorithm is
+% in pseudocode, developed by myself with inspiration from ??? TODO: find refs
+The distance product, giving our running distance- and predecessor matrices,
+is computed in parallel using the parallel system simulation. We distribute
+the computation across $p^2$ \acp{PE}, where each \ac{PE} executes the code
+in \autoref{alg:foxOtto}. The communication is based on a technique by
+\citeauthor{fox}, initially used to just perform standard matrix multiplication
+\citep{fox}. Given two $n \times n$ matrices $A$ and $B$, we split them up into
+$p^2$ submatrices of size $\lceil n /p \rceil \times \lceil n/p \rceil$ and
+distribute them to the corresponding \acp{PE}. Before computation at each phase,
+% TODO: clever ref to lower caps
+we broadcast a submatrix of $A$ along each row, as shown in \autoref{fig:fox}.
+After computation, we shift the $B$ submatrices upwards, wrapping around the edges.
+This ensures that the corresponding entries to partially compute $C_{i,j}$
+are available to \ac{PE} $(i,j)$ at each computation phase.
+
+
+% Conclusion where explain time complexity and memory complexity
+% and relate this to $p$, and what complexity is then...
+
+\begin{algorithm}
+    \caption{Generalised Fox-Otto execution at processing element $p_{i,j}$}%
+\label{alg:foxOtto}
+\SetKwInOut{Parameter}{Parameter}
+\SetKwInOut{Data}{Data}
+\SetKwInOut{Result}{Result}
+\Data{$A_{const}',B',P'$}
+\Parameter{problem size $n$, PE grid size $p$, subMatrixSize $n'=\lceil n/p\rceil$,}
+\Result{$M_{dist}^{(l)},M_{pred}^{(l)}$}
+
+\tcp{ ** Initialisation phase **}
+$M_{dist}' \gets n' \times n' \textrm{ matrix}$\;
+$M_{pred}' \gets n' \times n' \textrm{ matrix}$\;
+\For{$0 \leq i_2,j_2 < n'$}{
+    $M_{pred}'[i_2,j_2] \gets j$\;
+    $M_{dist}'[i_2,j_2] \gets \infty$\;
+}
+
+\For{phase number $l = 0$ to $p-1$}{
+
+    \tcp{ ** CommunicationBefore phase $l$ **}
+
+    \If{$j = (i + l) \mod p$}{
+        \texttt{broadcastRow(}$A_{const}'$\texttt{)}\;
+    }
+    \tcp{ ** Computation phase $l$ **}
+    \For{$0 \leq i_2,j_2 < n'$}{
+    \tcp{We start with $m$ s.t. $k=i'$ at $l=0$, which causes shorter}
+    \tcp{paths from the previous squaring to be considered first.}
+    \tcp{This is necessary to get the predecessor right.}
+        \For{$m=i_2,i_2+1, \dots n', 0, 1, \dots, i_2-1$}{
+
+
+            \tcp{In this iteration, we compute A[i', k] + B[k, j'], where}
+            $k \gets (n' \cdot (i+l) + m) \mod n$\;
+            $i' \gets i \cdot n' + i_2$\;
+            $j' \gets j \cdot n' + j_2$\;
+            \tcp{Distance product}
+            $d_{new} \gets A'[i_2,m] + B'[m,j_2]$\;
+
+            \If{$d_{new} < M_{dist}'[i_2,j_2]$}{
+                $M_{dist}'[i_2,j_2] \gets d_{new}$\;
+                \tcp{If $k=j'$, the path $k \rightarrow j'$ will be a self-loop, so}
+                \tcp{we should not update the predecessor}
+                \If{$k \neq j'$}{
+                    $M_{pred}'[i_2,j_2] \gets P[m,j_2]$\;
+                }
+            }
+        }
+    }
+    \tcp{ ** ComunicationAfter phase $l$ **}
+    \texttt{send(}$p+i-1 \mod p$\texttt{, }$j$\texttt{, }$B'$\texttt{)}\;
+    \texttt{send(}$p+i-1 \mod p$\texttt{, }$j$\texttt{, }$P'$\texttt{)}\;
+}
+% (subMatrixSize * (i + l) + iter) % n != 
+%  subMatrixSize * j + j2
+%
+%  if not (j2 == iter
+%      and j == (i + l) mod n)
+%     update
+\end{algorithm}
 
 % Notes from reserach-and-planning diary:
 % **Problem with generalized FoxOtto**:
@@ -589,6 +791,9 @@ By using \ac{MatSquare}, we can ...
 % can only receive from **one** other PE, which is not equivilant, but in _most
 % cases_ (all PE do the same thing) causes the above assumption to hold.
 
+% TODO TODO: Compile list of all things about graphs, predecessors etc. that I
+%            mention here, and put those in the preperation chapter!
+
 % }}}
 
 % Graph compression:
@@ -598,6 +803,22 @@ By using \ac{MatSquare}, we can ...
 % Graph compression {{{
 \section{Graph compression}%
 \label{sec:Graph compression}
+
+% Paragraph on motivation:
+% * Table of number of 2-degree nodes in each graph dataset, and proportion
+%   reduction, e.g. graph size reduced by 15 times
+% * In general, road-networks are often very sparse
+% Paragraph on how transformation works
+% * Introduce notation
+% * Example graph, showing how work
+% Inverse transformation
+% * Want to perform inverse transform as well, so extra book-keeping as compress
+% * In `GraphCompressor`, which subclasses `APSPSolver`
+% * Something about how nice this is, reduce computation requires, while as
+%   powerful as solve the original problem as well
+% Algorithm
+% * Diagram of all the possible cases (look at code and `me` on how this done)
+
 
 % }}}
 
