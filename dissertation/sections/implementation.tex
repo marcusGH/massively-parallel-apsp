@@ -679,6 +679,7 @@ path is not of length 0. This is what happens on lines 10 -- 12 in
     \fontsize{7pt}{7pt}
     \vspace{-10pt}
     \import{figs/}{fox-otto-diagram.pdf_tex}%
+    \vspace{-10pt}
     \caption{Message-passing pattern used in the Fox-Otto technique.}%
     \label{fig:fox}
 \end{wrapfigure}
@@ -818,7 +819,98 @@ $M_{pred}' \gets n' \times n' \textrm{ matrix}$\;
 %   powerful as solve the original problem as well
 % Algorithm
 % * Diagram of all the possible cases (look at code and `me` on how this done)
+Most road networks tend to be very sparse, so many of the vertices will just
+have two neighbours. We can leverage this to reduce the amount of computation
+as there is only one path across a segment of two-degree nodes. We do this by
+contracting all the contiguous paths of two-degree nodes into a single edge.
+% TODO: clreverref
+In \autoref{tab:size-reduction}, we see that this reduces the problem size by
+over 16\% for all our datasets, and for some of them, like the California road
+network, we have massive gains.
 
+\begin{table}
+    \centering
+    \begin{tabular}{|c|c|c|c|}
+        \hline
+        \textbf{Road network} & \textbf{Nodes} &
+        \textbf{2-degree nodes} & \textbf{Size reduction} \\
+        \hline
+        California          & 21048  & 19683  & $\times 15.4$ \\
+        \hline
+        San Francisco       & 174956 & 29627  & $\times 1.2$  \\
+        \hline
+        North America       & 175813 & 166687 & $\times19.3$ \\
+        \hline
+        City of San Joaquin & 18263  & 3760   & $\times1.26$ \\
+        \hline
+        City of Oldenburg   & 6105   & 3232   & $\times2.12$ \\
+        \hline
+    \end{tabular}%
+    \caption{Possible size reduction by removing 2-degree nodes from different
+    road networks}%
+    \label{tab:size-reduction}
+\end{table}
+
+We compress the graph by removing all nodes with exactly two neighbours, and
+the corresponding edges. We refer to a contiguous sequence of such compressed
+nodes as a \textit{(compressed) chain}, and compensate for its removal by
+adding a new edge between the \textit{junctions} of the compressed chain,
+as shown in \autoref{fig:compression-notation}. The weight of the new edge
+is the sum of the weight of the edges removed. We do this for all chains containing
+at least one node of degree two. There are two edge-cases that may occur during
+the compression. Firstly, if the two junctions are the same node, I set the other
+junction to be one of the two-degree nodes that neighbour the junction. This is
+done to not introduce further edge-cases in the path-reconstruction later.
+% TODO: rename Compressed edge -> compression edge, and make colour darker
+Second, if we have a two-degree-node path $p \rightarrow n_1 \rightarrow \cdots
+n_l \rightarrow q$ between two junctions $p$ and $q$, and there is an edge
+$(p,q) \in E$, then the compressed graph will be a have two different edges
+between $p$ and $q$. In this case, we only keep the edge with the lowest
+weight, discarding the other.
+
+\begin{wrapfigure}{r}{0.36\textwidth}
+    \includegraphics[scale=1]{figs/compression-notation.pdf}
+    \caption{Graph before and after compression.}%
+    \label{fig:compression-notation}%
+    \vspace{-10pt}
+\end{wrapfigure}
+
+To get any benefit from running some \ac{APSP} algorithm, like the
+\ac{MatSquare} algorithm, on the compressed graph, we must be able to map path
+queries for the original graph to queries on the compressed graph, and then
+map back the result. To do this, extra bookkeeping during graph compression is
+needed. For each compressed node, we store a map to its two junctions, the list of
+nodes in the paths to the junctions, and the length of these paths. Additionally,
+with each compression edge, we store the list of compressed nodes.
+To answer an \ac{APSP} query $p \rightsquigarrow q$ 
+on the original graph, we visualise the graph as
+shown in. % TODO: make diagram and add reference
+We have 5 cases, each of which gives different queries to the original graph:
+\begin{enumerate}
+    \item Nodes $p$ and $q$ are on the same compressed chain, in which case
+        no queries are made, and we just compute the path length from the
+        bookkept information (This case is not depicted on the figure).
+    \item We have $p=E,q=F$. We compute the four possible paths,
+        $p \rightsquigarrow \{A,B\} \rightsquigarrow \{C,D\} \rightsquigarrow q$,
+        and use the shortest one.
+    \item  We have $p\in \{A,B\},q=F$. We compute the two paths, one going
+        through junction $C$ and the other through $D$. The queries on the
+        compressed graph are $p \rightsquigarrow C$ and $p \rightsquigarrow D$.
+    \item We have $p=E,q\in \{C,D\}$. This is symmetric to case (3).
+    \item We have $p\in \{A,B\}, q\in \{C,D\}$. Both nodes are on the compressed
+        graph, so we query $p \rightsquigarrow q$.
+\end{enumerate}
+For all of the above cases, we get back a path on the form:
+\begin{equation}
+    p\; \rsquigarrow{nodes all in original graph}{18}\;
+    J_1 \;\rsquigarrow{nodes just in compressed graph}{20}\;
+    J_2 \; \rsquigarrow{nodes all in original graph}{18}\; q,
+\end{equation}
+where $p=J_1,J_1=J_2$, etc.~are possible. To map this back to a path in
+the original graph, we must expand all the edges in the path between
+the junctions, if present, $J_1 \rightsquigarrow J_2$ to a path in the original
+graph. This is done by going through each edge, and swapping the compression
+edges out for the list of edges that were compressed.
 
 % }}}
 
