@@ -18,8 +18,8 @@ tex_fonts = {
     # Make the legend/label fonts a little smaller
     "legend.fontsize": 8,
     "legend.title_fontsize": 10,
-    "xtick.labelsize": 8, # 8 at full scale
-    "ytick.labelsize": 8
+    "xtick.labelsize": 5, # 8 at full scale
+    "ytick.labelsize": 5
 }
 plt.rcParams.update(tex_fonts)
 
@@ -78,7 +78,7 @@ class SymHandler(HandlerLine2D):
     @staticmethod
     def get_legend_func():
         return lambda ax: ax.legend(handler_map={matplotlib.lines.Line2D: SymHandler()},
-                                    fontsize='6', title="Processing element layout", ncol=2, loc='lower right', handleheight=2, labelspacing=0.05, prop={'size':8})
+                                    fontsize='5', title="Processing element layout", ncol=2, loc='upper left', handleheight=1.5, labelspacing=0.04, prop={'size':5})
 
 
 def read_and_compute_errors(filename):
@@ -210,11 +210,11 @@ def plot_with_errorbars(ax, ns, ys, err, label, plot_kwargs=None, use_caps=False
         # [cap.set_alpha(0.3) for cap in caps]
         [cap.set_zorder(-10) for cap in caps]
     else:
-        ax.plot(ns, ys, 'D--', markersize=4, label=label, linewidth=1, **plot_kwargs)
+        ax.plot(ns, ys, 'D-', markersize=.8, label=label, linewidth=1, **plot_kwargs)
         if 'c' in plot_kwargs:
             plot_kwargs['color'] = plot_kwargs['c']
             plot_kwargs.pop('c')
-        ax.fill_between(ns, ys - err, ys + err, alpha=0.3, **plot_kwargs)
+        # ax.fill_between(ns, ys - err, ys + err, alpha=0.3, **plot_kwargs)
 
     SymHandler.get_legend_func()(ax)
     #ax.legend(loc='lower right') #, prop={'size': 4})
@@ -231,7 +231,7 @@ def plot_scaling(base_path, ns, ps, y_func, y_err_func, use_caps=False):
     :param y_err_func:
     :return:
     """
-    fig, ax = plt.subplots(figsize=set_size(fraction=1.0))
+    fig, ax = plt.subplots(figsize=set_size(fraction=.5, ratio=.87))
     for p in reversed(ps):
         ys = []
         err = []
@@ -257,18 +257,19 @@ def plot_scaling(base_path, ns, ps, y_func, y_err_func, use_caps=False):
 
 def plot_total_time_scaling(base_path, ns, ps):
     # nanoseconds to milliseconds
-    fig, ax = plot_scaling(base_path, ns, ps, lambda t: t['finish_time'] * 1E-6, lambda t: t['finish_time_err'] * 1E-6, use_caps=True)
+    fig, ax = plot_scaling(base_path, ns, ps, lambda t: t['finish_time'] * 1E-6, lambda t: t['finish_time_err'] * 1E-6, use_caps=False)
     ax.set_yscale('log', nonpositive='clip')
     ax.set_xscale('log',  nonpositive='clip')
-    ax.set_xlabel(r"Problem size (number of vertices, $| V |$): $n$", fontsize=10)
-    ax.set_ylabel("Time (ms)", fontsize=10)
+    ax.set_xlabel(r"Problem size: $n$", fontsize=9)
+    ax.set_ylabel("Time (ms)", fontsize=9)
     # ax.set_title("Total execution time by MatSquare", fontsize=10)
     ax.set_xticks([10,20,30,40,50,60,70,80,90] + list(range(100,701,100)))
+    ax.set_ylim([1E-2, 10 ** 6])
     ax.tick_params(axis='x', labelrotation=45)
     ax.get_xaxis().set_major_formatter(matplotlib.ticker.ScalarFormatter())
     fig.tight_layout(pad=0.8)
     #fig.set_constrained_layout_pads(w_pad=2, h_pad=2)
-    fig.savefig('plots/total-time-scaling-internet-full-width.pdf', format='pdf', bbox_inches='tight')
+    fig.savefig('plots/total-time-scaling-sandy-full-width-no-errorbars.pdf', format='pdf', bbox_inches='tight')
     plt.show()
 
 
@@ -477,6 +478,6 @@ if __name__ == "__main__":
     taihu = "timing-data/cal-random-sunway-light/cal-random-sunway-light-5-repeats"
     sandy = "timing-data/cal-random-sandy-bridge/cal-random-sandy-bridge-5-repeats"
     internet = "timing-data/cal-random-internet/cal-random-internet-3-repeats"
-    plot_total_time_scaling(internet, ns, [4, 8, 16, 32, 64, 128])
+    plot_total_time_scaling(sandy, ns, [4, 8, 16, 32, 64, 128])
     #plot_ratio_scaling(taihu, ns, [16, 32, 64, 128])
     #plot_ratio_bucket(internet, ns, [4, 8, 16, 32, 64, 128])
