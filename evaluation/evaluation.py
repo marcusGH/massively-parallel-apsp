@@ -78,7 +78,7 @@ class SymHandler(HandlerLine2D):
     @staticmethod
     def get_legend_func():
         return lambda ax: ax.legend(handler_map={matplotlib.lines.Line2D: SymHandler()},
-                                    fontsize='6', title="Processing element layout", ncol=2, loc='upper left', handleheight=2, labelspacing=0.05, prop={'size':8})
+                                    fontsize='6', title="Processing element layout", ncol=2, loc='lower right', handleheight=2, labelspacing=0.05, prop={'size':8})
 
 
 def read_and_compute_errors(filename):
@@ -217,7 +217,7 @@ def plot_with_errorbars(ax, ns, ys, err, label, plot_kwargs=None, use_caps=False
         ax.fill_between(ns, ys - err, ys + err, alpha=0.3, **plot_kwargs)
 
     SymHandler.get_legend_func()(ax)
-    # ax.legend(loc='lower right', prop={'size': 4})
+    #ax.legend(loc='lower right') #, prop={'size': 4})
 
 
 def plot_scaling(base_path, ns, ps, y_func, y_err_func, use_caps=False):
@@ -247,8 +247,7 @@ def plot_scaling(base_path, ns, ps, y_func, y_err_func, use_caps=False):
     err = []
     for n in ns:
         # temp override for sunway, because serial is the same for both
-        if base_path == "timing-data/cal-random-sunway-light/cal-random-sunway-light-5-repeats":
-            base_path = "timing-data/cal-random-sandy-bridge/cal-random-sandy-bridge-5-repeats"
+        base_path = "timing-data/cal-random-sandy-bridge/cal-random-sandy-bridge-5-repeats"
         timings = read_and_compute_error_serial(f"{base_path}-n-{n}-p-1")
         ys.append(y_func(timings))
         err.append(y_err_func(timings))
@@ -269,7 +268,7 @@ def plot_total_time_scaling(base_path, ns, ps):
     ax.get_xaxis().set_major_formatter(matplotlib.ticker.ScalarFormatter())
     fig.tight_layout(pad=0.8)
     #fig.set_constrained_layout_pads(w_pad=2, h_pad=2)
-    #fig.savefig('plots/total-time-scaling-taihu-full-width.pdf', format='pdf', bbox_inches='tight')
+    fig.savefig('plots/total-time-scaling-internet-full-width.pdf', format='pdf', bbox_inches='tight')
     plt.show()
 
 
@@ -382,7 +381,7 @@ def plot_ratio_bucket(base_path, ns, ps):
     # error behind scatter
     ax.fill_between(xs2, ys2 - err, ys2 + err, zorder=-10, alpha=0.3)
     fig.tight_layout(pad=0.3)
-    fig.savefig('plots/ratio-bucket-taihu-half-scale.pdf', format='pdf', bbox_inches='tight')
+    #fig.savefig('plots/ratio-bucket-taihu-half-scale.pdf', format='pdf', bbox_inches='tight')
     plt.show()
     
 def plot_cal():
@@ -477,6 +476,7 @@ if __name__ == "__main__":
     ns = list(range(10, 101, 10)) + list(range(100, 701, 50))
     taihu = "timing-data/cal-random-sunway-light/cal-random-sunway-light-5-repeats"
     sandy = "timing-data/cal-random-sandy-bridge/cal-random-sandy-bridge-5-repeats"
-    #plot_total_time_scaling("timing-data/cal-random-sunway-light/cal-random-sunway-light-5-repeats", ns, [4, 8, 16, 32, 64, 128])
+    internet = "timing-data/cal-random-internet/cal-random-internet-3-repeats"
+    plot_total_time_scaling(internet, ns, [4, 8, 16, 32, 64, 128])
     #plot_ratio_scaling(taihu, ns, [16, 32, 64, 128])
-    plot_ratio_bucket(taihu, ns, [4, 8, 16, 32, 64, 128])
+    #plot_ratio_bucket(internet, ns, [4, 8, 16, 32, 64, 128])
