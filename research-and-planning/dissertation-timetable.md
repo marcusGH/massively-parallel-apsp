@@ -14,9 +14,9 @@ We are here marker: `-HERE-`
 | March | 3    | x                                            |
 | March | 4    | x                                            |
 | April | 1    | x                                            |
-| April | 2    | -Here-                                       |
-| April | 3    | First draft done, and sent for feedback      |
-| April | 4    | _waiting for feedback_                       |
+| April | 2    | x                                            |
+| April | 3    | x                                            |
+| April | 4    | -Here-                                       |
 | May   | 1    | TERM START, implement feedback               |
 | May   | 2    |                                              |
 | May   | 3    | FINAL DEADLINE                               |
@@ -44,12 +44,10 @@ TODO refactors:
 * Worker::initialise -> Worker::initialisation
 * TimingMemoryController -> TimedCommunicationManager
 
-Writing TODO:
-* Implementation:Memory model:
-  * Clean-up, removing stuff said in above subsection
-* TimingAnalysis:
-  * Create diagram? (necessary?)
-  * Write about decorator
+Evaluation writing TODO:
+* Go through notes and pinkBook,marking scheme to figure out what _aims_ of text is
+* Email Modi about day propose send to him
+* Make list of general aspects/points to put in the chapter
 
 ## Current status
 

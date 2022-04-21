@@ -91,6 +91,13 @@ Relevant testing for me:
 Good stuff:
 * Discuss limits of your evaluations
 
+  _Clearly presented argument demonstrating success criteria met._
+  _Good or excellent evidence of critical thought and interpretation of the results which_
+    _substantiate any claims of success, improvements or novelty._
+  _Conclusions provide an effective summary of work completed along with good future_
+    _work._
+  _Personal reflection on the lessons learned._
+
 ### Conclusions
 
 _very short summary_
