@@ -1,5 +1,7 @@
 package main;
 
+import APSPSolver.APSPSolver;
+import APSPSolver.RepeatedMatrixSquaring;
 import graphReader.GraphCompressor;
 import graphReader.GraphReader;
 import matrixMultiplication.GeneralisedFoxOtto;
@@ -137,17 +139,53 @@ public class Evaluation {
         }
     }
 
+    public void outputPathOnCaliforniaNetwork(int p, int startNode, int endNode) {
+        GraphReader cal;
+        try {
+            cal = new GraphReader("../datasets/cal.cedge", false);
+//            cal = new GraphReader("../test-datasets/cal-compressed-random-graphs/500.cedge", false);
+        } catch (ParseException e) {
+            e.printStackTrace();
+            return;
+        }
+        // compress the graph and use it as the solver
+        GraphCompressor calCompressed = new GraphCompressor(cal, GraphCompressor.getCurriedFoxOttoAPSPSolverConstructor(p));
+        APSPSolver solver = calCompressed;
+
+        solver.solve();
+
+        // Some interesting hand-picked example pairs:
+        //   1 -> 19000,
+        //   10585 -> 9000,
+        //   14000 -> 13520,
+        //   60 -> 200
+        Integer[][] examplePairs = {
+                {1, 19000},
+                {10585, 9000},
+                {14000, 13520},
+                {60, 200},
+        };
+        for (int i = 0; i < 4; i++) {
+            int start = examplePairs[i][0];
+            int end = examplePairs[i][1];
+            System.out.println(String.format("Path from %d to %d is length %f and consists of:",
+                    start, end, solver.getDistanceFrom(start, end).doubleValue()));
+            System.out.println(solver.getShortestPath(start, end));
+        }
+    }
+
     public static void main(String[] args) {
         Evaluation evaluation = new Evaluation();
         setupLogger();
 
-        List<Integer> ns = Arrays.asList(10, 20, 30, 40, 50, 60, 70, 80, 90, 100,
-                150, 200, 250, 300, 350, 400, 450, 500, 550, 600, 650, 700);
+//        List<Integer> ns = Arrays.asList(10, 20, 30, 40, 50, 60, 70, 80, 90, 100,
+//                150, 200, 250, 300, 350, 400, 450, 500, 550, 600, 650, 700);
 //        List<Integer> ns = Arrays.asList(700);
-        evaluation.measureScaling(8, ns, 3);
+//        evaluation.measureScaling(128, ns, 3);
 //        evaluation.measureCalRoadNetworkExecutionTimes(128, 5);
         // TODO:
         //    serial for both cal and random
 
+        evaluation.outputPathOnCaliforniaNetwork(8, 1, 10);
     }
 }

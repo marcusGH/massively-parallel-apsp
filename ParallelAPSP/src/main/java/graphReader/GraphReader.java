@@ -272,11 +272,11 @@ public class GraphReader {
     public static void main(String[] args) {
         try {
 //            GraphReader gr = new GraphReader("../datasets/small-example.cedge");
-            GraphReader gr = new GraphReader("../datasets/cal.cedge", false);
-            GraphCompressor gc = new GraphCompressor(gr);
-            gr = gc.getCompressedGraph();
+            GraphReader gr = new GraphReader("../datasets/OL.cedge", false);
+//            GraphCompressor gc = new GraphCompressor(gr);
+//            gr = gc.getCompressedGraph();
             gr.printSummary();
-            gr.onlyUseLargestConnectedComponent();
+//            gr.onlyUseLargestConnectedComponent();
 //            System.out.println("The matrix:");
 //            System.out.println(gr.getAdjacencyMatrix(false));
         } catch (ParseException e) {

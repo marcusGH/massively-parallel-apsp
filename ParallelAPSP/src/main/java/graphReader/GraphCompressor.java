@@ -98,7 +98,8 @@ public class GraphCompressor extends APSPSolver {
 
         if (this.graph.getNumberOfNodes() != (this.compressedGraph.getNumberOfNodes() +
                 this.closestNodesInCompressedGraph.keySet().size())) {
-            throw new IllegalStateException("The difference in the graph sizes should be equal the the number of removed nodes");
+            throw new IllegalStateException("The difference in the graph sizes should be equal the the number of removed nodes: "
+                + this.graph.getNumberOfNodes() + " != " + this.compressedGraph.getNumberOfNodes() + " + " + this.closestNodesInCompressedGraph.keySet().size());
         }
         // for all the nodes that were not removed, we create a mapping to themselves
         for (int i = 0; i < this.graph.getNumberOfNodes(); i++) {

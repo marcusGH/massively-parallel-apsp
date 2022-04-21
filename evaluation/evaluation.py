@@ -269,7 +269,7 @@ def plot_total_time_scaling(base_path, ns, ps):
     ax.get_xaxis().set_major_formatter(matplotlib.ticker.ScalarFormatter())
     fig.tight_layout(pad=0.8)
     #fig.set_constrained_layout_pads(w_pad=2, h_pad=2)
-    fig.savefig('plots/total-time-scaling-sandy-full-width-no-errorbars.pdf', format='pdf', bbox_inches='tight')
+    fig.savefig('plots/total-time-scaling-internet-full-width-no-errorbars.pdf', format='pdf', bbox_inches='tight')
     plt.show()
 
 
@@ -343,7 +343,7 @@ def plot_ratio_bucket(base_path, ns, ps):
                     classes[class_id]['col'].append(f"C{col_id}")
                 else:
                     break
-    fig, ax = plt.subplots(figsize=set_size(fraction=0.5, ratio=1.5))
+    fig, ax = plt.subplots(figsize=set_size(fraction=0.5, ratio=.87))
     # setup the plot
     ax.set_xscale('log', nonpositive='clip')
     ax.set_xlabel("sub-matrix size",fontsize=10)
@@ -361,7 +361,7 @@ def plot_ratio_bucket(base_path, ns, ps):
     for mpc in classes:
         ax.scatter(mpc['xs'], mpc['ys'], c=mpc['col'], s=4, marker='x',
                    label=f"{mpc['p']} x {mpc['p']}",
-                   alpha=0.5, edgecolors='none')
+                   alpha=0.3, edgecolors='none')
     # produce a legend
     leg = ax.legend(loc="lower right", title="Multiprocessor size")
     for lh in leg.legendHandles:
@@ -378,11 +378,11 @@ def plot_ratio_bucket(base_path, ns, ps):
             err.append(np.std(y))
     ys2 = np.array(ys2)
     err = np.array(err)
-    ax.plot(xs2, ys2, zorder=-8)
+    ax.plot(xs2, ys2, zorder=8)
     # error behind scatter
     ax.fill_between(xs2, ys2 - err, ys2 + err, zorder=-10, alpha=0.3)
-    fig.tight_layout(pad=0.3)
-    #fig.savefig('plots/ratio-bucket-taihu-half-scale.pdf', format='pdf', bbox_inches='tight')
+    #fig.tight_layout(pad=0.3)
+    fig.savefig('plots/ratio-bucket-sandy-half-scale.pdf', format='pdf', bbox_inches='tight')
     plt.show()
     
 def plot_cal():
@@ -478,6 +478,6 @@ if __name__ == "__main__":
     taihu = "timing-data/cal-random-sunway-light/cal-random-sunway-light-5-repeats"
     sandy = "timing-data/cal-random-sandy-bridge/cal-random-sandy-bridge-5-repeats"
     internet = "timing-data/cal-random-internet/cal-random-internet-3-repeats"
-    plot_total_time_scaling(sandy, ns, [4, 8, 16, 32, 64, 128])
+    #plot_total_time_scaling(internet, ns, [4, 8, 16, 32, 64, 128])
     #plot_ratio_scaling(taihu, ns, [16, 32, 64, 128])
-    #plot_ratio_bucket(internet, ns, [4, 8, 16, 32, 64, 128])
+    plot_ratio_bucket(sandy, ns, [4, 8, 16, 32, 64, 128])
