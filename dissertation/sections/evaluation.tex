@@ -2,6 +2,9 @@
 \documentclass[../diss.tex]{subfiles}
 \chapter{Evaluation}
 
+% TODO: Instead of seperate unit test section, just add it as a figure somewhere
+%       with a sufficiently long caption explaining everything
+
 % ** Other points **
 % All unit tests passed (screenshot)
 % Some points to show:
@@ -167,57 +170,48 @@ are any faults in the parallel distance product subroutine.
 % * Discuss the main plot, and explain sensitivity analysis
 % * Explain the first column of plots as well...
 % Advantage of parallel computation for solving APSP {{{
-\section{Advantage of parallel computation for solving APSP}%
-\label{sec:Advantage of parallel computation for solving APSP}
+\section{MatSquare timing measurements}%
+\label{sec:MatSquare timing measurements}
+
 
 \begin{figure}
     \centering
-    \subfigure[Figure A]{%
+    \subfigure[Multi-core processor (Sandy Bridge)]{%
         \label{fig:main-plot-fig-a}%
-        % TODO: fix which plots are there
         \includegraphics{figs/plots/total-time-scaling-sandy-full-width-no-errorbars.pdf}%
         \hfill%
         \includegraphics{figs/plots/ratio-bucket-sandy-half-scale.pdf}
     }%
     \vskip\baselineskip\vspace{-25pt}%
-    \subfigure[Figure B]{%
+    \subfigure[Supercomputer (Sunway  TaihuLight)]{%
         \label{fig:main-plot-fig-b}%
         \includegraphics{figs/plots/total-time-scaling-taihu-full-width-no-errorbars.pdf}%
         \hfill%
         \includegraphics{figs/plots/ratio-bucket-taihu-half-scale.pdf}
     }%
     \vskip\baselineskip\vspace{-25pt}%
-    \subfigure[Figure C]{%
+    \subfigure[Distributed computer (Internet)]{%
         \label{fig:main-plot-fig-c}%
         \includegraphics{figs/plots/total-time-scaling-internet-full-width-no-errorbars.pdf}%
         \hfill%
         \includegraphics{figs/plots/ratio-bucket-internet-half-scale.pdf}
     }%
-    \caption{Global caption that might be a bit long as it goes over two lines, right
-        about now... It might even go over three lines since we are daring today. Just
-    this extra sentence should do it.}
+    \caption{In the left column, the total execution time of \ac{MatSquare} is
+        plotted for different different input graphs with $n=|V|$ vertices.
+        In the right column, computation ratios are grouped by the number of
+        rows and columns in the sub-matrix each PE is responsible for.}
     \label{fig:main-eval-plot}
 \end{figure}
 
-% Introduction tying this section's subs together
-
+% TODO: Introduction tying this section's subs together
 % Choice of communication parameters:
 % * sensitivity analysis
 % * map onto real hardware for more applicable conclusions
 % * The three models used and reference
+TODO
 
-% \begin{wraptable}{r}{0.60\textwidth}
-%         \centering
-%         \begin{tabular}{|p{0.1\textwidth}|p{0.1\textwidth}|p{0.15\textwidth}|}
-%             \hline
-%             \textbf{Parallel system} & \textbf{Latency} & \textbf{Bandwidth} \\
-%             \hline
-%             Multi-core processor & 107 clock cycles & 32 Bytes per cycle \\
-%             \hline
-%         \end{tabular}%
-%         \caption{Caption}%
-%         \label{tab:node-paths}%
-% \end{wraptable}
+\subsection{Choice of communication parameters}%
+\label{sub:Choice of communication parameters}
 
 % Sandy bridge
 \paragraph{Multi-core processor}%
@@ -226,32 +220,79 @@ are any faults in the parallel distance product subroutine.
 The Sandy Bridge microarchitecture supports multiple cores which execute in
 \ac{MIMD} fashion, and the L3 cache is shared across all cores while the
 lower-level caches are local to each core \cite{sandyBridge}. For one core to
-send a data from its private L1 cache to another core's L1 cache,
-we must look at the round-trip time of the cache coherence protocol because
-the receiving core must message the sending core and it must then wait for
-the cache line to come back. \citeauthor{timJones} have done measurements of
-this kind of cache coherence latency, and found that for the Sandy Bridge
-microarchitecture, the round-trip latency is about 107 80\% of the time. I make
-the simplifying assumption that the latency is constantly at 107 cycles, and
-this delay is fixed whatever the clock frequency is, as I will be using the
-clock frequency of my own laptop \cite{timJones}.
-In the ring interconnect used to implement cache coherency in the Sandy Bridge microarchitecture, the data ring used
-has a bandwidth of 32 bytes per cycle. I will therefore make the assumption that when sending data from one private
-L1 cache to another through the ring interconnect (using cache coherncy protocol), this is the available bandwidth.
+send a data from its private L1 cache to another core's L1 cache, we must look
+at the round-trip time of the cache coherence protocol because the receiving
+core must message the sending core and it must then wait for the cache line to
+come back. \citeauthor{timJones} have done measurements of this kind of cache
+coherence latency, and found that for the Sandy Bridge microarchitecture, the
+round-trip latency is about 107 80\% of the time \cite{timJones}. I make the simplifying
+assumption that the latency is constantly at 107 cycles, and this delay is
+fixed whatever the clock frequency is, as I will be using the clock frequency
+of my own laptop.  In the ring interconnect used to implement
+cache coherency in the Sandy Bridge microarchitecture, the data ring used has a
+bandwidth of 32 bytes per cycle. I will therefore make the assumption that when
+sending data from one private L1 cache to another through the ring interconnect
+(using cache coherncy protocol), this is the available bandwidth.
 
-Cite these guys: \cite{sandyBridge} and \cite{timJones}.
+% Cite these guys: \cite{sandyBridge} and \cite{timJones}.
 
 % Taihu light
 \paragraph{Supercomputer}%
 \label{par:Supercomputer}
 
-\cite{sunway} this guy.
+For the supercomputer parallel system, I have based by constants on the
+Sunway TaihuLight system, which consists of several SW26010 processors
+connected together through a system interface with a bidirectional bandwidth
+of 16~GB/s and a latency around 1~{\textmu}s \cite{sunway}. Each SW26010 processor
+consists of 256 computer processing elements which can themselves communicate
+with lower latency and higher bandwidth, and they also run at a lower clock
+frequency than that of my laptop. I decided to not simulate this memory hierarchy
+between the \ac{PE}, but instead assume each individual \ac{PE} is connected
+through the system interface used on the Sunway TaihuLight system, and executes
+instructions at the same clock frequency as my laptop. I also half the bandwidth
+because messages can only go in one direction in my assumed parallel system.
 
-% Internet
-Bandwidth internet values based on report from \url{https://www.cable.co.uk/broadband/speed/worldwide-speed-league/}. Latency values for Europe based on statistics from
-Verizon here \url{https://www.verizon.com/business/terms/latency/}. Chose round-trip
-time because TCP transfer, and ACKs etc.
+\paragraph{Distributed computer}%
+\label{par:Distributed computer}
 
+For this parallel system, I am assuming that we have some set of \acp{PE} that
+are distributed geographically across a continent, and they communicate by sending
+packets over the Internet. This kind of system is very scalable as it is easy
+to add new \acp{PE}, but we expect the communication constants to be higher.
+Within Europe, ICMP packets have been measured to have a round-trip time latency
+of under 15~ms in the last 12 months, but use the generous upper-bound of 30~ms
+\citep{verizon}.
+% TODO: why do this?
+I also use the round-trip time such that communication can happen over protocols
+where acknowledgement messages are sent as well.
+For the bandwidth, I used the regional average broadband speed across
+Western Europe, which is 90.56~Mbps \cite{broadband}.
+
+\begin{table}
+    \centering
+    \begin{tabular}{|c|c|c|}
+        \hline
+        \textbf{Parallel system} & \textbf{Latency} & \textbf{Bandwidth} \\
+        \hline
+        Multi-core processor & 107 clock cycles\footnotemark & 32 Bytes per
+        cycle\footnotemark \\
+        \hline
+        Supercomputer & 1~{\textmu}s & 8~GB/s \\
+        \hline
+        Distributed computer & 30~ms & 11.25~MB/s \\
+        \hline
+    \end{tabular}%
+    \caption{The communication constants used in my timing analysis of the
+    \ac{MatSquare} algorithm. Note that since each message consists of two
+    or fewer \texttt{Double}s, the latency will be the dominating contributor
+    to the communication cost, not the bandwidth.}%
+    \label{tab:communication-constants}%
+\end{table}
+
+\footnotetext[2]{With the clock frequency of my system, this corresponds to
+46.52~ns}
+\footnotetext{With the clock frequency of my system, this corresponds to
+68.55~GB/s}
 
 % Discuss total time scaling
 % * As num. PE *4, we have a decrease in computation time, decrease gets slightly
@@ -266,63 +307,58 @@ time because TCP transfer, and ACKs etc.
 % * quote success criteria
 % * show that for all parameter choices, evenually reach over 90 and even 95\%
 %   efficiency
+\subsection{Advantage of parallel computation for solving APSP}%
+\label{sub: of parallel computation for solving APSP}
 
+Introduction. For the multi-core and supercomputer configuration, we see that
+the total execution time plot is flat or step-wise-like for small problem sizes,
+especially for large \ac{PE} layouts. For example, the execution time is constant
+for $n<100$ when we have $128 \times 128$ \acp{PE}. This is because we have
+enough \acp{PE} for each cell in the input matrix in this range, so increasing
+the problem size does not give more computation per \ac{PE}. The step-wise-like
+increase in the execution time is caused by the input padding: To map for instance
+a problem of size $n=200$ onto $64 \times 64$ \acp{PE}, we must pad the input
+until the size is a multiple of 64, which can cause two different problem sizes
+to be mapped to the same size, causing a flat segment.
+
+As we get to larger problem sizes, the total times in figures
+\ref{fig:main-plot-fig-a} and \autoref{fig:main-plot-fig-b} start to even out
+and approach linear in the log-log-scale. This means that whenever we multiply
+the number of \acp{PE} by 4, we also decrease the computation time requires by
+a constant factor, although this factor seems to grow somewhat smaller the large
+the number of \acp{PE}. Regardless, it tells us that for large problem sizes,
+there's always a benefit to adding more computation power as this reduces
+execution time.
+
+We can also look at the parallel efficiency. As we saw in
+\autoref{eq:parallel-efficiency}, the parallel efficiency is the same as the
+computation ratio. We can therefore think of the $y$-axis in three right-column
+plots in \autoref{fig:main-eval-plot} as being the parallel efficiency.  With
+the multi-core processor and supercomputer configurations, we quickly achieve
+$\varepsilon>0.9$ and it even reaches above 95\% eventually. This means the
+\ac{MatSquare} algorithm is able to efficiently utilize the available
+processing power on a parallel system without communication being a bottleneck,
+which is in accordance with the last success criteria: ``\textit{The evaluation
+of the algorithm demonstrates that parallel computation gives a high parallel
+efficiency for solving APSP}''.
+
+In figure \ref{fig:main-plot-fig-c}, we see that
+there is little benefit to parallel computation compared with serial until we
+reach large problem sizes. When there are just a few {\textmu}s of computation
+before we need to send a packet across Europe, there is a very large communication
+overhead, which we see from the near-zero computation ratio for sub-matrices
+of size less than 20. This is also why most of the execution time plots are flat,
+since the communication is dominating. However, even with such a large latency
+constant,  we eventually achieve a high parallel efficiency, but this only happens
+for the $4 \times 4$ and $8 \times 8$ arrangements for my selection of
+problem sizes, but we can expect other arrangements to also get to this point
+with larger problems. Also, as we reach the point where computation start to
+dominate, we total execution time starts increasing in a similar manner to that
+in figures \ref{fig:main-plot-fig-a} and \ref{fig:main-plot-fig-b}. Therefore,
+we would expect the $128 \times 128$ configuration to overtake all the smaller
+ones eventually.
 
 % }}}
-
-\section{Evaluation metrics}
-
-Nothing in this section
-
-\section{Parallel matrix-multiplication}
-
-\newpage
-See \autoref{fig:example1} for some example plots. There is also
-\autoref{fig:example3} which shows some stuff.
-
-
-% Example figure
-\begin{figure}
-    \begin{center}
-        % \includegraphics[scale=1]{figs/plots/example1.pdf}
-        \includegraphics{inkscape-diagrams/template-diagram2.pdf}
-    \end{center}
-    \caption{Example diagram produced with inkscape}
-    \label{fig:example1}
-\end{figure}
-
-% Comparison of computation ratio
-\begin{figure}%
-    \hfill
-    \subfigure[Sandy bridge]{\includegraphics[scale=0.95]{figs/plots/ratio-bucket-sandy-half-scale.pdf}}
-    \hfill
-    \subfigure[Taihu light]{\includegraphics[scale=0.95]{figs/plots/ratio-bucket-taihu-half-scale.pdf}}
-    \hfill
-    \caption{Title for both, and explain some more...}
-    \label{fig:example2}
-\end{figure}
-
-% Third example figure
-\begin{figure}
-    \begin{center}
-        % \includegraphics[scale=1]{figs/plots/example3.pdf}
-        \includegraphics{figs/plots/total-time-scaling-sandy-full-width.pdf}
-    \end{center}
-    \caption{Sandy bridge total time scaling}
-    \label{fig:example3}
-\end{figure}
-
-% Fourth example figure
-\begin{figure}
-    \begin{center}
-        \includegraphics[scale=1]{figs/plots/total-time-scaling-taihu-full-width.pdf}
-    \end{center}
-    \caption{Taihu light total time scaling}
-    \label{fig:example4}
-\end{figure}
-
-
-% Explanation of where constants from:
 
 
 % vim: foldmethod=marker
