@@ -14,8 +14,20 @@ Introduction goes here.
 \section{Parallel computing}%
 \label{sec:Parallel computing}
 
-Parallel systems can be classified according to several different attributes.
-Here, I will ...
+% Where are you going?
+% Why are you going there?
+% And how are you going to get there?
+
+We will now look at an overview of parallel computers. To design parallel
+algorithms that utilize the computational resources as efficiently as possible,
+we should be familiar with the landscape of parallel systems and their classifications. In this section, I will provide such an overview by classifying systems
+according to how the streams of instructions are mapped onto data, what
+hierarchies of memory are commonly used, and how this affects inter-processing-element communication. Additionally, we will discuss 
+the scale at which parallelisation happens and cover metrics used for evaluating
+how resource efficient a parallel algorithm is.
+
+% Also define some metrics for evaluating how efficiently
+%   the algorithm uses the computation reousrces available.
 
 \subsection{Flynn's taxonomy}%
 \label{sub:Flynn's taxonomy}
@@ -60,8 +72,8 @@ address space. Multiple  \acp{PE} can communicate by reading and writing
 to the same segment of memory, and locking mechanisms can be implemented to
 prevent race conditions. % Fact check?
 
-\subsection{Something something classes MPP and others}%
-\label{sub:Something something classes MPP and others}
+\subsection{Classes of  parallel computers}%
+\label{sub:Classes of  parallel computers}
 
 By looking at the extent to which the system supports parallelism and at the
 physical distance between the \acp{PE}, we create further classifications.
@@ -71,7 +83,11 @@ and there are typically both local memory for each core as well as some shared
 memory between cores, that can be used for communication.
 In \acp{MPP}, we often have many thousands of processors, interconnected through
 a specialised network. An example is the Sunway TaihuLight supercomputer
-% TODO: reference....
+\cite{sunway}.
+There is also a wide class of computers known as \textit{distributed computers},
+where the \acp{PE} communicate over a network, such as the Internet.
+% TODO: cite Wikipedia?
+
 
 \subsection{Evaluating performance}%
 \label{sub:Evaluating performance}
@@ -141,11 +157,21 @@ It is also easier to measure this ratio.
 \section{APSP algorithm}%
 \label{sec:APSP algorithm}
 
-We consider a graph $G=(V,E,w)$, where we have a set $V$ of $n$ vertices and a set
+% TODO: Find citation for dijkstra overhead?
+% TODO: Look at implementation chapter, and add whatever details used there, such
+%       as the distance product....
+%       After this, we can create the introduction paragraph
+
+% * What is a `distance product`, and explain concept of MatMul on the semiring
+
+The main algorithm of the dissertation is based on matrix multiplication and
+solves a problem in graph theory. By going through the notation and definitions
+I will be using, as well as discussing alternative approaches to parallelising
+\ac{APSP}, we can better understand the \ac{MatSquare} algorithm.
+Throughout the dissertation, we consider graphs on the form $G=(V,E,w)$, where we have a set $V$ of $n$ vertices and a set
 $E$ of edges and each edge $e \in E$ has a non-negative weight $w(e)$ assigned
 to it. The \ac{APSP} problem concerns finding the \textit{shortest path} between
 each pair of vertices.
-% TODO: one more sentence about text to come...
 
 \subsection{Parallelisation}%
 \label{sub:Parallelisation}
@@ -154,7 +180,6 @@ There are many widely-used algorithms for efficiently solving the
 \ac{SSSP} problem, such as Dijkstra's algorithm, Bellman-Ford and A$^*$-search.
 If we have fewer than $n$ \acp{PE}, a trivial parallelisation for solving \ac{APSP}
 is to run one of these algorithms on each \ac{PE}, distributing the sources.
-% TODO: rephrase
 However, this approach does not use our parallel resources efficiently if we have
 more than $n$ \acp{PE}. To exploit this, we must either consider other algorithms
 or parallelise parts of the \ac{SSSP} computation in one of these algorithms.
@@ -164,38 +189,40 @@ but they incur a significant overhead. I have therefore decided to use a new
 algorithm based on matrix multiplication, a highly paralleliseable task,
 instead.
 
-
 \subsection{Repeated matrix squaring}%
 \label{sub:Repeated matrix squaring}
 
 Matrix multiplication usually happens over the \textit{semiring}\footnote{See
 appendix \autoref{sec:Abstract algebra}.} $(\mathbb{R},+,\cdot)$.
 However, by replacing addition with multiplication and  multiplication by the
-$\min$-operator, giving the semiring $(\mathbb{R}\cup\{\infty\},\cdot,\min)$.
-This operation is known as the distance product, and by repeatedly computing it
-for the weight matrix, we can find the length of shortest paths. If $W$ is
-an $|V| \times |V|$ matrix, and $W_{ij}=w(e_{ij})$, the entries in $W^k$ are
-distances between vertices in the graph $G$ using paths of length $k$.
+$\min$-operator, resulting in the tropical semiring $(\mathbb{R}^*, \cdot,\min)$,
+where we define $\mathbb{R}^* \triangleq \mathbb{R}\cup\{\infty\}$. When doing
+matrix multiplication over this algebra, we perform an operation called
+the \textit{distance product}.
+\begin{definition}
+    The distance product of two matrices, $A$ and $B$, whose entries $(i,j)$
+    gives the length of the shortest path $i \rightsquigarrow j$ of length
+    exactly $n$ and $m$, respectively, is a matrix $M$ whose entries $(i,j)$
+    are given by
+    \begin{equation}%
+    \label{eq:distanceProduct}
+        M_{i,j} = [A \otimes B]_{i,j} = \min_{k}\left( A_{i,k} \cdot B_{k,j}\right).
+    \end{equation}
+    Each entry $M_{i,j}$ then gives the distance of the shortest path
+    $i \rightsquigarrow k \rightsquigarrow j$ of length $n+m$.
+\end{definition}
+If we let $W$ be the adjacency matrix, where each entry $(i,j)$ is the weight
+of edge $(i,j)$ and $\infty$ if $(i,j) \not\in E$, then computing the distance
+product of $W$ with itself $k$ times will give a matrix containing the length
+of shortest paths of length $k$.
 If we add a self-loop to each vertex with weight 0, and compute $W^n$, the matrix
 will contain the shortest-distances between all pairs of nodes that are of length
 at most $n$, i.e. the shortest path (because it cannot be longer).
-We can compute this matrix by squaring $W$ $\lceil \log_2 n \rceil$ times. This
+A more efficient way to compute this is by squaring
+ $W$ $\lceil \log_2 n \rceil$ times. This
 % TODO: explain abbreviation better
-is the idea behind our \ac{MatSquare} algorithm. We also need to modify this
-algorithm to also keep track of the edges used in the shortest path, but more
-details of this will be explain in \autoref{sec:APSP via repeated matrix-squaring}.
-% TODO: rephrase this paragraph, it does not read well.
-
-\subsection{Fox-Otto's technique}%
-\label{sub:Fox-Otto's technique}
-
-In \cite{fox}, they describe a technique for multiplying two matrices on a
-parallel distributed-memory system, such that the amount of communication is
-minimized. This is a suitable technique as we maximise our parallel efficiency
-by minimising the communication. If we are computing $C=A \times B$, we
-can visualise the memory movement ....
-
-% TODO: diagram...
+is the idea behind the \ac{MatSquare} algorithm that I explain in
+\autoref{sec:APSP via repeated matrix-squaring}.
 
 % }}}
 
@@ -217,16 +244,19 @@ can visualise the memory movement ....
 \section{Parallel architecture assumptions}%
 \label{sec:Parallel architecture assumptions}
 
-
 % Note: The idea behind this section is tying everything together, **why**
 %   have we made all these decisions on our parallel system...
 
-Having reviewed some of the different classes of parallel systems, as well as
-the general idea behind our \ac{APSP} algorithm, we now review the assumptions
-I have made about the parallel system I will be developing an algorithm for.
-Regardless of system, it should have a configurable number of \acp{PE}, and
-this number can be very high as we might want to evaluate performance with
-many. % TODO: rephrase
+In this section, I will list the assumptions behind the parallel system that
+will be simulated. For the implementation to go as smoothly as possible and the
+timing evaluation to be applicable, it is important to have a clear and
+well-defined parallel system in mind. As we saw in \autoref{sec:Parallel computing}, there are many classes of parallel systems. We will hone in on a particular
+parallel system by making assumptions about its model of memory and execution,
+as well as how message passing is modelled.
+
+% Regardless of system, it should have a configurable number of \acp{PE}, and
+% this number can be very high as we might want to evaluate performance with
+% many.
 
 \paragraph{Memory model}%
 \label{par:Memory model}
@@ -257,7 +287,7 @@ following reasons:
         computation resources, and is difficult to simulate. In standard
         matrix multiplication, there are no branches, but we are implementing
         a alternative matrix multiplication algorithm for the
-        $(\mathbb{R},\cdot,\min)$ semiring, where we also have computation for
+        $(\mathbb{R}^*,\cdot,\min)$ semiring, where we also have computation for
         finding the predecessors. This introduces possibly large branches into
         our inner-loop.
     \item If simulated, this model gives the programmer more flexibility...
@@ -288,10 +318,15 @@ I also assume some fixed latency and bandwidth for the broadcasting.
 \section{Requirements analysis}%
 \label{sec:Requirements analysis}
 
-Introduction. 
+% Where are you going? Why are you going there? And how are you going to get there?
+We will now look at the main components to be implemented, and what their
+functional requirements are. To make implementation as smooth as possible, it
+is important to know beforehand what the different components will do and how
+they interface with other components. This will also make modular development
+easier as we only need to focus on one component and its interface at a time.
 
-\paragraph{Parallel arcitecture simulation framework?}%
-\label{par:Parallel arcitecture simulation framework?}
+\paragraph{Parallel system simulation}%
+\label{par:Parallel system simulation}
 
 Since I do not have access to a physical system fitting the
 properties described in \autoref{sec:Parallel architecture assumptions},
@@ -363,6 +398,16 @@ graph compressor to reconstruct \ac{APSP} solutions on the original graph.
 \section{Choice of tools}%
 \label{sec:Choice of tools}
 
+TODO: Mention networkX in python for graph generation
+
+We will now go over various existing software, programming languages
+and services that can aid the development. When developing and testing
+a parallel program, there are many already built tools and utilities that
+handle a lot of the work, such as high-level synchronisation classes or
+unit testing frameworks. By using these tools, we can spend more time on the
+core parts of the project, like creating the simulation and developing the
+\ac{MatSquare} algorithm.
+
 \subsection{Programming languages and libraries}%
 \label{sub:Programming languages and libraries}
 
@@ -386,14 +431,17 @@ and \texttt{matplotlib}.
 \subsection{Development, testing and revision control}%
 \label{sub:Development, testing and revision control}
 
-% TODO: finish this subsection
-revision control with \texttt{git} and GitHub, development, testing and evaluation
-on my own laptop with specs ...
-
-Intellij IDE for Java,
-
-github workflows, build my project every time I commit to \texttt{main} branch,
-to make sure code always in a valid state.
+To easily manage different versions of the codebase, I will do revision control
+with \texttt{git} and GitHub\footnote{\url{https://github.com/}}. I also set up
+contiguous integration with  GitHub Workerflows, which compiles the project
+every time I push a commit. This way, I can make sure the code is always in a
+valid state and there are no syntax errors.  I will use my Acer Nitro Laptop,
+running Ubuntu Linux 18.04 LTS, to both write and run all of my code. It has a
+quad-core CPU (an Intel i5-8300H \@ 2.30~Ghz), 8~GB of RAM, and an NVIDIA GTX
+1050 Mobile. The CPU supports running 8 threads concurrently, which means
+parallelising the simulation itself will make a significant impact on the
+simulation time. To write the Java code, I use the IntelliJ IDEA IDE to improve
+the quality of the code and spend less time on getting the Java syntax right.
 
 % }}}
 

@@ -11,6 +11,7 @@
 
 % Useful math packages
 \usepackage{amsmath}
+\usepackage{blkarray} 
 \usepackage{textcomp} 
 \usepackage{amssymb}
 \usepackage{stackengine}
@@ -29,7 +30,8 @@
 % for verbatim in footnotes
 \usepackage{fancyvrb} 
 \VerbatimFootnotes
-
+% directory tree
+\usepackage{forest,adjustbox} 
 
 \usepackage[margin=25mm]{geometry}  % adjusts page layout
 \usepackage{array}
@@ -87,6 +89,47 @@
 \sloppy
 \clubpenalty1000%
 \widowpenalty1000%
+
+% Forest styling, see Gonzalo Medina's answer in
+%   https://tex.stackexchange.com/questions/5073/making-a-simple-directory-tree
+\forestset{
+    dirtree/.style={
+        baseline,
+        for tree={
+            font=\ttfamily,
+            grow'=0,
+            child anchor=west,
+            parent anchor=south,
+            anchor=west,
+            calign=first,
+            edge path={
+                \noexpand\path [draw, \forestoption{edge}]
+                (!u.south west) +(7.5pt,0) |- node[fill,inner sep=1.25pt] {} (.child anchor)\forestoption{edge label};
+            },
+            before typesetting nodes={
+                if n=1
+                {insert before={[,phantom]}}
+                {}
+            },
+            fit=band,
+            before computing xy={l=15pt},
+            align=left,
+            inner xsep=1.5pt,
+            inner ysep=-3pt,
+        }
+    },
+    dots/.style={for tree={
+        anchor=north,
+        child anchor=north,
+        parent anchor=north,
+        edge path={
+            \noexpand\path [draw, \forestoption{edge}]
+            (!u.south west) +(7.5pt,0) -- node[inner sep=1.25pt] {} (.parent anchor)\forestoption{edge label};
+        },
+        before computing xy={l=7.5pt},
+    }}
+}
+\usepackage{flexisym} 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%                 Definitions                            %%%%
