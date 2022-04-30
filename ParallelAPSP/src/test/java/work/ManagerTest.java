@@ -2,7 +2,7 @@ package work;
 
 import memoryModel.CommunicationChannelCongestionException;
 import memoryModel.CommunicationChannelException;
-import memoryModel.MemoryController;
+import memoryModel.CommunicationManager;
 import memoryModel.PrivateMemory;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -223,12 +223,12 @@ class ManagerTest {
  */
 class SimpleCommunicatingWorker extends Worker {
 
-    public SimpleCommunicatingWorker(int i, int j, int p, int n, int numPhases, PrivateMemory privateMemory, MemoryController memoryController) {
-        super(i, j, p, n, numPhases, privateMemory, memoryController);
+    public SimpleCommunicatingWorker(int i, int j, int p, int n, int numPhases, PrivateMemory privateMemory, CommunicationManager communicationManager) {
+        super(i, j, p, n, numPhases, privateMemory, communicationManager);
     }
 
     @Override
-    public void initialise() { }
+    public void initialisation() { }
 
     @Override
     public void computation(int l) {
@@ -259,12 +259,12 @@ class SimpleCommunicatingWorker extends Worker {
  */
 class BroadcastingWorker extends Worker {
 
-    public BroadcastingWorker(int i, int j, int p, int n, int numPhases, PrivateMemory privateMemory, MemoryController memoryController) {
-        super(i, j, p, n, numPhases, privateMemory, memoryController);
+    public BroadcastingWorker(int i, int j, int p, int n, int numPhases, PrivateMemory privateMemory, CommunicationManager communicationManager) {
+        super(i, j, p, n, numPhases, privateMemory, communicationManager);
     }
 
     @Override
-    public void initialise() { }
+    public void initialisation() { }
 
     @Override
     public void computation(int l) {

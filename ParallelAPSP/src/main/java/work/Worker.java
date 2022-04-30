@@ -1,7 +1,7 @@
 package work;
 
 import memoryModel.CommunicationChannelCongestionException;
-import memoryModel.MemoryController;
+import memoryModel.CommunicationManager;
 import memoryModel.PrivateMemory;
 import org.junit.platform.commons.util.ExceptionUtils;
 
@@ -23,7 +23,7 @@ public abstract class Worker implements Runnable {
     // The list of arguments to the abstract Worker class constructor
     static final Class[] workerConstructorParameterTypes = {
             Integer.TYPE, Integer.TYPE, Integer.TYPE, Integer.TYPE, Integer.TYPE,
-            PrivateMemory.class,  MemoryController.class
+            PrivateMemory.class,  CommunicationManager.class
     };
 
     protected final int i;
@@ -33,7 +33,7 @@ public abstract class Worker implements Runnable {
     protected final int numPhases;
 
     private final PrivateMemory privateMemory;
-    private final MemoryController memoryController;
+    private final CommunicationManager communicationManager;
 
     public Worker(Worker worker) {
         this.i = worker.i;
@@ -43,7 +43,7 @@ public abstract class Worker implements Runnable {
         this.numPhases = worker.numPhases;
 
         this.privateMemory = worker.getPrivateMemory();
-        this.memoryController = worker.memoryController;
+        this.communicationManager = worker.communicationManager;
     }
 
     /**
@@ -55,10 +55,10 @@ public abstract class Worker implements Runnable {
      * @param p non-negative integer such that the number of workers == p ^ 2
      * @param numPhases number of computation phases to be performed during execution
      * @param privateMemory the worker's own private memory. May already contain values
-     * @param memoryController a reference to a unique memory controller.
+     * @param communicationManager a reference to a unique memory controller.
      *                         All workers should use the same memory controller
      */
-    public Worker(int i, int j, int p, int n, int numPhases, PrivateMemory privateMemory, MemoryController memoryController) {
+    public Worker(int i, int j, int p, int n, int numPhases, PrivateMemory privateMemory, CommunicationManager communicationManager) {
         this.i = i;
         this.j = j;
         this.p = p;
@@ -66,7 +66,7 @@ public abstract class Worker implements Runnable {
         this.numPhases = numPhases;
 
         this.privateMemory = privateMemory;
-        this.memoryController = memoryController;
+        this.communicationManager = communicationManager;
 
         // TODO: add method and assert for memory controller on size match
     }
@@ -77,7 +77,7 @@ public abstract class Worker implements Runnable {
      * iterations of the later communication and computation phases. No communication methods should be invoked from
      * this method, as this could give undefined behaviour.
      */
-    abstract public void initialise();
+    abstract public void initialisation();
 
     /**
      * Defines the computation to be done by Worker(i, j) at computation phase l. Only the method
@@ -157,7 +157,7 @@ public abstract class Worker implements Runnable {
     // ================ Methods for point to point communication ================
 
     protected void send(int i, int j, Number value) throws CommunicationChannelCongestionException {
-        this.memoryController.sendData(this.i, this.j,  i, j, value);
+        this.communicationManager.sendData(this.i, this.j,  i, j, value);
     }
 
     protected void receive(String label) {
@@ -165,17 +165,17 @@ public abstract class Worker implements Runnable {
     }
 
     protected void receive(int mi, int mj, String label) {
-        this.memoryController.receiveData(this.i, this.j, mi, mj, label);
+        this.communicationManager.receiveData(this.i, this.j, mi, mj, label);
     }
 
     // ================ Methods for broadcast communication ==================
 
     protected void broadcastRow(Number value) throws CommunicationChannelCongestionException {
-        this.memoryController.broadcastRow(this.i, this.j, value);
+        this.communicationManager.broadcastRow(this.i, this.j, value);
     }
 
     protected void broadcastCol(Number value) throws CommunicationChannelCongestionException {
-        this.memoryController.broadcastCol(this.i, this.j, value);
+        this.communicationManager.broadcastCol(this.i, this.j, value);
     }
 
     protected void receiveRowBroadcast(String label) {
@@ -183,7 +183,7 @@ public abstract class Worker implements Runnable {
     }
 
     protected void receiveRowBroadcast(int mi, int mj, String label) {
-        this.memoryController.receiveRowBroadcast(this.i, this.j, mi, mj, label);
+        this.communicationManager.receiveRowBroadcast(this.i, this.j, mi, mj, label);
     }
 
     protected void receiveColBroadcast(String label) {
@@ -191,7 +191,7 @@ public abstract class Worker implements Runnable {
     }
 
     protected void receiveColBroadcast(int mi, int mj, String label) {
-        this.memoryController.receiveColBroadcast(this.i, this.j, mi, mj, label);
+        this.communicationManager.receiveColBroadcast(this.i, this.j, mi, mj, label);
     }
 
     // ================= Methods for interaction with Manager ==============
@@ -199,7 +199,7 @@ public abstract class Worker implements Runnable {
     Callable<Object> getInitialisationCallable() {
         return () -> {
             LOGGER.log(Level.FINER, "Worker({0}, {1}) is starting initialisation phase.", new Object[]{i, j});
-            initialise();
+            initialisation();
             return null;
         };
     }

@@ -9,11 +9,11 @@ import java.util.List;
 
 public class TimingAnalysisResult {
 
-    private final TimingAnalysisMemoryController memoryController;
+    private final TimedCommunicationManager memoryController;
     private final int problemSize;
 
 
-    public TimingAnalysisResult(TimingAnalysisMemoryController memoryController, int problemSize) {
+    public TimingAnalysisResult(TimedCommunicationManager memoryController, int problemSize) {
         this.memoryController = memoryController;
         this.problemSize = problemSize;
     }

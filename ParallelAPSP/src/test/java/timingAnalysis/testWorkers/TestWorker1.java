@@ -1,7 +1,7 @@
 package timingAnalysis.testWorkers;
 
 import memoryModel.CommunicationChannelCongestionException;
-import memoryModel.MemoryController;
+import memoryModel.CommunicationManager;
 import memoryModel.PrivateMemory;
 import work.Worker;
 
@@ -27,8 +27,8 @@ public class TestWorker1 extends Worker {
 
     private String nodeID;
 
-    public TestWorker1(int i, int j, int p, int n, int numPhases, PrivateMemory privateMemory, MemoryController memoryController) {
-        super(i, j, p, n, numPhases, privateMemory, memoryController);
+    public TestWorker1(int i, int j, int p, int n, int numPhases, PrivateMemory privateMemory, CommunicationManager communicationManager) {
+        super(i, j, p, n, numPhases, privateMemory, communicationManager);
 
         if (i == 0 && j == 2) {
             nodeID = "A";
@@ -44,7 +44,7 @@ public class TestWorker1 extends Worker {
     }
 
     @Override
-    public void initialise() { }
+    public void initialisation() { }
 
     @Override
     public void computation(int l) {

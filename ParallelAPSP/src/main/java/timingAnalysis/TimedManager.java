@@ -3,8 +3,8 @@ package timingAnalysis;
 import graphReader.GraphReader;
 import matrixMultiplication.FoxOtto;
 import memoryModel.CommunicationChannelException;
-import memoryModel.topology.SquareGridTopology;
-import memoryModel.topology.Topology;
+import timingAnalysis.topology.SquareGridTopology;
+import timingAnalysis.topology.Topology;
 import util.Matrix;
 import work.Manager;
 import work.WorkerInstantiationException;
@@ -19,7 +19,7 @@ public class TimedManager extends Manager {
     private final int p;
     private final int problemSize;
     private final Matrix<TimedWorker> timedWorkers;
-    private final TimingAnalysisMemoryController timingAnalysisMemoryController;
+    private final TimedCommunicationManager timedCommunicationManager;
 
     /**
      * Decorates a passed Manager object with functionality to measure the computation time and estimate the
@@ -41,10 +41,10 @@ public class TimedManager extends Manager {
         // We decorate the memory controller with timing analyses functionality
         Topology topology = memoryTopology.apply(this.p);
         this.timedWorkers = new Matrix<>(this.p);
-        this.timingAnalysisMemoryController = new TimingAnalysisMemoryController(manager.getMemoryController(),
+        this.timedCommunicationManager = new TimedCommunicationManager(manager.getCommunicationManager(),
                 this.timedWorkers, topology, multiprocessorAttributes);
         // then use it instead of the existing one with dynamic dispatch
-        this.setMemoryController(this.timingAnalysisMemoryController);
+        this.setCommunicationManager(this.timedCommunicationManager);
 
         // decorate all the workers with timing behaviour
         for (int i = 0; i < this.p; i++) {
@@ -67,7 +67,7 @@ public class TimedManager extends Manager {
     }
 
     public TimingAnalysisResult getTimingAnalysisResult() {
-        return new TimingAnalysisResult(this.timingAnalysisMemoryController, this.problemSize);
+        return new TimingAnalysisResult(this.timedCommunicationManager, this.problemSize);
     }
 
     public static void main(String[] args) {

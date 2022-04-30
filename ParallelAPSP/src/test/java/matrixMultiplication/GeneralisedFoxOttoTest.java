@@ -1,10 +1,7 @@
 package matrixMultiplication;
 
-import APSPSolver.APSPSolver;
-import APSPSolver.RepeatedMatrixSquaring;
-import graphReader.GraphReader;
 import memoryModel.CommunicationChannelException;
-import memoryModel.topology.SquareGridTopology;
+import timingAnalysis.topology.SquareGridTopology;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import timingAnalysis.MultiprocessorAttributes;
@@ -15,7 +12,6 @@ import work.Manager;
 import work.WorkerInstantiationException;
 import work.WorkersFailedToCompleteException;
 
-import java.text.ParseException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;

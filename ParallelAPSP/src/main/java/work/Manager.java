@@ -1,15 +1,12 @@
 package work;
 
 import memoryModel.*;
-import memoryModel.topology.SquareGridTopology;
-import memoryModel.topology.Topology;
 import util.Matrix;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.*;
-import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -27,7 +24,7 @@ public class Manager {
 
     private final Class<? extends Worker> algorithm;
 
-    private MemoryController memoryController;
+    private CommunicationManager communicationManager;
     private final Matrix<PrivateMemory> privateMemoryMatrix;
     private final Matrix<Worker> workers;
 
@@ -45,7 +42,7 @@ public class Manager {
         this.n = manager.n;
         this.p = manager.p;
         this.numComputationPhases = manager.numComputationPhases;
-        this.memoryController = manager.memoryController;
+        this.communicationManager = manager.communicationManager;
         this.privateMemoryMatrix = manager.privateMemoryMatrix;
         this.executorService = manager.executorService;
         this.workers = manager.workers;
@@ -91,11 +88,11 @@ public class Manager {
         // TODO: refactor to make privateMemoryMatrix be local variable, and don't use as field
         //       also consider not referecing PrivateMemory at all, but set the worker's memory after created
 
-        this.memoryController = new MemoryController(this.p, this.privateMemoryMatrix);
+        this.communicationManager = new CommunicationManager(this.p, this.privateMemoryMatrix);
 
         // set up the worker factory
         WorkerFactory workerFactory = new WorkerFactory(workerClass);
-        workerFactory.init(this.memoryController);
+        workerFactory.init(this.communicationManager);
 
         // and create all the workers
         this.workers = new Matrix<>(this.p);
@@ -248,7 +245,7 @@ public class Manager {
             LOGGER.log(Level.FINER, "Manager is starting communicationBefore phase {0}", l);
             workerFutures = startWorkerExecution(l, Worker.WorkerPhases.COMMUNICATION_BEFORE);
             checkForWorkerFailure(workerFutures);
-            this.memoryController.flush();
+            this.communicationManager.flush();
 
             // COMPUTATION phase (no exception can be thrown here)
             LOGGER.log(Level.FINER, "Manager is starting computation phase {0}", l);
@@ -263,7 +260,7 @@ public class Manager {
             LOGGER.log(Level.FINER, "Manager is starting communicationAfter phase {0}", l);
             workerFutures = startWorkerExecution(l, Worker.WorkerPhases.COMMUNICATION_AFTER);
             checkForWorkerFailure(workerFutures);
-            this.memoryController.flush();
+            this.communicationManager.flush();
         }
 
         LOGGER.log(Level.INFO, "Manager has completed {0} phases of work.", this.numComputationPhases);
@@ -329,8 +326,8 @@ public class Manager {
         this.workers.set(i, j, worker);
     }
 
-    public MemoryController getMemoryController() {
-        return this.memoryController;
+    public CommunicationManager getCommunicationManager() {
+        return this.communicationManager;
     }
 
     /**
@@ -341,17 +338,17 @@ public class Manager {
      * so we can't have a setter for the memoryController. Instead, we must recreate the worker with a new memoryController
      * reference, which is what we do here.
      *
-     * @param memoryController the new memory controller
+     * @param communicationManager the new memory controller
      * @throws WorkerInstantiationException if the worker factory fails
      */
-    public void setMemoryController(MemoryController memoryController) throws WorkerInstantiationException {
+    public void setCommunicationManager(CommunicationManager communicationManager) throws WorkerInstantiationException {
         // set the self reference
-        this.memoryController = memoryController;
+        this.communicationManager = communicationManager;
 
         // TODO: maybe a setter in the Worker actually works as well, and the reason for it not working earlier
         //       was just the manager.Method fluke instead of this.Method on the TimedManager constructor?
         WorkerFactory workerFactory = new WorkerFactory(this.algorithm);
-        workerFactory.init(memoryController);
+        workerFactory.init(communicationManager);
         for (int i = 0; i < this.p; i++) {
             for (int j = 0; j < this.p; j++) {
                 Worker newWorker = workerFactory.createWorker(i, j, this.p, this.n, this.numComputationPhases,

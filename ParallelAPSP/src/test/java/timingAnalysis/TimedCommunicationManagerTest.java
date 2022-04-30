@@ -3,7 +3,7 @@ package timingAnalysis;
 import graphReader.GraphReader;
 import matrixMultiplication.GeneralisedFoxOtto;
 import memoryModel.CommunicationChannelException;
-import memoryModel.topology.SquareGridTopology;
+import timingAnalysis.topology.SquareGridTopology;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import timingAnalysis.testWorkers.TestWorker1;
@@ -18,7 +18,7 @@ import java.util.logging.Logger;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class TimingAnalysisMemoryControllerTest {
+class TimedCommunicationManagerTest {
 
     private static final Logger LOGGER = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
     private static final MultiprocessorAttributes dummyFastProcessor = new MultiprocessorAttributes(

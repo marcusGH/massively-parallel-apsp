@@ -3,22 +3,19 @@ package timingAnalysis;
 import javafx.util.Pair;
 import memoryModel.CommunicationChannelCongestionException;
 import memoryModel.InconsistentCommunicationChannelUsageException;
-import memoryModel.MemoryController;
-import memoryModel.topology.Topology;
+import memoryModel.CommunicationManager;
+import timingAnalysis.topology.Topology;
 import util.Matrix;
 
-import javax.management.MBeanAttributeInfo;
 import java.util.*;
 
 /**
- * TODO: rename the class
- *
  * Simulates the communication dependencies in a MIMD multiprocessor.  When wrapping this class around a
  * memoryController, it will keep track of the simulates real-time state of each of the passed timedWorkers.
  *
  * The state of the processing elements is represented by a matrix of times, {@code currentWorkerTimes}. Entry (i, j)
  * in the matrix represents the number of nanoseconds PE(i, j) has been running for since the start of computation,
- * counting both computation and communication time. This state is updated every time {@link MemoryController#flush()}
+ * counting both computation and communication time. This state is updated every time {@link CommunicationManager#flush()}
  * is called. The update happens as follows:
  * <ul>
  *     <li>The measured computation time for PE(i, j) is added to the currentWorkerTimes</li>
@@ -30,10 +27,8 @@ import java.util.*;
  *         currentWorkerTimes.</li>
  * </ul>
  *
- * TODO: rename this class
- *
  */
-public class TimingAnalysisMemoryController extends MemoryController {
+public class TimedCommunicationManager extends CommunicationManager {
 
     // processing element grid size
     private final int p;
@@ -63,16 +58,16 @@ public class TimingAnalysisMemoryController extends MemoryController {
 
     /**
      *
-     * @param memoryController this memory controller should be the same one used by the timedWorkers.
+     * @param communicationManager this memory controller should be the same one used by the timedWorkers.
      *                         Otherwise, behaviour is undefined.
      * @param timedWorkers
      * @param memoryTopology
      * @param multiprocessorAttributes
      */
-    public TimingAnalysisMemoryController(MemoryController memoryController, Matrix<TimedWorker> timedWorkers,
-                                          Topology memoryTopology, MultiprocessorAttributes multiprocessorAttributes) {
-        super(memoryController);
-        this.p = memoryController.getProcessingElementGridSize();
+    public TimedCommunicationManager(CommunicationManager communicationManager, Matrix<TimedWorker> timedWorkers,
+                                     Topology memoryTopology, MultiprocessorAttributes multiprocessorAttributes) {
+        super(communicationManager);
+        this.p = communicationManager.getProcessingElementGridSize();
         this.timedWorkers = timedWorkers;
         this.memoryTopology = memoryTopology;
         this.multiprocessorAttributes = multiprocessorAttributes;
@@ -124,7 +119,7 @@ public class TimingAnalysisMemoryController extends MemoryController {
      * transfers originating from each node, and the "cost" associated with each of these. When later computating the
      * communication cost, we would then take the maximum of the "sum of send-costs".
      *
-     * For functionality, see {@link MemoryController#sendData(int, int, int, int, Number)}
+     * For functionality, see {@link CommunicationManager#sendData(int, int, int, int, Number)}
      */
     @Override
     public void sendData(int sendI, int sendJ, int receiveI, int receiveJ, Number value) throws CommunicationChannelCongestionException {

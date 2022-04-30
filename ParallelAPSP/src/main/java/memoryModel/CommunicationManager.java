@@ -1,14 +1,10 @@
 package memoryModel;
 
 import javafx.util.Pair;
-import jdk.jshell.spi.ExecutionControl;
-import memoryModel.topology.SquareGridTopology;
-import memoryModel.topology.Topology;
 import util.Matrix;
 import util.Triple;
 
 import java.util.*;
-import java.util.function.Function;
 import java.util.logging.Logger;
 
 // TODO: switch from synchronised to thread-safe queues etc.
@@ -44,7 +40,7 @@ import java.util.logging.Logger;
  * memoryController that it wants to receive some data, and how this received data should be stored.
  * </p>
  */
-public class MemoryController {
+public class CommunicationManager {
 
     private static final Logger LOGGER = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
 
@@ -76,10 +72,10 @@ public class MemoryController {
 
     /**
      * This constructor does not make a deep-copy of the provided object, but rather reuses its private memories.
-     * @param memoryController
+     * @param communicationManager
      */
-    public MemoryController(MemoryController memoryController) {
-        this(memoryController.getProcessingElementGridSize(), memoryController.getPrivateMemories());
+    public CommunicationManager(CommunicationManager communicationManager) {
+        this(communicationManager.getProcessingElementGridSize(), communicationManager.getPrivateMemories());
     }
 
     /**
@@ -90,7 +86,7 @@ public class MemoryController {
      * @param p a positive integer
      * @param privateMemories a matrix of private memories of type T
      */
-    public MemoryController(int p, Matrix<PrivateMemory> privateMemories) {
+    public CommunicationManager(int p, Matrix<PrivateMemory> privateMemories) {
         this.p = p;
         this.privateMemories = privateMemories;
 

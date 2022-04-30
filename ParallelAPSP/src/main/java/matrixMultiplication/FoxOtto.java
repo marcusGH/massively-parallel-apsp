@@ -1,7 +1,7 @@
 package matrixMultiplication;
 
 import memoryModel.CommunicationChannelCongestionException;
-import memoryModel.MemoryController;
+import memoryModel.CommunicationManager;
 import memoryModel.PrivateMemory;
 
 import java.lang.management.ManagementFactory;
@@ -31,8 +31,8 @@ import java.lang.management.ThreadMXBean;
  */
 public class FoxOtto extends MinPlusProduct {
 
-    public FoxOtto(int i, int j, int p, int n, int numPhases, PrivateMemory privateMemory, MemoryController memoryController) {
-        super(i, j, p, n, numPhases, privateMemory, memoryController);
+    public FoxOtto(int i, int j, int p, int n, int numPhases, PrivateMemory privateMemory, CommunicationManager communicationManager) {
+        super(i, j, p, n, numPhases, privateMemory, communicationManager);
     }
 
     /**
@@ -42,7 +42,7 @@ public class FoxOtto extends MinPlusProduct {
      * "P" -> element P[i, j] of predecessor matrix
      */
     @Override
-    public void initialise() {
+    public void initialisation() {
         // This is not the first management of this worker, so recall input (see main-loop in RepeatedMatrixSquaring)
         if (presentInMemory("dist")) {
             store("A", read("dist"));
@@ -114,7 +114,7 @@ public class FoxOtto extends MinPlusProduct {
         pm.set("B", 3.14);
         pm.set("P", 5);
         FoxOtto worker = new FoxOtto(4, 3, 6, 6, 6, pm, null);
-        worker.initialise();
+        worker.initialisation();
         ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
         long timeBefore = threadMXBean.getCurrentThreadCpuTime();
         for (int i = 0; i < num_iters; i++) {

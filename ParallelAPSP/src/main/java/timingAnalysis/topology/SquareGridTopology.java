@@ -1,4 +1,4 @@
-package memoryModel.topology;
+package timingAnalysis.topology;
 
 import java.lang.Math;
 

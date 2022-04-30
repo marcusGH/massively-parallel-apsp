@@ -6,8 +6,9 @@ import graphReader.GraphReader;
 import matrixMultiplication.FoxOtto;
 import matrixMultiplication.GeneralisedFoxOtto;
 import matrixMultiplication.MinPlusProduct;
-import memoryModel.topology.SquareGridTopology;
-import memoryModel.topology.Topology;
+import memoryModel.CommunicationManager;
+import timingAnalysis.topology.SquareGridTopology;
+import timingAnalysis.topology.Topology;
 import util.LoggerFormatter;
 import util.Matrix;
 import work.Manager;
@@ -31,7 +32,7 @@ public class TimedRepeatedMatrixSquaring extends RepeatedMatrixSquaring {
 
     /**
      * Performs the same functionality as {@link RepeatedMatrixSquaring}, but with additional timing functionality.
-     * This driver will decorate the {@link memoryModel.MemoryController}, {@link work.Manager}, and all the
+     * This driver will decorate the {@link CommunicationManager}, {@link work.Manager}, and all the
      * {@link work.Worker}s such that during execution, the computation time of the workers are measured and the
      * time required to handle the communication between them is estimated. After {@link TimedRepeatedMatrixSquaring#solve()}
      * is called, the timing analyses can be retrieved with {@link TimedRepeatedMatrixSquaring#getTimingAnalysisResults()}.

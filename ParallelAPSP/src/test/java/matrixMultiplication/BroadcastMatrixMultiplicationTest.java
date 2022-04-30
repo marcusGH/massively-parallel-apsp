@@ -1,7 +1,6 @@
 package matrixMultiplication;
 
 import memoryModel.CommunicationChannelException;
-import memoryModel.topology.SquareGridTopology;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import util.LoggerFormatter;

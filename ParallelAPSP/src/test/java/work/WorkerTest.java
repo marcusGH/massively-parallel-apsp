@@ -1,7 +1,7 @@
 package work;
 
 import memoryModel.CommunicationChannelCongestionException;
-import memoryModel.MemoryController;
+import memoryModel.CommunicationManager;
 import memoryModel.PrivateMemory;
 import org.junit.jupiter.api.Test;
 
@@ -56,13 +56,13 @@ class WorkerTest {
 class ComputationOnlyWorker extends Worker {
     private final Runnable computation;
 
-    public ComputationOnlyWorker(int i, int j, int p, int n, int numPhases, PrivateMemory privateMemory, MemoryController memoryController, Runnable computation) {
-        super(i, j, p, n, numPhases, privateMemory, memoryController);
+    public ComputationOnlyWorker(int i, int j, int p, int n, int numPhases, PrivateMemory privateMemory, CommunicationManager communicationManager, Runnable computation) {
+        super(i, j, p, n, numPhases, privateMemory, communicationManager);
         this.computation = computation;
     }
 
     @Override
-    public void initialise() { }
+    public void initialisation() { }
 
     @Override
     public void computation(int l) {
@@ -78,12 +78,12 @@ class ComputationOnlyWorker extends Worker {
 
 class SimpleComputationWorker extends Worker {
 
-    public SimpleComputationWorker(int i, int j, int p, int n, int numPhases, PrivateMemory privateMemory, MemoryController memoryController) {
-        super(i, j, p, n, numPhases, privateMemory, memoryController);
+    public SimpleComputationWorker(int i, int j, int p, int n, int numPhases, PrivateMemory privateMemory, CommunicationManager communicationManager) {
+        super(i, j, p, n, numPhases, privateMemory, communicationManager);
     }
 
     @Override
-    public void initialise() { }
+    public void initialisation() { }
 
     /**
      * Stores in C the sum of all the values in private memory location (0, l) for all l

@@ -1,7 +1,7 @@
 package matrixMultiplication;
 
 import memoryModel.CommunicationChannelCongestionException;
-import memoryModel.MemoryController;
+import memoryModel.CommunicationManager;
 import memoryModel.PrivateMemory;
 import work.Worker;
 
@@ -11,12 +11,12 @@ import work.Worker;
  */
 public class BroadcastMatrixMultiplication extends Worker {
 
-    public BroadcastMatrixMultiplication(int i, int j, int p, int n, int numPhases, PrivateMemory privateMemory, MemoryController memoryController) {
-        super(i, j, p, n, numPhases, privateMemory, memoryController);
+    public BroadcastMatrixMultiplication(int i, int j, int p, int n, int numPhases, PrivateMemory privateMemory, CommunicationManager communicationManager) {
+        super(i, j, p, n, numPhases, privateMemory, communicationManager);
     }
 
     @Override
-    public void initialise() {
+    public void initialisation() {
 
     }
 

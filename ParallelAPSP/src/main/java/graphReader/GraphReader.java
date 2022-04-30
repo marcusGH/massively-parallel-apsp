@@ -272,7 +272,7 @@ public class GraphReader {
     public static void main(String[] args) {
         try {
 //            GraphReader gr = new GraphReader("../datasets/small-example.cedge");
-            GraphReader gr = new GraphReader("../datasets/OL.cedge", false);
+            GraphReader gr = new GraphReader("../datasets/OL-but-smaller.cedge", false);
 //            GraphCompressor gc = new GraphCompressor(gr);
 //            gr = gc.getCompressedGraph();
             gr.printSummary();

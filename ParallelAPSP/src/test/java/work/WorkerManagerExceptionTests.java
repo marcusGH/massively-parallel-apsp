@@ -3,9 +3,8 @@ package work;
 import jdk.jfr.Description;
 import memoryModel.CommunicationChannelCongestionException;
 import memoryModel.CommunicationChannelException;
-import memoryModel.MemoryController;
+import memoryModel.CommunicationManager;
 import memoryModel.PrivateMemory;
-import memoryModel.topology.SquareGridTopology;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import util.LoggerFormatter;
@@ -136,12 +135,12 @@ class WorkerManagerExceptionTests {
  */
 class EmptyWorker extends Worker {
 
-    public EmptyWorker(int i, int j, int p, int n, int numPhases, PrivateMemory privateMemory, MemoryController memoryController) {
-        super(i, j, p, n, numPhases, privateMemory, memoryController);
+    public EmptyWorker(int i, int j, int p, int n, int numPhases, PrivateMemory privateMemory, CommunicationManager communicationManager) {
+        super(i, j, p, n, numPhases, privateMemory, communicationManager);
     }
 
     @Override
-    public void initialise() { }
+    public void initialisation() { }
 
     @Override
     public void computation(int l) { }
@@ -156,12 +155,12 @@ class EmptyWorker extends Worker {
 class FailingWorker extends Worker {
     public static int highestPhase = 0;
 
-    public FailingWorker(int i, int j, int p, int n, int numPhases, PrivateMemory privateMemory, MemoryController memoryController) {
-        super(i, j, p, n, numPhases, privateMemory, memoryController);
+    public FailingWorker(int i, int j, int p, int n, int numPhases, PrivateMemory privateMemory, CommunicationManager communicationManager) {
+        super(i, j, p, n, numPhases, privateMemory, communicationManager);
     }
 
     @Override
-    public void initialise() { }
+    public void initialisation() { }
 
     @Override
     public void computation(int l) {
@@ -191,12 +190,12 @@ class FailingWorker extends Worker {
 class InconsistentWorker extends Worker {
     public static int highestPhase = 0;
 
-    public InconsistentWorker(int i, int j, int p, int n, int numPhases, PrivateMemory privateMemory, MemoryController memoryController) {
-        super(i, j, p, n, numPhases, privateMemory, memoryController);
+    public InconsistentWorker(int i, int j, int p, int n, int numPhases, PrivateMemory privateMemory, CommunicationManager communicationManager) {
+        super(i, j, p, n, numPhases, privateMemory, communicationManager);
     }
 
     @Override
-    public void initialise() { }
+    public void initialisation() { }
 
     @Override
     public void computation(int l) {

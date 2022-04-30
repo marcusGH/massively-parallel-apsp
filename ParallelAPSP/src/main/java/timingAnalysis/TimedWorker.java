@@ -36,8 +36,8 @@ public class TimedWorker extends Worker {
     }
 
     @Override
-    public void initialise() {
-        worker.initialise();
+    public void initialisation() {
+        worker.initialisation();
     }
 
     @Override

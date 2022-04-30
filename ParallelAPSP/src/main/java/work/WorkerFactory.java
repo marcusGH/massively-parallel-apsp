@@ -1,6 +1,6 @@
 package work;
 
-import memoryModel.MemoryController;
+import memoryModel.CommunicationManager;
 import memoryModel.PrivateMemory;
 
 import java.lang.reflect.Constructor;
@@ -11,7 +11,7 @@ import java.util.logging.Logger;
 public class WorkerFactory {
     private static final Logger LOGGER = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
 
-    private MemoryController memoryController;
+    private CommunicationManager communicationManager;
     private final Constructor<?> workerConstructor;
 
     /**
@@ -39,13 +39,13 @@ public class WorkerFactory {
      * Initialises the fields of the objects that are shared by all workers. This method should only be called once
      * and must be executed before {@link #createWorker} is called.
      *
-     * @param memoryController the memory controller
+     * @param communicationManager the memory controller
      */
-    void init(MemoryController memoryController) {
-        if (null == memoryController) {
+    void init(CommunicationManager communicationManager) {
+        if (null == communicationManager) {
             throw new IllegalArgumentException("A memory controller reference must be provided");
         } else {
-            this.memoryController = memoryController;
+            this.communicationManager = communicationManager;
         }
     }
 
@@ -62,7 +62,7 @@ public class WorkerFactory {
      */
     Worker createWorker(int i, int j, int p, int n, int numPhases, PrivateMemory privateMemory) throws WorkerInstantiationException {
         try {
-            return (Worker) this.workerConstructor.newInstance(i, j, p, n, numPhases, privateMemory, this.memoryController);
+            return (Worker) this.workerConstructor.newInstance(i, j, p, n, numPhases, privateMemory, this.communicationManager);
         } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
             e.printStackTrace();
             throw new WorkerInstantiationException(String.format("Failed to instantiate Worker(%d, %d).", i, j));

@@ -1,11 +1,8 @@
 package matrixMultiplication;
 
 import memoryModel.CommunicationChannelCongestionException;
-import memoryModel.MemoryController;
+import memoryModel.CommunicationManager;
 import memoryModel.PrivateMemory;
-
-import java.lang.management.ManagementFactory;
-import java.lang.management.ThreadMXBean;
 
 /**
  * This class implements the min-plus matrix product computation, and can be used by passing the class to a
@@ -33,8 +30,8 @@ public class GeneralisedFoxOtto extends MinPlusProduct {
 
     private final int subMatrixSize;
 
-    public GeneralisedFoxOtto(int i, int j, int p, int n, int numPhases, PrivateMemory privateMemory, MemoryController memoryController) {
-        super(i, j, p, n, numPhases, privateMemory, memoryController);
+    public GeneralisedFoxOtto(int i, int j, int p, int n, int numPhases, PrivateMemory privateMemory, CommunicationManager communicationManager) {
+        super(i, j, p, n, numPhases, privateMemory, communicationManager);
         this.subMatrixSize = n / p;
     }
 
@@ -45,7 +42,7 @@ public class GeneralisedFoxOtto extends MinPlusProduct {
      * "P" -> element P[i, j] of predecessor matrix
      */
     @Override
-    public void initialise() {
+    public void initialisation() {
         for (int i2 = 0; i2 < subMatrixSize; i2++) {
             for (int j2 = 0; j2 < subMatrixSize; j2++) {
                 // This is not the first management phase, so reinitialize input with result from

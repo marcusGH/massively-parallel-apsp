@@ -1,13 +1,12 @@
 package main;
 
 import APSPSolver.APSPSolver;
-import APSPSolver.RepeatedMatrixSquaring;
 import graphReader.GraphCompressor;
 import graphReader.GraphReader;
 import matrixMultiplication.GeneralisedFoxOtto;
 import matrixMultiplication.MinPlusProduct;
-import memoryModel.topology.SquareGridTopology;
-import memoryModel.topology.Topology;
+import timingAnalysis.topology.SquareGridTopology;
+import timingAnalysis.topology.Topology;
 import org.junit.jupiter.api.BeforeAll;
 import timingAnalysis.MultiprocessorAttributes;
 import timingAnalysis.TimedRepeatedMatrixSquaring;
@@ -15,7 +14,6 @@ import util.LoggerFormatter;
 
 import java.io.IOException;
 import java.text.ParseException;
-import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
 import java.util.logging.Level;
