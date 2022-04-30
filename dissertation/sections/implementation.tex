@@ -1153,9 +1153,19 @@ map back the result. To do this, extra bookkeeping during graph compression is
 needed. For each compressed node, we store a map to its two junctions, the list of
 nodes in the paths to the junctions, and the length of these paths. Additionally,
 with each compression edge, we store the list of compressed nodes.
+
+\begin{figure}[ht]
+\begin{center}
+    \includegraphics[scale=1]{figs/compression-diagram.pdf}
+\end{center}
+\caption{A graph}
+\label{fig:compression-diagram}
+\end{figure}
+
+
 To answer an \ac{APSP} query $p \rightsquigarrow q$
 on the original graph, we visualise the graph as
-shown in. % TODO: make diagram and add reference
+shown in \autoref{fig:compression-diagram}.
 We have 5 cases, each of which gives different queries to the original graph:
 \begin{enumerate}
     \item Nodes $p$ and $q$ are on the same compressed chain, in which case

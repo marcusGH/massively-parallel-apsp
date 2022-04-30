@@ -73,7 +73,13 @@ extent for a comparable purpose.
 
 \tableofcontents
 
+% Put them on the same pages
 \listoffigures
+\begingroup
+\let\clearpage\relax
+\let\cleardoublepage\relax
+\listoftables
+\endgroup
 
 %%%%%%%%%%%%%%%%%%%%%  Acronyms %%%%%%%%%%%%%%%%%%%%%
 \newpage % TODO: Is it okay to put this in the proforma? Or put in appendix?

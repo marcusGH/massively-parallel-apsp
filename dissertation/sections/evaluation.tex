@@ -5,6 +5,22 @@
 % TODO: Instead of seperate unit test section, just add it as a figure somewhere
 %       with a sufficiently long caption explaining everything
 
+In this chapter, I review the software produced in the implementation phase.
+I relate systems and algorithms built to the success criteria in the project
+proposal, and describe how the work done exceeds what I initially set out to do.
+This is done by looking at the \ac{MatSquare} algorithm, the parallel system
+built, and the optimisations applied.
+I review the tests I conducted to assert correctness. Then I proceed to
+discuss the advantage of parallel computation for solving \ac{APSP}, where
+I demonstrate that the benefit is large, even for different types of parallel
+computers and number of \acp{PE}.
+
+
+
+% TODO: intro to three types of computer, then write something about Cal,
+%   possibly limits to evaluation as would expect linear decrease and higher
+%   efficeincy for the earlier ones looking at the trends
+
 % ** Other points **
 % All unit tests passed (screenshot)
 % Some points to show:
@@ -69,6 +85,16 @@ is a lot easier to prove the correctness of compared to the \ac{MatSquare}
 algorithm. I then ran this and my algorithm and asserted the equality of the
 results for all vertex-pairs. This was done in a unit test for reproducibility,
 and was done for both the regular and generalised version of the algorithm.
+
+\begin{wrapfigure}{r}{0.47\textwidth}
+\begin{center}
+    \vspace{-15pt}
+    \includegraphics[scale=.4]{figs/unit-test-success.png}
+\end{center}
+\caption[Unit tests]{A screenshot showing all the unit tests written and that they passed.}
+\label{fig:unit-test}
+\vspace{-10pt}
+\end{wrapfigure}
 
 I also successfully extended the project with the graph compression optimisation.
 Arbitrary undirected graphs can be compressed through removal of two-degree nodes,
@@ -213,6 +239,17 @@ TODO
 \subsection{Choice of communication parameters}%
 \label{sub:Choice of communication parameters}
 
+By basing the communication constants on real hardware, we can draw more
+applicable conclusions. For the parallel system simulation to estimate the
+message-passing delay, we must specify a latency and bandwidth. As we reviewed
+in \autoref{sec:Parallel computing}, there are many classes of parallel computers,
+ranging from multi-core processors to different computers communicating over the
+Internet. To get a sense of what the parallelism benefit is for this whole range,
+we consider the two extremes and a supercomputer in-between. We consider three
+real-life systems within each of these three classes, and use their communication
+constants. The values chosen are summarised in
+\autoref{tab:communication-constants}.
+
 % Sandy bridge
 \paragraph{Multi-core processor}%
 \label{par:Multi-core processor}
@@ -310,6 +347,22 @@ Western Europe, which is 90.56~Mbps \cite{broadband}.
 \subsection{Advantage of parallel computation for solving APSP}%
 \label{sub: of parallel computation for solving APSP}
 
+\begin{figure}[t]
+    \centering
+    \subfigure[Total time]{%
+        \label{fig:california-total-time}%
+        \centering%
+        \includegraphics[scale=1]{figs/plots/total-time-california.pdf}%
+        }%
+    \subfigure[Computation ratio]{%
+        \label{fig:california-ratio}%
+        \includegraphics[scale=1]{figs/plots/bucket-california.pdf}%
+    }%
+    \caption{Compressed California road network $|V|=1408$}%
+    \label{fig:california-plot}
+\end{figure}
+
+
 Introduction. For the multi-core and supercomputer configuration, we see that
 the total execution time plot is flat or step-wise-like for small problem sizes,
 especially for large \ac{PE} layouts. For example, the execution time is constant
@@ -357,6 +410,35 @@ dominate, we total execution time starts increasing in a similar manner to that
 in figures \ref{fig:main-plot-fig-a} and \ref{fig:main-plot-fig-b}. Therefore,
 we would expect the $128 \times 128$ configuration to overtake all the smaller
 ones eventually.
+
+% }}}
+
+% Summary
+% Summary {{{
+\section{Summary}%
+\label{sec:Summary}
+
+In this chapter, I showed how the project met and exceeded the success criteria.
+The parallel system simulation was showed to work well through unit tests, and
+the interface it provides was very easy to work with. I demonstrated the correctness of the main algorithm of the project, and used timing measurements to prove the benefits of parallel computation for solving \ac{APSP} on real-world-like graphs on a wide range of different parallel systems.
+
+% The success criteria for creating parallel APSP algorithm and reconstructing
+% paths was successfull, MatSquare. And I asserted its correctness with several
+% unit tests
+% Also successfully implemented graph compression optimisation, which has large
+% gains in time-saving when executed on Californian road network.
+% Also minimized the data movement.
+%
+% An efficient parallel simulation of a parallel system was implemented, and
+% it provides an expressive interface to the programmer. Using this, I paralleised
+% the MatSquare algorithm and tested it.
+%
+% Communication constants based on three three parallel systems of different
+% types.
+%
+% Both the supercomputer and multi-core processors quickly achieve high parallel
+% efficiency, meaning we benefit from parallel computation. For internet,
+% takes a bit longer, but get same effect at this point
 
 % }}}
 

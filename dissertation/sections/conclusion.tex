@@ -4,6 +4,59 @@
 
 This chapter is empty!
 
-Potential for further time complexity savings by using sparse
-matrix multiplication because very sparse road networks \cite{sparseMatMul}.
+
+% Results 
+% Results {{{
+\section{Results}%
+\label{sec:Results}
+
+As shown in \autoref{sec:Parallel simulation}, the project has met all the
+success criteria related to developing an efficient simulation of a parallel
+system. A parallel algorithm, \ac{MatSquare}, was developed using the interface
+the simulation provided. This algorithm meets all the success criteria that was
+initially outlined, and exceeded these through further optimisations.
+Additionally, the analysis of the algorithm's execution proved the final
+success criteria, and went beyond by considering different classes of
+parallel computation.
+
+% }}}
+
+% Lessons learnt {{{
+\section{Lessons learnt}%
+\label{sec:Lessons learnt}
+
+Using the proper tools, such as an IDE for writing Java code and \texttt{git} for
+doing revision control, helped immensely with keeping implementation productive.
+Additionally, creating UML diagrams before writing any code also made managing
+the large project easier, allowing more time for writing code than trying to
+figure out how components piece together.
+
+During development, I was often fixated on minor aspects of the parallel
+simulation interface, which did not end up having much value when writing the
+parallel \ac{MatSquare} algorithm. This caused the interface to have more
+functionality than required, and this added development time would be better
+spent on extension work.
+
+% }}}
+
+% Future work {{{
+\section{Future work}%
+\label{sec:Future work}
+
+The input graphs used in the dissertation were very sparse. This could be exploited
+to reduce the time complexity by using parallel matrix multiplication techniques
+designed for sparse matrices, such as what \citeauthor{sparseMatMul} propose
+\cite{sparseMatMul}.
+
+I also only considered one algorithm for solving \ac{APSP}. It would be interesting
+to implement others on the simulation framework and compare how they scale on different types of parallel systems.
+
+Another interesting extension would be to implement the algorithm on real
+parallel hardware, such as a FPGA, and compare its execution times with the
+simulated counterpart.
+
+% }}}
+
+
+
 
