@@ -137,3 +137,75 @@ abstract = {We discuss algorithms for matrix multiplication on a concurrent proc
     journal = {Proceedings of the 23rd International Symposium on the Mathematical Foundations of Computer Science (MFCS-98), Springer, 722-731 (1998)},
     doi = {10.1007/BFb0055823}
 }
+
+@article{berntsen,
+    title = {Communication efficient matrix multiplication on hypercubes},
+    journal = {Parallel Computing},
+    volume = {12},
+    number = {3},
+    pages = {335-342},
+    year = {1989},
+    issn = {0167-8191},
+    doi = {https://doi.org/10.1016/0167-8191(89)90091-4},
+    url = {https://www.sciencedirect.com/science/article/pii/0167819189900914},
+    author = {Jarle Berntsen},
+    keywords = {Matrix multiplication, hypercubes, communication overhead, block algorithms},
+}
+
+@article{astar,
+  author    = {Alex Fukunaga and
+               Adi Botea and
+               Yuu Jinnai and
+               Akihiro Kishimoto},
+  title     = {A Survey of Parallel {A}},
+  journal   = {CoRR},
+  volume    = {abs/1708.05296},
+  year      = {2017},
+  url       = {http://arxiv.org/abs/1708.05296},
+  eprinttype = {arXiv},
+  eprint    = {1708.05296},
+  timestamp = {Mon, 13 Aug 2018 16:47:38 +0200},
+  biburl    = {https://dblp.org/rec/journals/corr/abs-1708-05296.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@article{floydScale,
+    title = {Scalable All-pairs Shortest Paths for Huge Graphs on Multi-GPU Clusters},
+    author = {Sao, Piyush and Lu, Hao and Kannan, Ramakrishnan and Thakkar, Vijay and Vuduc, Richard and Potok, Thomas},
+    doi = {},
+    url = {https://www.osti.gov/biblio/1814306}, journal = {},
+    place = {United States},
+    year = {2020},
+    month = {06}
+} 
+
+@article{scalability,
+    title = {Scalability of parallel algorithms for the all-pairs shortest-path problem},
+    journal = {Journal of Parallel and Distributed Computing},
+    volume = {13},
+    number = {2},
+    pages = {124-138},
+    year = {1991},
+    issn = {0743-7315},
+    doi = {https://doi.org/10.1016/0743-7315(91)90083-L},
+    url = {https://www.sciencedirect.com/science/article/pii/074373159190083L},
+    author = {Vipin Kumar and Vineet Singh},
+}
+
+@inproceedings{experimentalAnalysis,
+    author = {Kim, Jong Wook and Choi, Hyoeun and Bae, Seung-Hee},
+    title = {Efficient Parallel All-Pairs Shortest Paths Algorithm for Complex Graph Analysis},
+    year = {2018},
+    isbn = {9781450365239},
+    publisher = {Association for Computing Machinery},
+    address = {New York, NY, USA},
+    url = {https://doi.org/10.1145/3229710.3229730},
+    doi = {10.1145/3229710.3229730},
+    abstract = {The all-pairs shortest path problem is a classic problem to study characteristics of the given graphs. Though many efficient all-pairs shortest path algorithms have been published, it is still a very expensive computing task, especially with large graph datasets. In this paper, we propose an efficient parallel all-pairs shortest path algorithm based on Peng et al.'s fast sequential algorithm on shared-memory parallel environments to achieve faster and more efficient calculation for large-scale real-world networks. Peng et al.'s algorithm needs to sort vertices with respect to their degrees. However, it turns out the original algorithm uses less efficient sorting method, which is a significant portion of parallel overhead. Therefore, we also propose an efficient parallel method to sort data within a fixed range, in order to minimize the parallel overhead in our parallel algorithm. The optimized efficient sorting method can be used for general sorting purposes. Our experimental analysis shows that our proposed parallel algorithm achieves very high parallel speedup, even hyper-linear speedup, with real-world test datasets on two different shared-memory multi-core systems.},
+    booktitle = {Proceedings of the 47th International Conference on Parallel Processing Companion},
+    articleno = {5},
+    numpages = {10},
+    keywords = {Shared-memory parallelism, Parallel Algorithms, All-pairs shortest paths},
+    location = {Eugene, OR, USA},
+    series = {ICPP '18}
+}

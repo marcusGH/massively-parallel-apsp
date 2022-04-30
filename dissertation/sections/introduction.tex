@@ -2,19 +2,129 @@
 \documentclass[../diss.tex]{subfiles}
 \chapter{Introduction}
 
-\section{Project structure}%
-\label{sec:Project structure}
+% Clear motiviation, justing potential benefits of success
+% How does work fit into areae of compsci
+% related work
+% Aim for 500 words here...
 
-\section{Motivation}%
+% intro to intro, one sentence descriving whole project; implemented simulator, then developed algo on top, tested on different graphs, random and also a large california real world dataset, tested and evaluated
+
+% speeding up computation with parallelism:
+% * stop to moore's law, but multiple processors have more agg. performance per
+%   power consumption
+% * many different kind of parallel systems common today
+% * given a sequential algorithm to solve a problem, limit to how efficiently
+%   utilize resources, compiler optimisations, limtied beneift
+% * need to redesign algorithm with parallelism in mind
+
+% why APSP:
+% * pathfinding usable in many different domains, planning routes in transport
+%   networks, route packets across internet to minimize some metric, planning
+%   actions in AI
+
+% something about how large benefit is when large problem sizes, but keep
+% parallel system same
+\section{Motivation \& aims}%
 \label{sec:Motivation}
 
-\subsection{Parallel algorithms}%
-\label{sub:Parallel algorithms}
+\subsection{Parallel computation}%
+\label{sub:Parallel computation}
 
-They are cool.
+Since the 1970s, there has been a yearly exponential increase in the
+number of transistors in integrated circuits, thanks to Moore's law.
+% cite https://www.karlrupp.net/2018/02/42-years-of-microprocessor-trend-data/
+However, around 2006, Dennard scaling started to break down, which meant that
+the increase in transitory density did not directly translate to an increase in
+performance per watt on a single processor
+% cite https://users.cs.duke.edu/~lkw34/papers/dennard-ieee2007.pdf
+As a result, performance improvements had to be achieved through other means.
+The innovation of multi-core processors allowed the aggregated performance per
+watt to keep increasing by combing many \acf{PE}. Today, there are a
+huge variety of different parallel systems.
+
+Designing algorithms to explore the computational resources of parallel systems
+is important. To fully utilise the computational power of these new systems to
+increase performance, a new kind of algorithms must be considered.  Given a
+serial algorithm that solves a problem, there is a limit to how much
+performance increase automatic parallelisation can achieve. Therefore, the
+performance of such algorithms will not scale well with the current trends in
+processor manufacturing. Instead, we should go back to the problem to be solved
+and rethink an algorithm with parallel computation in mind. That way, we can
+utilise the available \acp{PE} fully and increase performance to a higher
+degree.
 
 \subsection{The all-pairs shortest path problem}%
 \label{sub:The all-pairs shortest path problem}
 
-% The \acrfull{apsp} problem is famous, but why is it called \acrshort{apsp}?
-The \ac{APSP} problem is famous, but why is it called \ac{APSP}?
+In the shortest path problem, the goal is finding the \textit{shortest path} in
+a graph $G=(V,E,w)$ from a source vertex $i$ to a sink vertex $j$. In the
+\ac{APSP} variant of the problem, we want to find the shortest paths between
+all pairs of vertices $(i,j) \in V^2$. By working with weighted graphs, a
+path-finding algorithm can be applied in many different areas. For example, it
+can be used for planning routes in transport networks, route packets across the
+Internet to maximise some given metric, or planning a robot's movement.
+
+\subsection{Related work and proposed analysis}%
+\label{sub:Related work}
+
+There is a plethora of different parallel algorithms to solve route-planning
+problems \cite{astar,parallelDijkstra,floydScale,scalability,experimentalAnalysis}.
+However, the evaluation of the proposed or surveyed
+algorithms differ greatly from paper to paper. In some research, the analysis
+of how the execution time scales with the problem is mostly based on 
+the algorithm's asymptotic complexity
+\cite{scalability,parallelDijkstra}. \citeauthor{experimentalAnalysis} and
+\citeauthor{floydScale} have analysed the performance of the algorithms through
+experimental measures, but they did not run them on more than 256 \acp{PE}.
+Additionally, their test graphs very dense, randomly generated graphs, not based
+on real-world graphs such as road-networks.
+
+This project aims to analyse the scaling of a parallel algorithm for solving
+\ac{APSP} on real-world-like graphs, using a simulation of a parallel system
+with a massive number of \acp{PE}. The project will also investigate
+the benefit of parallel execution for different problem sizes and parallel
+systems, considering both the number of \acp{PE} and the class of the parallel
+system.
+
+
+% attemts at paralleising route-planning algorithms
+% A*: https://arxiv.org/abs/1708.05296
+% Dijkstra \cite{parallelDijkstra}
+% FloydWarshall: servlets purl one
+
+% also many paralleisation of matrix multiplication
+% berntsen, 
+
+% also work on analysing how well these algorithm scale, but mostly based on
+% models created from the asymptotic complexity of the algorithms:
+% 
+% theoretical predictions on performance scalability
+% https://www.sciencedirect.com/science/article/pii/074373159190083L?via%3Dihub
+% parallelDijkstra
+% or experimental, but limited in number of processing elements
+% \cite{experimentalAnalysis,floydScale}
+% https://www.osti.gov/servlets/purl/1814306
+% https://dl.acm.org/doi/abs/10.1145/3229710.3229730
+
+
+% Use a small number of threads (< 50)
+% All the way up to 256, but use dense random graphs ??? not real-world graphs?
+% https://www.osti.gov/servlets/purl/1814306
+% Mostly focused on asynptotic time analysis
+% parallel dijkstra
+% http://ilpubs.stanford.edu:8090/59/1/1994-25.pdf
+% \cite{berntsen}
+
+% Overview of the whole dissertation
+% * summary of work completed
+% * (structure of how worked as done, mixing prep. and implm.)
+% * roadmap for dissertation, how go about presenting work, what is in diff. chaps
+% * s
+
+\section{Project structure}%
+\label{sec:Project structure}
+
+
+In the Preparation chapter,
+% TODO: add points to go here
+
