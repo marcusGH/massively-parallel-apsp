@@ -18,12 +18,25 @@
 % Repo overview figure
 % Repostory overview figure {{{
 
-\begin{figure}[t]
+\begin{figure}[htp]
 \begin{center}
     \begin{adjustbox}{valign=t}
     \begin{forest}
         dirtree,
-        [ParallelAPSP/src/main/java/
+        [part-ii-project/
+        [scripts/
+            [graph-extractor.py]
+            [download-spatial-datasets.sh]
+            [random-graphs.py]
+        ]
+        [evaluation/
+            [evaluation.py]
+        ]
+        [ParallelAPSP/src/
+        [test/java/
+            [$\dots$]
+        ]
+        [main/java/
         [APSPSolver/
             [APSPSolver.java]
             [RepeatedMatrixSquaring.java]
@@ -42,21 +55,26 @@
             [GeneralisedFoxOtto.java]
             [MinPlusProduct.java]
         ]
-        [memoryModel/
-            [CommunicationChannel-\\{ }CongestionException.java]
-            [CommunicationChannel-\\{ }Exception.java]
-            [InconsistentCommunication-\\{ }ChannelUsageException.java]
-            [CommunicationManager.java]
-            [PrivateMemory.java]
+        [util/
+        [LoggerFormatter.java]
+        [Matrix.java]
+        [Triple.java]
         ]
         [$\vdots$, dots]
-        ]
+        ]]]
     \end{forest}
 \end{adjustbox}%\qquad
 \begin{adjustbox}{valign=t}
     \begin{forest}
         dirtree,
         [\,$\vdots$
+        [memoryModel/
+        [CommunicationChannel-\\{ }CongestionException.java]
+        [CommunicationChannel-\\{ }Exception.java]
+        [InconsistentCommunication-\\{ }ChannelUsageException.java]
+        [CommunicationManager.java]
+        [PrivateMemory.java]
+        ]
             [timingAnalysis/
                 [MultiprocessorAttributes.java]
                 [Timed-\\{ }CommunicationManager.java]
@@ -68,11 +86,6 @@
                     [Topology.java]
                     [SquaeGridTopology.java]
                 ]
-            ]
-            [util/
-                [LoggerFormatter.java]
-                [Matrix.java]
-                [Triple.java]
             ]
             [work/
                 [Manager.java]
@@ -93,7 +106,20 @@
 
 % }}}
 
-Some kind of introduction, referring to the code repository goes here...
+This chapter elaborates on how the requirements laid out in
+\autoref{sec:Requirements analysis} were accomplished.
+The final codebase, as shown in \autoref{fig:repo-overview}, ended up containing
+about TODO lines of Java code. There were also several unit tests, but these are
+reviewed in the Evaluation chapter. 
+First, we cover the input graphs used in \autoref{sec:Graph datasets}. We then
+move onto \autoref{sec:Simulation of a distributed memory multiprocessor}, where
+I explain how a parallel system is simulated using the \texttt{work} and
+\texttt{memoryModel} package, and how its execution time is simulated with
+the \texttt{timingAnalysis} package. Afterwards, in \autoref{sec:APSP via repeated matrix-squaring} I elaborate how a parallel
+\ac{APSP} algorithm is built on top of the simulator using the
+\texttt{APSPSolver} and \texttt{matrixSquaring} package.
+Finally, we cover an optimisation made in the \texttt{graphReader} package in
+\autoref{sec:Graph compression}.
 
 % Some "practices used/software dev.? chapter":
 % * Weekly meetings, log book,
@@ -144,6 +170,31 @@ execution time of the algorithm for a wide range of evenly spaced inputs.
 \subsubsection{Choice of parameter $p$}%
 \label{ssub:Choice of parameter $p$}
 
+\begin{wraptable}{r}{0.46\textwidth}
+    \vspace{-10pt}
+    \centering
+    \begin{tabular}{|m{0.28\textwidth}|m{0.11\textwidth}|}
+        \hline
+        \textbf{Location} & \textbf{Average vertex degree} \\
+        \hline
+        San-Francisco (SF) &  2.549 \\
+        \hline
+        North-America (NA) & 2.038 \\
+        \hline
+        City of Oldenburg (OL) & 2.305 \\
+        \hline
+        California (cal) & 2.061 \\
+        \hline
+        California (compressed) & 2.945 \\
+        \hline
+        City of San Joaquin (TG) & 2.614 \\
+        \hline
+    \end{tabular}%
+    \caption[Short title in brackets]{Average vertex degree for various road-network datasets\footnotemark.}%
+    \label{tab:vertex-degree}
+    \vspace{-10pt}
+\end{wraptable}
+
 The random graphs are not real-world graphs, but we can set the parameter $p$
 such that the Erd{\"o}s-R{\'e}nyi graphs are as similar as possible to
 real-world road networks. This will make the evaluation results more
@@ -180,29 +231,6 @@ to 700 nodes for use in evaluation%
 \footnote{To get a sense of scaling for both small and large problem sizes,
 the graphs were of sizes: \texttt{10,20,30,40,50,60,70,80,90,100,
 150,200,250,300,350,400,450,500,550,600,650,700}}.
-
-\begin{table}
-    \centering
-    \begin{tabular}{|c|c|}
-        \hline
-        \textbf{Location} & \textbf{Average vertex degree} \\
-        \hline
-        San-Francisco (SF) &  2.549 \\
-        \hline
-        North-America (NA) & 2.038 \\
-        \hline
-        City of Oldenburg (OL) & 2.305 \\
-        \hline
-        California (cal) & 2.061 \\
-        \hline
-        California (compressed) & 2.945 \\
-        \hline
-        City of San Joaquin (TG) & 2.614 \\
-        \hline
-    \end{tabular}%
-    \caption[Short title in brackets]{Average vertex degree for various road-network datasets\footnotemark.}%
-    \label{tab:vertex-degree}
-\end{table}
 
 \footnotetext{These values were computed using the 
 \texttt{printSummary} method in the \texttt{GraphReader} class.}
@@ -301,7 +329,7 @@ using the decorator pattern.
 % TODO: add comment that Manager runs whatever methods on the worker objects it has
 % TODO: also add number annotations, showing how many of each they have
 % TODO: shorten width of ComMan, so that can have some blue on the side
-\begin{figure}[h]
+\begin{figure}[htp]
 \begin{center}
     \includegraphics[scale=1]{figs/parallel-system-simulation.pdf}
 \end{center}
@@ -702,7 +730,6 @@ the decorators. % TODO: Some of this is a bit fluffy, and can probably be reduce
 % * As explain, also use a simple graph as an example, going through as you do the
 %   general explanation
 % APSP via repeated matrix-squaring {{{
-\newpage % TODO: fix this later
 \section{APSP via repeated matrix-squaring}%
 \label{sec:APSP via repeated matrix-squaring}
 
@@ -712,9 +739,10 @@ the decorators. % TODO: Some of this is a bit fluffy, and can probably be reduce
     \centering
     \vspace{-10pt}
     \includegraphics[scale=1]{figs/example-apsp-graph.pdf}
-    \vspace{-10pt}
+    \vspace{-20pt}
     \caption{An example of a directed graph with 7 vertices.}%
     \label{fig:example-graph}
+    \vspace{-10pt}
 \end{wrapfigure}
 
 % TODO: Introduction paragraph
@@ -766,7 +794,7 @@ graph in \autoref{fig:example-graph} to better illustrate how it works.
                 }
             }
         \end{algorithm}
-        \vspace{-30pt}
+        \vspace{-15pt}
     \end{minipage}
 \end{wrapfigure}
 
@@ -907,16 +935,6 @@ stop because $M_{pred}[0,0]=0$.
 \subsubsection{Parallelising MatSquare with FoxOtto}%
 \label{ssub:Parallelising MatSquare with FoxOtto}
 
-\begin{wrapfigure}{r}{0.42\textwidth}
-    \centering
-    \fontsize{7pt}{7pt}
-    \vspace{-10pt}
-    \import{figs/}{fox-otto-diagram.pdf_tex}%
-    \vspace{-10pt}
-    \caption{Message-passing pattern used in the Fox-Otto technique.}%
-    \label{fig:fox}
-\end{wrapfigure}
-
 We will now look at how to parallelise the matrix multiplication step and
 associated assignments in lines 6--14 of \autoref{alg:matsquare}. I describe a
 parallel algorithm to perform the operations of a single iteration of the
@@ -931,6 +949,69 @@ We also let $P$ be the predecessor matrix $M_{pred}$.
 After the parallel procedure, these three matrices should be updated according
 to lines 7--13 in \autoref{alg:matsquare}.
 
+\begin{algorithm}[htp]
+    \caption{Generalised Fox-Otto execution at processing element $p_{i,j}$}%
+    \label{alg:foxOtto}
+    \SetKwInOut{Parameter}{Parameter}
+    \SetKwInOut{Data}{Data}
+    \SetKwInOut{Result}{Result}
+    \Data{$A_{const}',B',P'$}
+    \Parameter{problem size $n$, PE grid size $p$, subMatrixSize $n'=\lceil n/p\rceil$,}
+    \Result{$M_{dist}^{(l)},M_{pred}^{(l)}$}
+
+    \tcp{ ** Initialisation phase **}
+    $M_{dist}' \gets n' \times n' \textrm{ matrix}$\;
+    $M_{pred}' \gets n' \times n' \textrm{ matrix}$\;
+    \For{$0 \leq i_2,j_2 < n'$}{
+        $M_{pred}'[i_2,j_2] \gets j$\;
+        $M_{dist}'[i_2,j_2] \gets \infty$\;
+    }
+
+    \For{phase number $l = 0$ to $p-1$}{
+
+        \tcp{ ** CommunicationBefore phase $l$ **}
+
+        \If{$j = (i + l) \mod p$}{
+            \texttt{broadcastRow(}$A_{const}'$\texttt{)}\;
+        }
+        \tcp{ ** Computation phase $l$ **}
+        \For{$0 \leq i_2,j_2 < n'$}{
+            \tcp{We start with $m$ s.t. $k=i'$ at $l=0$, which causes shorter}
+            \tcp{paths from the previous squaring to be considered first.}
+            \tcp{This is necessary to get the predecessor right.}
+            \For{$m=i_2,i_2+1, \dots n'-1, 0, 1, \dots, i_2-1$}{
+
+
+                \tcp{In this iteration, we compute A[i', k] + B[k, j'], where}
+                $k \gets (n' \cdot (i+l) + m) \mod n$\;
+                $i' \gets i \cdot n' + i_2$\;
+                $j' \gets j \cdot n' + j_2$\;
+                \tcp{Distance product}
+                $d_{new} \gets A'[i_2,m] + B'[m,j_2]$\;
+
+                \If{$d_{new} < M_{dist}'[i_2,j_2]$}{
+                    $M_{dist}'[i_2,j_2] \gets d_{new}$\;
+                    \tcp{If $k=j'$, the path $k \rightarrow j'$ will be a self-loop, so}
+                    \tcp{we should not update the predecessor}
+                    \If{$k \neq j'$}{
+                        \tcp{The cell $P'[m,j_2]$ holds $P_{k,j'}$}
+                        $M_{pred}'[i_2,j_2] \gets P'[m,j_2]$\;
+                    }
+                }
+            }
+        }
+        \tcp{ ** ComunicationAfter phase $l$ **}
+        \texttt{send(}$p+i-1 \mod p$\texttt{, }$j$\texttt{, }$B'$\texttt{)}\;
+        \texttt{send(}$p+i-1 \mod p$\texttt{, }$j$\texttt{, }$P'$\texttt{)}\;
+    }
+    % (subMatrixSize * (i + l) + iter) % n !=
+    %  subMatrixSize * j + j2
+    %
+    %  if not (j2 == iter
+    %      and j == (i + l) mod n)
+    %     update
+\end{algorithm}
+
 To parallelise the procedure, we distribute the data $A$, $B$, and $P$ 
 evenly among the $p^2$ \acp{PE} by dividing them up into submatrices of size
 $\lceil n / p \rceil \times \lceil n / p \rceil$. For example, \ac{PE} with
@@ -943,6 +1024,16 @@ as the submatrices each \ac{PE} currently holds, but that are shifted around
 in communication phases. Each \ac{PE} also holds an additional copy of the
 initial $A'$, called $A'_{const}$ that is not moved around.
 
+\begin{wrapfigure}{r}{0.42\textwidth}
+    \vspace{-5pt}
+    \centering
+    \fontsize{7pt}{7pt}
+    \vspace{-10pt}
+    \import{figs/}{fox-otto-diagram.pdf_tex}%
+    \vspace{-10pt}
+    \caption{Message-passing pattern used in the Fox-Otto technique.}%
+    \label{fig:fox}
+\end{wrapfigure}
 
 If we consider the computation of a single entry in the distance product as in
 \autoref{eq:distanceProduct}, we notice that the order of products $A_{i',j}
@@ -974,69 +1065,6 @@ on lines 19--21 very similar to what is done in lines 10--12 in
 
 % Conclusion where explain time complexity and memory complexity
 % and relate this to $p$, and what complexity is then...
-
-\begin{algorithm}
-    \caption{Generalised Fox-Otto execution at processing element $p_{i,j}$}%
-\label{alg:foxOtto}
-\SetKwInOut{Parameter}{Parameter}
-\SetKwInOut{Data}{Data}
-\SetKwInOut{Result}{Result}
-\Data{$A_{const}',B',P'$}
-\Parameter{problem size $n$, PE grid size $p$, subMatrixSize $n'=\lceil n/p\rceil$,}
-\Result{$M_{dist}^{(l)},M_{pred}^{(l)}$}
-
-\tcp{ ** Initialisation phase **}
-$M_{dist}' \gets n' \times n' \textrm{ matrix}$\;
-$M_{pred}' \gets n' \times n' \textrm{ matrix}$\;
-\For{$0 \leq i_2,j_2 < n'$}{
-    $M_{pred}'[i_2,j_2] \gets j$\;
-    $M_{dist}'[i_2,j_2] \gets \infty$\;
-}
-
-\For{phase number $l = 0$ to $p-1$}{
-
-    \tcp{ ** CommunicationBefore phase $l$ **}
-
-    \If{$j = (i + l) \mod p$}{
-        \texttt{broadcastRow(}$A_{const}'$\texttt{)}\;
-    }
-    \tcp{ ** Computation phase $l$ **}
-    \For{$0 \leq i_2,j_2 < n'$}{
-    \tcp{We start with $m$ s.t. $k=i'$ at $l=0$, which causes shorter}
-    \tcp{paths from the previous squaring to be considered first.}
-    \tcp{This is necessary to get the predecessor right.}
-        \For{$m=i_2,i_2+1, \dots n'-1, 0, 1, \dots, i_2-1$}{
-
-
-            \tcp{In this iteration, we compute A[i', k] + B[k, j'], where}
-            $k \gets (n' \cdot (i+l) + m) \mod n$\;
-            $i' \gets i \cdot n' + i_2$\;
-            $j' \gets j \cdot n' + j_2$\;
-            \tcp{Distance product}
-            $d_{new} \gets A'[i_2,m] + B'[m,j_2]$\;
-
-            \If{$d_{new} < M_{dist}'[i_2,j_2]$}{
-                $M_{dist}'[i_2,j_2] \gets d_{new}$\;
-                \tcp{If $k=j'$, the path $k \rightarrow j'$ will be a self-loop, so}
-                \tcp{we should not update the predecessor}
-                \If{$k \neq j'$}{
-                    \tcp{The cell $P'[m,j_2]$ holds $P_{k,j'}$}
-                    $M_{pred}'[i_2,j_2] \gets P'[m,j_2]$\;
-                }
-            }
-        }
-    }
-    \tcp{ ** ComunicationAfter phase $l$ **}
-    \texttt{send(}$p+i-1 \mod p$\texttt{, }$j$\texttt{, }$B'$\texttt{)}\;
-    \texttt{send(}$p+i-1 \mod p$\texttt{, }$j$\texttt{, }$P'$\texttt{)}\;
-}
-% (subMatrixSize * (i + l) + iter) % n !=
-%  subMatrixSize * j + j2
-%
-%  if not (j2 == iter
-%      and j == (i + l) mod n)
-%     update
-\end{algorithm}
 
 % Notes from reserach-and-planning diary:
 % **Problem with generalized FoxOtto**:
@@ -1122,6 +1150,13 @@ network, we have massive gains.
     \label{tab:size-reduction}
 \end{table}
 
+\begin{wrapfigure}{r}{0.36\textwidth}
+    \includegraphics[scale=1]{figs/compression-notation.pdf}
+    \caption{Graph before and after compression.}%
+    \label{fig:compression-notation}%
+    \vspace{-10pt}
+\end{wrapfigure}
+
 We compress the graph by removing all nodes with exactly two neighbours, and
 the corresponding edges. We refer to a contiguous sequence of such compressed
 nodes as a \textit{(compressed) chain}, and compensate for its removal by
@@ -1139,13 +1174,6 @@ $(p,q) \in E$, then the compressed graph will be a have two different edges
 between $p$ and $q$. In this case, we only keep the edge with the lowest
 weight, discarding the other.
 
-\begin{wrapfigure}{r}{0.36\textwidth}
-    \includegraphics[scale=1]{figs/compression-notation.pdf}
-    \caption{Graph before and after compression.}%
-    \label{fig:compression-notation}%
-    \vspace{-10pt}
-\end{wrapfigure}
-
 To get any benefit from running some \ac{APSP} algorithm, like the
 \ac{MatSquare} algorithm, on the compressed graph, we must be able to map path
 queries for the original graph to queries on the compressed graph, and then
@@ -1154,14 +1182,13 @@ needed. For each compressed node, we store a map to its two junctions, the list 
 nodes in the paths to the junctions, and the length of these paths. Additionally,
 with each compression edge, we store the list of compressed nodes.
 
-\begin{figure}[ht]
-\begin{center}
-    \includegraphics[scale=1]{figs/compression-diagram.pdf}
-\end{center}
-\caption{A graph}
-\label{fig:compression-diagram}
+\begin{figure}[htp]
+    \begin{center}
+        \includegraphics[scale=1]{figs/compression-diagram.pdf}
+    \end{center}
+    \caption{A graph}
+    \label{fig:compression-diagram}
 \end{figure}
-
 
 To answer an \ac{APSP} query $p \rightsquigarrow q$
 on the original graph, we visualise the graph as
@@ -1194,5 +1221,25 @@ graph. This is done by going through each edge, and swapping the compression
 edges out for the list of edges that were compressed.
 
 % }}}
+
+% Summary
+% Summary {{{
+\section{Summary}%
+\label{sec:Summary}
+
+In this chapter, I explained the components implemented throughout the project.
+I discussed the datasets used as input. Then I went into depth on how I
+implemented a simulation of a parallel system, which met the requirements
+outlined in \autoref{sec:Requirements analysis}. The
+timing-estimation-functionality exceeded what was initially proposed, and the
+interface for writing parallel programs was very successful.  I then explained
+the \ac{MatSquare} algorithm, by first considering a high-level overview of it,
+followed by an in-depth description of how the computation was parallelised.
+Lastly, I looked at an optimisation that could significantly reduce the
+computation time required for solving \ac{APSP} on sparse graphs.
+
+% }}}
+
+
 
 % vim: foldmethod=marker

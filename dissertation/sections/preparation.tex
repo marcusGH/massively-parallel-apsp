@@ -2,7 +2,15 @@
 \documentclass[../diss.tex]{subfiles}
 \chapter{Preparation}
 
-Introduction goes here.
+This chapter gives an overview of work that was completed before any code was
+written. This includes theory surrounding parallel computing
+(\autoref{sec:Parallel computing}) and computing shortest paths through matrix
+multiplication (\autoref{sec:APSP algorithm}). It also includes the planning
+the components of the implementation, done through making up assumptions
+explicit (\autoref{sec:Parallel architecture assumptions}) and outline the
+requirements (\autoref{sec:Requirements analysis}).  Lastly, I go over the
+tools used (\autoref{sec:Choice of tools}) and the techniques used for
+productive and manageable development (\autoref{sec:Software engineering}).
 
 % Parallel computing (400 words?):
 % * Flynn's taxonomy
@@ -543,10 +551,18 @@ unit-tested.
 
 % }}}
 
-% Conclusion
-% Conclusion {{{
-\section{Conclusion}%
-\label{sec:Conclusion}
+% Summary
+% Summary {{{
+\section{Summary}%
+\label{sec:Summary}
+
+In this chapter, I reviewed work done before code was written.
+I presented a brief overview of different classes of parallel
+systems and the concept behind the \ac{APSP} algorithm.
+I also laid out the requirements for the different parts of the project,
+emphasising the assumptions made about the parallel system to be simulated.
+Then I outlined the choice of tools and techniques to be used during
+development.
 
 % }}}
 

@@ -222,10 +222,12 @@ are any faults in the parallel distance product subroutine.
         \hfill%
         \includegraphics{figs/plots/ratio-bucket-internet-half-scale.pdf}
     }%
-    \caption{In the left column, the total execution time of \ac{MatSquare} is
-        plotted for different different input graphs with $n=|V|$ vertices.
-        In the right column, computation ratios are grouped by the number of
-        rows and columns in the sub-matrix each PE is responsible for.}
+    \caption{To the left, the total execution time of \ac{MatSquare} is
+        plotted for different graphs with $n=|V|$ vertices.  To the right, I
+        group computation ratios by the size of the sub-matrix each \ac{PE} is
+        responsible for.  Confidence intervals are omitted from the left plots
+        because they are mostly negligible, but can be found in
+    \autoref{sec:Error bars} in the appendix.}
     \label{fig:main-eval-plot}
 \end{figure}
 

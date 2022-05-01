@@ -7,7 +7,18 @@
 % related work
 % Aim for 500 words here...
 
-% intro to intro, one sentence descriving whole project; implemented simulator, then developed algo on top, tested on different graphs, random and also a large california real world dataset, tested and evaluated
+% intro to intro, one sentence descriving whole project; implemented simulator,
+% then developed algo on top, tested on different graphs, random and also a
+% large california real world dataset, tested and evaluated
+The dissertation proposes using an algorithm based on matrix multiplication for
+solving \ac{APSP}, and demonstrates that parallel computation has significant
+benefit for solving route-planning problems on real-world graphs.  With this
+aim, I simulated a parallel system with characteristics based on real hardware.
+The simulator provides an expressive interface for developing parallel
+applications, which was used to implement the \ac{APSP} algorithm. I then
+evaluated the algorithm through execution time measures and other tests. The
+overall project has been a great success as both the base success criteria and
+several extensions were achieved.
 
 % speeding up computation with parallelism:
 % * stop to moore's law, but multiple processors have more agg. performance per
@@ -124,7 +135,24 @@ system.
 \section{Project structure}%
 \label{sec:Project structure}
 
+In the Preparation chapter, I give an overview on the different types of parallel
+systems as well as listing the assumptions I made for the system to be
+simulated. The concept behind the \ac{APSP} algorithm is briefly explained as well.
+Afterwards,
+I present an analysis of the requirements of each component to
+be implemented, and cover the tools and engineering techniques I will use during
+the implementation phase. 
 
-In the Preparation chapter,
-% TODO: add points to go here
+In the Implementation chapter, I cover the graph datasets used. Then I explain
+the parallel system simulation in a top-down fashion, emphasizing the interface
+it provides to the programmer. I then move onto explaining the algorithm
+for solving \ac{APSP}, how it is parallelised, and how it is further optimised
+through compression of the input graph. Before any code was written, I studied
+a lot of theory behind this algorithm, but this is presented together with
+its implementation for increased readability.
 
+In the evaluation chapter, I relate implemented components to corresponding
+success criteria. I also reference several tests used to justify the
+correctness of the software components. Afterwards, I present plots of the
+runtime measurements and use these to discuss the advantage of parallel
+computation for solving \ac{APSP}.
