@@ -9,18 +9,13 @@
 \section{Abstract algebra}%
 \label{sec:Abstract algebra}
 
-
-\chapter{Proof of some theorem}
-
-\section{Proof of that theorem}
-
-It's a tautology obviously.
+TODO
 
 % Error bars {{{
 \section{Error bars}%
 \label{sec:Error bars}
 
-Behold, the plots with error bars:
+The plots with error bars:
 
 % Sandy bridge
 \begin{figure}
@@ -55,4 +50,13 @@ Behold, the plots with error bars:
 % Project proposal
 \chapter{Project Proposal}
 
+\newlength{\originalVOffset}
+\newlength{\originalHOffset}
+\setlength{\originalVOffset}{\voffset}   
+\setlength{\originalHOffset}{\hoffset}
+
+\setlength{\voffset}{0cm}
+\setlength{\hoffset}{0cm}
+\includepdf[pages=-]{../project-proposal/proposal} \setlength{\voffset}{\originalVOffset}
+\setlength{\hoffset}{\originalHOffset}
 % \subfile{../project-proposal/proposal}

@@ -199,6 +199,12 @@ are any faults in the parallel distance product subroutine.
 \section{MatSquare timing measurements}%
 \label{sec:MatSquare timing measurements}
 
+Recalling the aim laid out in \cref{sub:Related work}
+we want to evaluate the benefit of parallel computation on
+a wide range of parallel systems. With this purpose, I justify by choice of
+communication parameters. Then I plot and discuss their effect on both
+the total execution time and the parallel efficiency achieved on a wide
+range of input graphs with real-world characteristics.
 
 \begin{figure}
     \centering
@@ -236,8 +242,6 @@ are any faults in the parallel distance product subroutine.
 % * sensitivity analysis
 % * map onto real hardware for more applicable conclusions
 % * The three models used and reference
-TODO
-
 \subsection{Choice of communication parameters}%
 \label{sub:Choice of communication parameters}
 
@@ -365,7 +369,7 @@ Western Europe, which is 90.56~Mbps \cite{broadband}.
 \end{figure}
 
 
-Introduction. For the multi-core and supercomputer configuration, we see that
+For the multi-core and supercomputer configuration, we see that
 the total execution time plot is flat or step-wise-like for small problem sizes,
 especially for large \ac{PE} layouts. For example, the execution time is constant
 for $n<100$ when we have $128 \times 128$ \acp{PE}. This is because we have
@@ -418,7 +422,7 @@ ones eventually.
 % Summary
 % Summary {{{
 \section{Summary}%
-\label{sec:Summary}
+\label{sec:Summary3}
 
 In this chapter, I showed how the project met and exceeded the success criteria.
 The parallel system simulation was showed to work well through unit tests, and

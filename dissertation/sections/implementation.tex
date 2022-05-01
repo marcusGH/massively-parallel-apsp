@@ -115,7 +115,7 @@ First, we cover the input graphs used in \autoref{sec:Graph datasets}. We then
 move onto \autoref{sec:Simulation of a distributed memory multiprocessor}, where
 I explain how a parallel system is simulated using the \texttt{work} and
 \texttt{memoryModel} package, and how its execution time is simulated with
-the \texttt{timingAnalysis} package. Afterwards, in \autoref{sec:APSP via repeated matrix-squaring} I elaborate how a parallel
+the \texttt{timingAnalysis} package. Afterwards, in \autoref{sec:APSP via repeated matrix-squaring}, I elaborate how a parallel
 \ac{APSP} algorithm is built on top of the simulator using the
 \texttt{APSPSolver} and \texttt{matrixSquaring} package.
 Finally, we cover an optimisation made in the \texttt{graphReader} package in
@@ -141,8 +141,9 @@ Finally, we cover an optimisation made in the \texttt{graphReader} package in
 
 To run the algorithms, we need graphs as input. Since one important usage of \ac{APSP}
 is route-planning, I used a dataset of the Californian road-network. This dataset was
-initially used in \citep{graph-dataset} and has been made available on the author's
-website\footnote{\url{https://www.cs.utah.edu/~lifeifei/SpatialDataset.htm}}.
+initially presented by \citeauthor{graph-dataset} and has been made available on the author's
+website\footnote{\url{https://www.cs.utah.edu/~lifeifei/SpatialDataset.htm}}
+\cite{graph-dataset}.
 % TODO: add plot of the dataset as a figure, using the python script...
 This graph was used to prove that practical problems can quickly be solved on my
 simulated parallel system, as long as graph compression is used.
@@ -205,7 +206,7 @@ distances. However, trying to generate new graphs with similar values for all
 of these metrics quickly becomes a difficult problem. I have therefore only
 tried to replicate the metric, \textit{average vertex degree}, which has
 some correlation to these metrics. I also want the random graphs
-to be fully-connected, as most road-networks are. In the $G(n,p)$ random-graph
+to be connected, as most road-networks are. In the $G(n,p)$ random-graph
 model, the number of edges follow the binomial distribution:
 \begin{equation}
     \textrm{For vertex } v \in V, \;\;\textrm{deg}(v) \sim \textrm{Binomial}(n-1,p)
@@ -218,7 +219,7 @@ and including each remaining edge independently with probability
 \begin{equation}
     p=\frac{\textrm{desired average degree} - 2}{n - 3},
 \end{equation}
-we get a fully-connected graph where the average degree is as desired.
+we get a connected graph where the average degree is as desired.
 % TODO: proof in appendix...
 
 I chose the desired average degree based on the Californian road-network, which
@@ -294,7 +295,8 @@ edges correspond to their weight\footnotemark.}%
 %   followed by another repeated execution, that diagram goes here and is
 %   refered to
 
-The parallel system simulation sprouts out from the \texttt{Worker}
+The parallel system simulation, as shown in
+\cref{fig:parallel-system-overview}, sprouts out from the \texttt{Worker}
 interface it provides. The parallel programmer can use this interface to
 implement a parallel algorithm by describing how each \acf{PE} should be
 initialised, and what computation and communication it should do in each
@@ -322,10 +324,6 @@ using the decorator pattern.
 
 % TODO: 3.23 memory model -> memory model and communication
 
-% In this "introduction 2" chapter, we explain the diagram...
-\subsection{Overview of components}%
-\label{sub:Overview of components}
-
 % TODO: add comment that Manager runs whatever methods on the worker objects it has
 % TODO: also add number annotations, showing how many of each they have
 % TODO: shorten width of ComMan, so that can have some blue on the side
@@ -333,19 +331,21 @@ using the decorator pattern.
 \begin{center}
     \includegraphics[scale=1]{figs/parallel-system-simulation.pdf}
 \end{center}
-\caption{A overview of the classes and their interaction in simulator.}
+\caption{
+    An overview of the main
+    components of the simulator and how they interact. The \texttt{Manager}
+    constructs the specified number of \texttt{Worker}s based on some provided
+    subtype, for example \texttt{FoxOtto}, using a \texttt{WorkerFactory}. When
+    \texttt{doWork()} is called, it will then run the \texttt{Worker}s through all
+    of their communication- and computation-phases, and \texttt{flush()} the
+    effects of their communication after each phase, which is done using the
+    \texttt{CommunicationManager}. The \texttt{Worker} is an abstract class
+    and provides a simple yet expressive interface for specifying
+    parallel algorithms.
+}
 \label{fig:parallel-system-overview}
 \end{figure}
 
-In \autoref{fig:parallel-system-overview}, we see an overview of the main
-components of the simulator, and how they interact. The \texttt{Manager}
-constructs the specified number of \texttt{Worker}s based on some provided
-subtype e.g.~\texttt{FoxOtto}, using a \texttt{WorkerFactory}. When
-\texttt{doWork()} is called, it will then run the \texttt{Worker}s through all
-of their communication- and computation-phases, and \texttt{flush()} the
-effects of their communication after each phase, which is done using the
-\texttt{CommunicationManager}. The \texttt{Worker} is an abstract class
-and provides a simple yet expressive interface for algorithms ....
 
 % Work management points:
 % * Diagram of how work is simulated in parallel fashion, 8 blocks at a time
@@ -365,19 +365,19 @@ their initial memory content, and what computation they should do in each phase,
 which is done by specifying the class of some implementation of
 \texttt{\textit{Worker}}. When calling \texttt{doWork()} on the manager, it will
 then run all the workers through a specified number of phases, where there is
-3 subphases in each phase. Looking at a single worker in isolation, the execution
+3 phases in each iteration. Looking at a single worker in isolation, the execution
 can be seen in \autoref{alg:execution-order}. However, these tasks are simulated
-in parallel, and we must run the same subphase of all the workers before moving
+in parallel, and we must run the same phases of all the workers before moving
 onto the next because of data dependencies. This parallel execution order is
-visualised in \autoref{fig:work-management-blocks}. After this is done, we can
-call \texttt{getResult(label)} to extract the result by combing the
+visualised in \cref{fig:work-management-blocks}. After this is done, we can
+call \texttt{getResult(label)} to extract the result by combining the
 private memory of each worker into a matrix.
 
-The worker done by each \ac{PE} is specified in subphases.  When investigating
+The work done by each \ac{PE} is specified in phases.  When investigating
 the different algorithms, as well as possible extension like Floyd-Warshall, I
 realised that they all had clear distinctions between when the \acp{PE} were
 doing computation and when they were communicating. This made forcing such a
-distinction in the interface not induce a reduction in flexibility. Instead of
+distinction in the interface not reduce flexibility. Instead of
 providing an abstract method \texttt{work}, where the programmer would themself
 create a \texttt{for}-loop and combine communication and computation, we
 provide the four methods shown in \autoref{fig:parallel-system-overview} and
@@ -394,7 +394,7 @@ execute them as shown in \autoref{alg:execution-order}.
     $\texttt{worker.initialisation()}$\;
 
 % \SetKwComment{Comment}{/* }{ */}
-\For{$l = 0 \dots \textrm{number of phases} -1$}{
+\For{$l = 0 \dots \textrm{number of iterations} -1$}{
     \texttt{worker.communicationBefore($l$)}
 
     \texttt{worker.computation($l$)}
@@ -410,14 +410,14 @@ Splitting up the work phases allows them to be represented as independent
 \texttt{Callable} tasks, which has many benefits. Firstly, it allows managing
 the workers using higher-level constructs like a Java \texttt{ExecutorService}
 rather than using Java \texttt{Thread}. We can submit all the $p^2$ tasks in a
-subphase to the executor service, and it will complete all of them without ever
-spawning more than 16\footnote{This number is configurable, but since my Laptop
-can execute 16 threads simultaneously, this was the optimal number} threads,
+phase to the executor service, and it will complete all of them without ever
+spawning more than 8 threads\footnote{This number is configurable, but since my Laptop
+can execute 8 threads simultaneously, this was the optimal number},
 which avoids a lot of overhead. Additionally, as I will explain further in the
 memory model, the side-effects of communication only happen when
 \texttt{CommunicationManager::flush} is called, so there are no data
-dependencies between \acp{PE} within a subphase, only between two different
-subphases. Therefore I do not need locking mechanisms inside the
+dependencies between \acp{PE} within a phase, only between two different
+iterations. Therefore I do not need locking mechanisms inside the
 \texttt{\textit{Worker}}, but can instead implicitly implement them by
 executing them in the order shown in \autoref{fig:work-management-blocks}.  The
 third benefit is allowing repeated execution of the same work, which gives a
@@ -452,10 +452,8 @@ add an additional parallel algorithm to the system.
 \label{sub:Memory model}
 
 % Explains string label access
-Memory is accessed through string labels. The communication
-Each \ac{PE} has its own local memory, represented by a \texttt{PrivateMemory}
-object. To make access as easy to use as possible for the programmer, access
-is done through string labels. For example, a \ac{PE} can store some values
+To make memory access simple, we use string labels.
+For example, a \ac{PE} can store some values
 at location \texttt{"A"} and then retrieve it with the same label later,
 additionally, for \acp{PE} handling a non $1\times 1$-sub-matrix, the
 local memory is arranged in a matrix where the \ac{PE} can for instance store
@@ -464,13 +462,13 @@ to for example $C_{5,9}$.
 % TODO: explain better above
 
 % Communication
-Introduction. To send for example data with point-to-point connections, both
+To send for example data with point-to-point connections, both
 the sender and recipient must call \texttt{sendData} and \texttt{receiveData},
 respectively. The \texttt{receiveData(i, j, label)} method does not return a
 value, but instead causes the recipient's memory at label \texttt{label} to be
 set to whatever value was received. This change does not happen until
 \texttt{CommunicationManager::flush()} is called, which happens in the
-synchronisation phase in ?.% TODO: reference
+synchronisation phase.% TODO: reference
 During the flushing all the sent data is matched up with corresponding calls
 to \texttt{receiveData}, and the private memories of all the recipient is
 modified by the \texttt{CommunicationManager}.
@@ -481,7 +479,7 @@ following benefits and drawbacks:
 \begin{itemize}
     \item[+] Separating the computation and communication gives implicit thread
         synchronisation, which allows using fewer \texttt{Thread}s, causing
-        less overhead (see ) % TODO: reference manager
+        less overhead in the work management. % TODO: reference manager
     \item[+] Measuring the computation time for evaluation is a lot simpler
     \item[$-$] Computation must be interleaved with a communication phase and
         we get less flexibility for algorithms where these two phases cannot
@@ -499,18 +497,23 @@ I have used. % TODO: ?
 \subsection{Estimating computation and communication times}%
 \label{sub:Estimating computation and communication times}
 
-% TODO: don't know what to name a ssub here...
+Even if we are using a simulator, we want the execution time measurements to
+be as realistic as possible. This is achieved by measuring computation time
+directly and using a communication model proposed by \citeauthor{hockney} for
+message-passing \cite{hockney}. I first cover the theory and ideas behind
+how the measurements done, then go into how this is implemented in the
+\texttt{timingAnalysis} package.
 
 % The points to introduce this sub section with are:
-* Diagram of how communication causes stalls, counted as comTime:
-  * Split up phases into the 3 things, and can use arrow to indicate which PE
-    is sending to what, and assumption on if send-before, no delay to start
-    next phase...
-* What is measured as computation time
-* The equation for estimating communication, latency + bandwitdh * w, and
-  the assumptions made behind this
+% * Diagram of how communication causes stalls, counted as comTime:
+%   * Split up phases into the 3 things, and can use arrow to indicate which PE
+%     is sending to what, and assumption on if send-before, no delay to start
+%     next phase...
+% * What is measured as computation time
+% * The equation for estimating communication, latency + bandwitdh * w, and
+%   the assumptions made behind this
 
-TODO: Cite this \cite{hockney}, for details on $\alpha + w \cdot (n^2/p^2) \cdot \beta$
+% TODO: Cite this \cite{hockney}, for details on $\alpha + w \cdot (n^2/p^2) \cdot \beta$
 
 % TODO here: First, create the above diagram and write some stuff on
 %      it, then the next task is creating a signpost introduction
@@ -539,7 +542,8 @@ each phase several times and take their average computation time.
 
 The communication time is estimated with a theoretical model. The time it takes
 to send a $s$-byte message can be modelled with $t=\alpha+\beta\cdot s$, which
-is a model that has been used in other work that ... % TODO: find reference in notebook
+is a model that has been previously used to estimate communication time
+\cite{hockney}.
 To simplify our model, I assume that the constants $\alpha$ and $\beta$ are fixed
 for all point-to-point links. Incorporating our interconnect topology, if the
 shortest distance between two nodes $i$ and $j$ is $\delta(i,j)$, then the time
@@ -569,19 +573,16 @@ $T^{(n)}_i$, then the next phase starts at
     _{\textrm{PE } i \textrm{ must stall until data has arrived}}
 \right).
 \end{equation}
-This start time and how it is affected by late senders can be visualised in
-figure % TODO: reference that figure
+
+% This start time and how it is affected by late senders can be visualised in
+% figure % TODO: reference that figure
 
 \subsubsection{The \texttt{timingAnalysis} package}
 
 The functionality for measuring the computation time of each \ac{PE} and
 estimating the communication time required for message-passing is implemented
-using the \textit{decorator} pattern. In \autoref{fig:timing-analysis-overview},
-we see an overview of the components of the \texttt{timingAnalysis} package,
-where the green classes are implemented using decoration: They extend the
-base class and only override methods related to timing, and use a reference to
-the base object to perform the original functionality in addition to the added
-timing analysis.
+using the \textit{decorator} pattern, where an overview of the components
+is shown in \cref{fig:timing-analysis-overview}.
 
 % TODO: blue background for what is part of the package....
 % TODO: refactor Topology into this package, and include in diagram
@@ -592,8 +593,10 @@ timing analysis.
 \caption{A overview of the components of the \texttt{timingAnalysis} package.
 Note that the \texttt{GeneralisedFoxOtto} and the \texttt{RepeatedMatrixSquaring}
 classes are not part of this package. Additionally, the green class diagrams with
-a yellow class inside it are short-hands for the decorator-pattern, where the
-outer class extends the yellow inner one and contains a reference to it.}
+a yellow class inside it are short-hands for the decorator-pattern: The green
+classes extend the base class, shown in yellow, and contains a reference
+to it that is used to perform the original functionality in overridden methods
+in addition to the timing analysis behaviour.}
 \label{fig:timing-analysis-overview}
 \end{figure}
 
@@ -626,22 +629,6 @@ classes are used to implement the function in \autoref{eq:send-time}, used
 whenever we compute the time it takes to send a message in
 \texttt{TimedCommunicationManager}.
 
-The main timing simulation functionality happens in
-\texttt{TimedCommunicationManager}. Here, we maintain a matrix of the simulated
-times of each \ac{PE}, starting with $T^{(0)}_{(i,j)}$ for each of the $p^2$
-\acp{PE}.  % TODO: more writing from here ....
-We then update these times whenever we advance from phase $(n)$ to phase $(n+1)$,
-with different rules depending on whether we have a communication phase or
-a computation phase. For computation phases, we simply increment the time with
-the measurement from the \texttt{TimedWorker}. For the communication phases,
-we use the formula in \autoref{eq:communication}, where we build up the sets
-$S$ and $R$ through decoration of the methods \texttt{sendData},
-\texttt{broadcastRow}, etc. We also only evaluate this formula when executing
-the decorated \texttt{flush()} method at the end of each communication phase.
-We also have separate counters for how much of this simulated execution has been
-used for communication, counting both time to send data and stalling until data
-is ready.
-
 \begin{wrapfigure}{l}{0.45\textwidth}
     \begin{minipage}{0.45\textwidth}
         \begin{algorithm}[H]
@@ -671,10 +658,27 @@ is ready.
             \texttt{computation($l$)}\;
         \end{algorithm}
     \end{minipage}
+    \vspace{-40pt}
 \end{wrapfigure}
 
+The main timing simulation functionality happens in
+\texttt{TimedCommunicationManager}. Here, we maintain a matrix of the simulated
+times of each \ac{PE}, starting with $T^{(0)}_{(i,j)}$ for each of the $p^2$
+\acp{PE}.  % TODO: more writing from here ....
+We then update these times whenever we advance from phase $(n)$ to phase $(n+1)$,
+with different rules depending on whether we have a communication phase or
+a computation phase. For computation phases, we simply increment the time with
+the measurement from the \texttt{TimedWorker}. For the communication phases,
+we use the formula in \autoref{eq:communication}, where we build up the sets
+$S$ and $R$ through decoration of the methods \texttt{sendData},
+\texttt{broadcastRow}, etc. We also only evaluate this formula when executing
+the decorated \texttt{flush()} method at the end of each communication phase.
+We also have separate counters for how much of this simulated execution has been
+used for communication, counting both time to send data and stalling until data
+is ready.
+
 In \texttt{TimedWorker}, we use a clever trick to get more accurate measures
-for the computation time, as shown in \ref{alg:timed-worker}. The read-only
+for the computation time, as shown in \cref{alg:timed-worker}. The read-only
 mode makes all side-effects of call to \texttt{Worker::store} be ignored.
 This is necessary to ensure the computation always follows the same control
 flow.  By running the unit of computation once before starting the timing,
@@ -935,6 +939,17 @@ stop because $M_{pred}[0,0]=0$.
 \subsubsection{Parallelising MatSquare with FoxOtto}%
 \label{ssub:Parallelising MatSquare with FoxOtto}
 
+\begin{wrapfigure}{r}{0.42\textwidth}
+    \vspace{-45pt}
+    \centering
+    \fontsize{7pt}{7pt}
+    \vspace{-10pt}
+    \import{figs/}{fox-otto-diagram.pdf_tex}%
+    \vspace{-10pt}
+    \caption{Message-passing pattern used in the Fox-Otto technique.}%
+    \label{fig:fox}
+\end{wrapfigure}
+
 We will now look at how to parallelise the matrix multiplication step and
 associated assignments in lines 6--14 of \autoref{alg:matsquare}. I describe a
 parallel algorithm to perform the operations of a single iteration of the
@@ -1012,28 +1027,21 @@ to lines 7--13 in \autoref{alg:matsquare}.
     %     update
 \end{algorithm}
 
+
 To parallelise the procedure, we distribute the data $A$, $B$, and $P$ 
 evenly among the $p^2$ \acp{PE} by dividing them up into submatrices of size
-$\lceil n / p \rceil \times \lceil n / p \rceil$. For example, \ac{PE} with
-id $(0,0)$ in ... would have .... $A,B,P[0\dots 1,2\dots 3]$. It would also be
+$\lceil n / p \rceil \times \lceil n / p \rceil$. For example, if we use a
+$2 \times 2$ lattice arrangement and distribute the graph in
+\cref{fig:example-graph}, the \ac{PE} with id $(0,1)$ would receive
+entries $[0\dots 3,4\dots 7]$ of matrices $A,B,P$.
+It would also be
 responsible for computing the submatrix of the distance product $A \otimes B$
 and the next predecessor matrix with the corresponding entries, that is
-$M_{dist}[0\dots 1, 2\dots 3]$. We will abbreviate the submatrix size
+$M_{dist}[0\dots 3, 4\dots 7]$. We will abbreviate the submatrix size
 $\lceil n / p \rceil$ as $n'$. Additionally, we will refer to $A',B'$ and $P'$
 as the submatrices each \ac{PE} currently holds, but that are shifted around
 in communication phases. Each \ac{PE} also holds an additional copy of the
 initial $A'$, called $A'_{const}$ that is not moved around.
-
-\begin{wrapfigure}{r}{0.42\textwidth}
-    \vspace{-5pt}
-    \centering
-    \fontsize{7pt}{7pt}
-    \vspace{-10pt}
-    \import{figs/}{fox-otto-diagram.pdf_tex}%
-    \vspace{-10pt}
-    \caption{Message-passing pattern used in the Fox-Otto technique.}%
-    \label{fig:fox}
-\end{wrapfigure}
 
 If we consider the computation of a single entry in the distance product as in
 \autoref{eq:distanceProduct}, we notice that the order of products $A_{i',j}
@@ -1048,6 +1056,14 @@ the submatrices of $B$ is shifted upwards to the next \acp{PE}. This pattern
 ensures that in the computation phases, all the \acp{PE} have access to
 matching submatrices of $A$ and $B$ in the distance product. These communication
 phases are implemented in lines 8--10 and 25--26 in \autoref{alg:foxOtto}.
+
+
+\begin{wrapfigure}{r}{0.36\textwidth}
+    \includegraphics[scale=1]{figs/compression-notation.pdf}
+    \caption{Graph before and after compression.}%
+    \label{fig:compression-notation}%
+    \vspace{-30pt}
+\end{wrapfigure}
 
 Since each \ac{PE} $p_{i,j}$ is responsible for computing a $n'\times n'$
 submatrix of $M_{dist}$ and $M_{pred}$, we have two \texttt{for}-loops on line
@@ -1150,13 +1166,6 @@ network, we have massive gains.
     \label{tab:size-reduction}
 \end{table}
 
-\begin{wrapfigure}{r}{0.36\textwidth}
-    \includegraphics[scale=1]{figs/compression-notation.pdf}
-    \caption{Graph before and after compression.}%
-    \label{fig:compression-notation}%
-    \vspace{-10pt}
-\end{wrapfigure}
-
 We compress the graph by removing all nodes with exactly two neighbours, and
 the corresponding edges. We refer to a contiguous sequence of such compressed
 nodes as a \textit{(compressed) chain}, and compensate for its removal by
@@ -1225,7 +1234,7 @@ edges out for the list of edges that were compressed.
 % Summary
 % Summary {{{
 \section{Summary}%
-\label{sec:Summary}
+\label{sec:Summary1}
 
 In this chapter, I explained the components implemented throughout the project.
 I discussed the datasets used as input. Then I went into depth on how I

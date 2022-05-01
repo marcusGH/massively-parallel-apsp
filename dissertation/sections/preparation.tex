@@ -73,7 +73,7 @@ between the \acp{PE} that allows message passing. One common approach is an
 interconnect network that can be arranged in a plethora of different
 \textit{topologies}. If the topology is not fully-connected, the messages need
 to be routed. A common network arrangement is the 2D Lattice Mesh, where there are
-$n^2$ \acp{PE} connected to each of their four orthogonal neighbours and there
+$p^2$ \acp{PE} connected to each of their four orthogonal neighbours and there
 are cyclic connection that wrap around the edges.
 In \textit{shared memory} systems, all the processors have access to a shared
 address space. Multiple  \acp{PE} can communicate by reading and writing
@@ -146,7 +146,7 @@ efficiency:
 \label{eq:parallel-efficiency}
     \varepsilon = \frac{T_1}{p T_p} = \frac{T_{computation}}{T_{computation}+T_{communication}}
 \end{equation}
-It is also easier to measure this ratio.
+It is also easier to measure this ratio of computation.
 
 % TODO: All of the above is very poorly worded. Redo this!
 % DONE: write from here, about communication and computation ratio, time where
@@ -191,7 +191,8 @@ is to run one of these algorithms on each \ac{PE}, distributing the sources.
 However, this approach does not use our parallel resources efficiently if we have
 more than $n$ \acp{PE}. To exploit this, we must either consider other algorithms
 or parallelise parts of the \ac{SSSP} computation in one of these algorithms.
-Parallel versions of these algorithms have been developed in the past,
+Parallel versions of these algorithms have been developed in the past
+\cite{parallelDijkstra,astar},
 % TODO: citation needed
 but they incur a significant overhead. I have therefore decided to use a new
 algorithm based on matrix multiplication, a highly paralleliseable task,
@@ -202,14 +203,14 @@ instead.
 
 Matrix multiplication usually happens over the \textit{semiring}\footnote{See
 appendix \autoref{sec:Abstract algebra}.} $(\mathbb{R},+,\cdot)$.
-However, by replacing addition with multiplication and  multiplication by the
+However, we replace addition with multiplication and  multiplication by the
 $\min$-operator, resulting in the tropical semiring $(\mathbb{R}^*, \cdot,\min)$,
 where we define $\mathbb{R}^* \triangleq \mathbb{R}\cup\{\infty\}$. When doing
 matrix multiplication over this algebra, we perform an operation called
 the \textit{distance product}.
 \begin{definition}
     The distance product of two matrices, $A$ and $B$, whose entries $(i,j)$
-    gives the length of the shortest path $i \rightsquigarrow j$ of length
+    give the length of the shortest path $i \rightsquigarrow j$ of length
     exactly $n$ and $m$, respectively, is a matrix $M$ whose entries $(i,j)$
     are given by
     \begin{equation}%
@@ -259,8 +260,8 @@ In this section, I will list the assumptions behind the parallel system that
 will be simulated. For the implementation to go as smoothly as possible and the
 timing evaluation to be applicable, it is important to have a clear and
 well-defined parallel system in mind. As we saw in \autoref{sec:Parallel computing}, there are many classes of parallel systems. We will hone in on a particular
-parallel system by making assumptions about its model of memory and execution,
-as well as how message passing is modelled.
+parallel system by making assumptions about its model of memory, its execution,
+and how it supports message-passing.
 
 % Regardless of system, it should have a configurable number of \acp{PE}, and
 % this number can be very high as we might want to evaluate performance with
@@ -287,7 +288,7 @@ following reasons:
 \begin{itemize}
     \item In distributed-memory systems with message passing, \ac{MIMD} is the
         most common, whereas \ac{SIMD} is most-often seen in shared-memory
-        systems.
+        systems. Simulating \ac{MIMD} thus gives more realism.
         % TODO: for this to make sense, add details on masking and on predecessor
         %    above in prepearation
     \item With \ac{SIMD}, if two or more \acp{PE} take different branches,
@@ -296,16 +297,19 @@ following reasons:
         matrix multiplication, there are no branches, but we are implementing
         a alternative matrix multiplication algorithm for the
         $(\mathbb{R}^*,\cdot,\min)$ semiring, where we also have computation for
-        finding the predecessors. This introduces possibly large branches into
+        finding the predecessors. This introduces possibly large branches in
         our inner-loop.
-    \item If simulated, this model gives the programmer more flexibility...
-        % TODO: really?
+    % flexibility?
 \end{itemize}
+In the initial plan for the project, I set out to use a na{\"i}ve simulation
+of \ac{SIMD}, where I would just average the computation time of each \ac{PE}.
+The change to a more realistic \ac{MIMD} execution model was an extension that
+was not planned for in the project proposal.
 
 \paragraph{Message passing}%
 \label{par:Message passing}
 The \acp{PE} are interconnected through point-to-point links, arranged in
-some fully-connected network topology. I will assume the \acp{PE} are laid
+some connected network topology. I will assume the \acp{PE} are laid
 out in a square lattice arrangement because the problem of matrix multiplication
 maps nicely to this. Additionally, the Fox-Otto algorithm assumes row-broadcast
 highways, so I will also assume these are available. Further, I will assume that
@@ -406,8 +410,6 @@ graph compressor to reconstruct \ac{APSP} solutions on the original graph.
 \section{Choice of tools}%
 \label{sec:Choice of tools}
 
-TODO: Mention networkX in python for graph generation
-
 We will now go over various existing software, programming languages
 and services that can aid the development. When developing and testing
 a parallel program, there are many already built tools and utilities that
@@ -430,11 +432,12 @@ creating concurrent programs as it has built-in primitives for synchronisation a
 well as classes for managing a large number of concurrent threads.
 
 For testing, I use JUnit\footnote{\url{https://junit.org}}, which is a testing
-framework for the \ac{JVM}. Since the code is modularised, this will allow me to
-create well-organised unit tests for the different modules.
-
-For plotting my evaluation results, I use python and modules like \texttt{pandas}
-and \texttt{matplotlib}.
+framework for the \ac{JVM}. Since the code is modularised, this will allow me
+to create well-organised unit tests for the different modules. To generate the
+random graphs, I use the \texttt{NetworkX} library in Python, and these graphs
+can also be visualised using a \texttt{ForceAtlas2} library.  For plotting my
+evaluation results, I use python and modules like \texttt{pandas} and
+\texttt{matplotlib}.
 
 \subsection{Development, testing and revision control}%
 \label{sub:Development, testing and revision control}
@@ -476,7 +479,7 @@ the quality of the code and spend less time on getting the Java syntax right.
 \end{table}
 
 Many courses from the Computer Science Tripos have been useful for my project,
-as seen in \autoref{tab:courses}. The unit of assessment, Advanced Data Science,
+as seen in \cref{tab:courses}. The unit of assessment, Advanced Data Science,
 has also been applicable when managing and visualising the timing data gathered
 for the evaluation.
 
@@ -554,7 +557,7 @@ unit-tested.
 % Summary
 % Summary {{{
 \section{Summary}%
-\label{sec:Summary}
+\label{sec:Summary2}
 
 In this chapter, I reviewed work done before code was written.
 I presented a brief overview of different classes of parallel
