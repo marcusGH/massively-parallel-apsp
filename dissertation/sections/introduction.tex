@@ -12,11 +12,11 @@
 % large california real world dataset, tested and evaluated
 The dissertation proposes using an algorithm based on matrix multiplication for
 solving \ac{APSP}, and demonstrates that parallel computation has significant
-benefit for solving route-planning problems on real-world graphs.  With this
-aim, I simulated a parallel system with characteristics based on real hardware.
+benefit for solving \ac{APSP}  on real-world graphs.  With this
+aim, I simulate a parallel system with characteristics based on real hardware.
 The simulator provides an expressive interface for developing parallel
-applications, which was used to implement the \ac{APSP} algorithm. I then
-evaluated the algorithm through execution time measures and other tests. The
+applications, which is used to implement the \ac{APSP} algorithm. I then
+evaluate the algorithm through execution-time measures and other tests. The
 overall project has been a great success as both the base success criteria and
 several extensions were achieved.
 
@@ -45,35 +45,35 @@ Since the 1970s, there has been a yearly exponential increase in the
 number of transistors in integrated circuits, thanks to Moore's law.
 % cite https://www.karlrupp.net/2018/02/42-years-of-microprocessor-trend-data/
 However, around 2006, Dennard scaling started to break down, which meant that
-the increase in transitory density did not directly translate to an increase in
+the increase in transistor density did not directly translate to an increase in
 performance per watt on a single processor
 % cite https://users.cs.duke.edu/~lkw34/papers/dennard-ieee2007.pdf
 As a result, performance improvements had to be achieved through other means.
 The innovation of multi-core processors allowed the aggregated performance per
-watt to keep increasing by combing many \acf{PE}. Today, there are a
-huge variety of different parallel systems.
+watt to keep increasing by combing many processing elements (\acp{PE}). 
+Today, there are various  different parallel systems.
 
-Designing algorithms to explore the computational resources of parallel systems
-is important. To fully utilise the computational power of these new systems to
-increase performance, a new kind of algorithms must be considered.  Given a
-serial algorithm that solves a problem, there is a limit to how much
-performance increase automatic parallelisation can achieve. Therefore, the
-performance of such algorithms will not scale well with the current trends in
+Designing algorithms to efficiently utilise 
+the computational resources of parallel systems
+is important. There is a limit to how much
+automatic parallelisation can increase performance of a
+serial algorithm.
+ Therefore, the performance of such algorithms will not scale well with the current trends in
 processor manufacturing. Instead, we should go back to the problem to be solved
 and rethink an algorithm with parallel computation in mind. That way, we can
-utilise the available \acp{PE} fully and increase performance to a higher
+utilise the available \acp{PE} fully and increase performance to a high
 degree.
 
 \subsection{The all-pairs shortest path problem}%
 \label{sub:The all-pairs shortest path problem}
 
 In the shortest path problem, the goal is finding the \textit{shortest path} in
-a graph $G=(V,E,w)$ from a source vertex $i$ to a sink vertex $j$. In the
+a graph $G=(V,E,w)$ from vertex $i$ to vertex $j$. In the
 \ac{APSP} variant of the problem, we want to find the shortest paths between
 all pairs of vertices $(i,j) \in V^2$. By working with weighted graphs, a
 path-finding algorithm can be applied in many different areas. For example, it
-can be used for planning routes in transport networks, route packets across the
-Internet to maximise some given metric, or planning a robot's movement.
+can be used for planning routes in transport networks, routing packets across the
+Internet according to some metric, or to plan a robot's movement.
 
 \subsection{Related work and proposed analysis}%
 \label{sub:Related work}
@@ -85,9 +85,9 @@ algorithms differ greatly from paper to paper. In some research, the analysis
 of how the execution time scales with the problem is mostly based on 
 the algorithm's asymptotic complexity
 \cite{scalability,parallelDijkstra}. \citeauthor{experimentalAnalysis} and
-\citeauthor{floydScale} have analysed the performance of the algorithms through
-experimental measures, but they did not run them on more than 256 \acp{PE}.
-Additionally, their test graphs very dense, randomly generated graphs, not based
+\citeauthor{floydScale} have analysed the performance of their algorithms through
+experiments, but they did not run them on more than 256 \acp{PE}.
+Additionally, their test graphs are dense, randomly generated graphs, not based
 on real-world graphs such as road-networks.
 
 This project aims to analyse the scaling of a parallel algorithm for solving
@@ -153,6 +153,6 @@ its implementation for increased readability.
 
 In the evaluation chapter, I relate implemented components to corresponding
 success criteria. I also reference several tests used to justify the
-correctness of the software components. Afterwards, I present plots of the
+correctness of the software produced. Afterwards, I present plots of the
 runtime measurements and use these to discuss the advantage of parallel
 computation for solving \ac{APSP}.

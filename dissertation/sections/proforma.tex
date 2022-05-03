@@ -21,6 +21,10 @@ extent for a comparable purpose.
 \medskip
 \leftline{Date: \today}
 
+\section*{Acknowledgements}
+
+TODO
+
 \chapter*{Proforma}
 
 {\large
@@ -29,19 +33,15 @@ extent for a comparable purpose.
         % College:            & \bf St John's College                     \\
         Project Title:      & \bf \dissertationtitle \\
         Examination:        & \bf Computer Science Tripos -- Part II, May 2021  \\
-        Word Count:         & \bf 11524\footnotemark[1]   \\
+        Word Count:         & \bf 11134\footnotemark[1]   \\
         Final line count : &  \bf 4081 (Java, \texttt{main/}) + 1796 (Java, \texttt{test/}) + 728 (Python) \\
         Project Originator: & \originator \\
         Supervisor:         & \supervisor                    \\
     \end{tabular}
 }
 %TC:ignore
-\footnotetext[1]{This word count was computed
-    %by \texttt{detex diss.tex | tr -cd '0-9A-Za-z $\tt\backslash$n' | wc -w}
-    by \Verb£echo "$(head -n 4 diss.tex) $(tail -n +3 -q \£
-
-    \Verb£sections/*.tex) $(tail diss.tex -n +5 -q)" | texcount -total£
-    i.e. by concatenating the subfiles and using \TeX count.
+\footnotetext[1]{This word count was computed using {\TeX}count. See
+    \cref{sec:Word count} for more details.
 }
 \stepcounter{footnote}
 %TC:endignore
@@ -49,11 +49,24 @@ extent for a comparable purpose.
 
 \section*{Original Aims of the Project}
 
-TODO
+The aim was to implement a massively
+parallel algorithm based on matrix-multiplication
+for solving all-pairs shortest paths (APSP). For this, a parallel system were to
+be simulated using Java. I would then evaluate the advantage of this parallel
+algorithm for solving APSP, and investigate how this advantage changed with
+increasing problem sizes.
 
 \section*{Work Completed}
 
-TODO
+The project was successful. All the success criteria were met, and three
+extensions were completed. I implemented a an expressive simulator of
+a massively parallel system with an interface that was simple to use. A
+parallel APSP algorithm based on matrix multiplication was then implemented
+using this interface, and was further generalised. I then extended the simulator
+with sophisticated functionality for timing execution, and optimised the algorithm
+with graph compression. Finally, I did a qualitative analysis on the benefit of
+parallel computation where I considered different types of systems and problem
+sizes.
 
 \section*{Special Difficulties}
 
@@ -67,6 +80,7 @@ None
 \let\clearpage\relax
 \let\cleardoublepage\relax
 \listoftables
+\listofalgorithms
 \endgroup
 
 %%%%%%%%%%%%%%%%%%%%%  Acronyms %%%%%%%%%%%%%%%%%%%%%
@@ -90,8 +104,3 @@ None
     \acro{OOP}{\LU{O}{o}bject-\LU{O}{o}riented \LU{P}{p}rogramming}
     \acro{JVM}{\LU{J}{J}ava virtual machine}
 \end{acronym}
-
-\newpage
-\section*{Acknowledgements}
-
-TODO
