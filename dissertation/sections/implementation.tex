@@ -353,6 +353,40 @@ the communication time is estimated using a mathematical model.
 \end{figure}
 
 
+\subsection{Memory model}%
+\label{sub:Memory model}
+
+% Explains string label access
+To make memory access simple, we use string labels.
+A \ac{PE} can then for example store a value
+at location \texttt{"A"} and then retrieve it with the same label later.
+Additionally, for \acp{PE} handling a non-$1\times 1$-submatrix, the
+local memory is arranged in a \texttt{Matrix}
+where the \ac{PE} can for example store
+values at location \texttt{(1,4,"A")} to associate it with an intermediate
+result $C_{1,4}$.
+
+% Communication
+To send point-to-point messages, both
+the sender and recipient must call \texttt{sendData} and \texttt{receiveData},
+respectively. The \texttt{receiveData(i, j, label)} method does not return a
+value, but instead modifies the recipient's memory at location \texttt{label},
+but this change does not happen until
+\texttt{CommunicationManager::flush()} is called. When sending data with
+\texttt{sendData}, \texttt{broadcastCol} or \texttt{broadcastRow}, the data
+is buffered in the \texttt{CommunicationManager}. When \texttt{flush} is called,
+all the buffered messages are matched up with corresponding calls
+to \texttt{receiveData}, and the private memories of the recipients are
+modified by the \texttt{CommunicationManager}. To prevent race conditions when
+buffering data, fine-grained locking mechanisms are used within the
+\texttt{CommunicationManager}.
+An obvious alternative to this approach is making the \texttt{receiveData} method
+return the number received, which can be done by putting the recipient
+\texttt{Worker} to sleep until data has been received. Compared with this
+approach, my approach allows cleanly separating computation and communication.
+This, as we will see in the following subsection, gives many benefits.
+
+
 % Work management points:
 % * Diagram of how work is simulated in parallel fashion, 8 blocks at a time
 % * Use Java's executor service to avoid thread management overhead
@@ -465,39 +499,6 @@ at runtime and create $p^2$ \texttt{FoxOtto}-workers, without needing
 a dedicated Fox-Otto worker factory. This simplifies the interface
 as implementing a \texttt{\textit{Worker}} is everything needed to
 add a new parallel algorithm.
-
-\subsection{Memory model}%
-\label{sub:Memory model}
-
-% Explains string label access
-To make memory access simple, we use string labels.
-A \ac{PE} can then for example store a value
-at location \texttt{"A"} and then retrieve it with the same label later.
-Additionally, for \acp{PE} handling a non-$1\times 1$-submatrix, the
-local memory is arranged in a \texttt{Matrix}
-where the \ac{PE} can for example store
-values at location \texttt{(1,4,"A")} to associate it with an intermediate
-result $C_{1,4}$.
-
-% Communication
-To send point-to-point messages, both
-the sender and recipient must call \texttt{sendData} and \texttt{receiveData},
-respectively. The \texttt{receiveData(i, j, label)} method does not return a
-value, but instead modifies the recipient's memory at location \texttt{label},
-but this change does not happen until
-\texttt{CommunicationManager::flush()} is called. When sending data with
-\texttt{sendData}, \texttt{broadcastCol} or \texttt{broadcastRow}, the data
-is buffered in the \texttt{CommunicationManager}. When \texttt{flush} is called,
-all the buffered messages are matched up with corresponding calls
-to \texttt{receiveData}, and the private memories of the recipients are
-modified by the \texttt{CommunicationManager}. To prevent race conditions when
-buffering data, fine-grained locking mechanisms are used within the
-\texttt{CommunicationManager}.
-An obvious alternative to this approach is making the \texttt{receiveData} method
-return the number received, which can be done by putting the recipient
-\texttt{Worker} to sleep until data has been received. Compared with this
-approach, my approach allows cleanly separating computation and communication.
-This, as we will see in the following subsection, gives many benefits.
 
 \subsection{Estimating computation and communication times}%
 \label{sub:Estimating computation and communication times}
