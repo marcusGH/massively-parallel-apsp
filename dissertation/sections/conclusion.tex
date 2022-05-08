@@ -8,7 +8,7 @@ evaluation of a parallel system simulator and an algorithm for solving
 expressive and efficient and the \ac{MatSquare} algorithm and its extensions
 gave correct outputs for large graphs. Furthermore, the evaluation covered
 an elaborate qualitative analysis on the benefit of parallel computation, which
-contributes to the original aims of the project---investigating the benefit of
+contributed to the original aims of the project---investigating the benefit of
 parallel computation and its extent on different parallel system and inputs.
 
 % Results
@@ -19,11 +19,12 @@ parallel computation and its extent on different parallel system and inputs.
 As shown in \autoref{sec:Parallel simulation}, the project has met all the
 success criteria related to developing an efficient simulation of a parallel
 system. A parallel algorithm, \ac{MatSquare}, was developed using the interface
-the simulation provided. This algorithm meets all the success criteria that was
-initially outlined, and exceeded these through further optimisations.
+the simulator provided. This algorithm met all the success criteria that was
+initially outlined, and exceeded these through generalisation and
+further optimisations.
 Additionally, the analysis of the algorithm's execution proved the final
 success criteria, and went beyond by considering different classes of
-parallel computation.
+parallel computers.
 
 % }}}
 
@@ -34,14 +35,13 @@ parallel computation.
 Using the proper tools, such as an IDE for writing Java code and \texttt{git} for
 doing revision control, helped immensely with keeping implementation productive.
 Additionally, creating UML diagrams before writing any code also made managing
-the large project easier, allowing more time for writing code than trying to
+the large project easier, allowing more time for writing code rather than trying to
 figure out how components piece together.
 
 During development, I was often fixated on minor aspects of the parallel
-simulation interface, which did not end up having much value when writing the
-parallel \ac{MatSquare} algorithm. This caused the interface to have more
-functionality than required, and this added development time would be better
-spent on extension work.
+simulation interface, which turned out less necessary than expected.
+Otherwise, the whole approach was educational and I learned a lot about planning
+a large project and writing parallel programs.
 
 % }}}
 
@@ -59,8 +59,14 @@ to implement others on the simulator
 and compare how they scale on different types of parallel systems.
 
 Another interesting extension would be to implement the algorithm on real
-parallel hardware, such as a FPGA, and compare its execution times with the
-simulated counterpart.
+parallel hardware, such as a \ac{FPGA}.
+
+Furthermore, the algorithm could be applied to Internet routing, where there are
+different metrics such as bandwidth and latency to optimize.
+
+Lastly, it would be interesting to explore the benefit of the graph compression and
+decompression algorithm for solving other graph optimization problems, such as the
+minimum spanning tree problem and the maximum flow problem.
 
 % }}}
 

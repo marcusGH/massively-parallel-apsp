@@ -38,8 +38,8 @@
         ]
         [main/java/
         [APSPSolver/
-            [APSPSolver.java]
-            [RepeatedMatrixSquaring.java]
+            [\textit{APSPSolver.java}]
+            [MatSquare.java]
             [SerialDijkstra.java]
         ]
         [graphReader/
@@ -53,7 +53,7 @@
             [BroadcastMatrix-\\{ }Multiplication.java]
             [FoxOtto.java]
             [GeneralisedFoxOtto.java]
-            [MinPlusProduct.java]
+            [\textit{MinPlusProduct.java}]
         ]
         [util/
         [LoggerFormatter.java]
@@ -63,7 +63,7 @@
         [$\vdots$, dots]
         ]]]
     \end{forest}
-\end{adjustbox}%\qquad
+\end{adjustbox}\qquad
 \begin{adjustbox}{valign=t}
     \begin{forest}
         dirtree,
@@ -79,31 +79,32 @@
                 [MultiprocessorAttributes.java]
                 [Timed-\\{ }CommunicationManager.java]
                 [TimedManager.java]
-                [TimedRepeatedMatrixSquaring.java]
+                [TimedMatSquare.java]
                 [TimedWorker.java]
                 [TimingAnalysisResult.java]
                 [topology/
-                    [Topology.java]
-                    [SquaeGridTopology.java]
+                    [\textit{Topology.java}]
+                    [SquareGridTopology.java]
                 ]
             ]
             [work/
                 [Manager.java]
                 [WorkerFactory.java]
                 [WorkerInstatiationException.java]
-                [Worker.java]
+                [\textit{Worker.java}]
                 [WorkersFailedToComplete-\\{ }Exception.java]
             ]
         ]
     \end{forest}
 \end{adjustbox}
 \end{center}
-\caption[Repository overview]{The directory structure of the code repository. Text in italics
-    indicate Java interfaces, while regular text indicate classes. Subdirectories
+\caption[Repository overview]{\textbf{Repository overview} Text in italics
+    indicate Java interfaces or abstract classes.  Subdirectories within
+    \texttt{main/java/}
     are Java packages. An overview of the unit tests in the \texttt{test/java/}
     directory is presented in \cref{fig:unit-test} in the Evaluation chapter.
     The whole codebase, as presented here, contains 5877 lines of Java code,
-    and 728 lines of Python code. The \texttt{work/}, \texttt{memoryModel/}
+    and 728 lines of Python code. All of the code, except about 120 lines of Python code, was written by me. The \texttt{work/}, \texttt{memoryModel/}
     and \texttt{timingAnalysis/} packages are elaborated in their
     respective subsections in \cref{sec:Simulation of a distributed memory
     multiprocessor}, and the \texttt{APSPSolver/} and
@@ -141,7 +142,6 @@ this interface is used to implement the
 %   *  python library used
 % * Graph reader
 %   * adjacency matrix and also neighbourhood list for Dijkstra's algorithm
-% * TODO: mention networkx as well as GraphReader class
 % Graph datasets {{{
 \section{Graph datasets}%
 \label{sec:Graph datasets}
@@ -164,12 +164,13 @@ range of different sizes. These were generated randomly.
 
 % TODO: information on Erdos-Renyi graphs in prepreration chapter...
 
+
 To generate the graphs,
-I used Erd{\"o}s-R{\'e}nyi graphs, specifically the $G(n,p)$ model:
+I used \erdos graphs, specifically the $G(n,p)$ model:
 We start with an edge-less graph of
 $n$ vertices. We then independently include each of
 the $n^2$ edges with probability $p$. I chose this model because it allows
-specifying the graphs size, and it has previously
+specifying the graph's size, and it has previously
 been used to evaluate the performance of \ac{APSP} algorithms
 \cite{parallelDijkstra}.
 % TODO: cite https://core.ac.uk/download/pdf/81103122.pdf
@@ -206,9 +207,9 @@ been used to evaluate the performance of \ac{APSP} algorithms
 \footnotetext{These values were computed using the 
 \texttt{printSummary} method in the \texttt{GraphReader} class.}
 
-To allow the evaluation to better analyse the practicality of using
+To allow the evaluation to better reason about the practicality of
 \ac{MatSquare} for route-planning problems, we want the input graphs
-to have matching characteristics to real-world graphs. With a clever choice of
+to have matching characteristics to that of real-world graphs. With a clever choice of
 $p$, we can achieve this.
 
 There are many characteristics of a graph, such as vertex- and
@@ -220,7 +221,7 @@ some correlation to these metrics. I also want the random graphs
 to be connected, as most road-networks are. In the $G(n,p)$ random-graph
 model, the number of edges follows the binomial distribution:
 \begin{equation}
-    \textrm{For vertex } v \in V, \;\;\textrm{deg}(v) \sim \textrm{Binomial}(n-1,p)
+    \textrm{For vertex } v \in V, \;\;\textrm{deg}(v) \sim \textrm{Binomial}(n-1,p),
 \end{equation}
 with the average degree being $(n-1)p$. By modifying the graph generation
 algorithm to start with a
@@ -230,8 +231,8 @@ and including each remaining edge independently with probability
 \begin{equation}
     p=\frac{\textrm{desired average degree} - 2}{n - 3},
 \end{equation}
-we get a connected graph where the average degree is as desired.
-% TODO: proof in appendix...
+we get a connected graph where the average degree is as desired. We can then
+sample the edge-weights from the uniform distribution to get a weighted graph.
 
 I chose the desired average degree based on that of 
 the Californian road-network. 
@@ -242,8 +243,8 @@ compressed California graph instead, which was 2.945. In
 through this method. I then generated 22 graphs of various sizes for use
 in evaluation%
 \footnote{To get a sense of scaling for both small and large problem sizes,
-the graphs were of sizes: \texttt{10,20,30,40,50,60,70,80,90,100,
-150,200,250,300,350,400,450,500,550,600,650,700}}.
+the graphs were of sizes: \texttt{10,20,30,40,50,60,70,80,90,100,%
+150,200,250,300,350,400,450,500,550,600,650}, and \texttt{700}.}.
 
 \begin{figure}
 \begin{center}
@@ -305,8 +306,8 @@ edges correspond to their weight\footnotemark.}%
 %   refered to
 
 The parallel system simulator, as shown in
-\cref{fig:parallel-system-overview}, is designed with a simple
-\texttt{Worker} interface in mind.
+\cref{fig:parallel-system-overview}, was designed with a
+\texttt{Worker} interface that is simple to use in mind.
 To implement a parallel algorithm, the programmer describes
 how each \acf{PE} should be initialised, and what computation and
 communication it should do in each
@@ -345,7 +346,8 @@ the communication time is estimated using a mathematical model.
     effects of their communication after each phase, which is done using the
     \texttt{CommunicationManager}. The \texttt{Worker} is an abstract class
     and provides a simple yet expressive interface for specifying
-    parallel algorithms.
+    parallel algorithms: The methods in cursive-bold are \texttt{abstract}, and
+    must be overridden, but the rest of the methods can be used as is.
 }
 \label{fig:parallel-system-overview}
 \end{figure}
@@ -374,8 +376,8 @@ The work done by each simulated \ac{PE} is specified in phases, as seen in the
 \texttt{Worker} interface in \cref{fig:parallel-system-overview}.
 If we consider a single \ac{PE} in isolation, the order of these phases
 is described in \cref{alg:execution-order}.
-However, the work management is not so simple because
-the \acp{PE} interact during communication. As we saw in the previous
+However, the work management is not that simple because
+the \acp{PE} interact during communication phases. As we saw in the previous
 subsection, the sent messages are put in a buffer and are not received until
 \texttt{CommunicationManager::flush} is called. Therefore, if worker $i$ sends
 a message to worker $j$ in their $n$th phase, the execution order dependency is
@@ -384,7 +386,7 @@ a message to worker $j$ in their $n$th phase, the execution order dependency is
     \rightarrow \textrm{phase } n+1 \textrm{ of } \textrm{worker}_j.
 \end{equation}
 These constraints are satisfied by running all the
-workers through each phase before moving onto the next, as visualised in
+workers through one phase before moving onto the next phase, as visualised in
 \cref{fig:work-management-blocks}. This execution pattern also allows
 exploiting parallelism on the host machine for efficiency.
 
@@ -430,7 +432,7 @@ computer can efficiently manage\footnote{
 } as the threads are reused for new computation, as shown in
 \cref{fig:work-management-blocks}. As a result, we avoid a lot of the overhead
 associated with
-Java's \texttt{Thread} API. Another benefit is implicit synchronisation.
+Java's \texttt{Thread} \acs{API}. Another benefit is implicit synchronisation.
 Because of the data dependencies in \cref{eq:data-dependency}, we do not
 need synchronisation primitives within the communication methods of each
 \texttt{Worker}. Instead, synchronisation and correct execution order
@@ -450,12 +452,11 @@ work, which gives a more accurate computation time estimates.
 \begin{center}
     \includegraphics[scale=1]{figs/work-management-blocks.pdf}
 \end{center}
-\caption[Execution order when managing worker phases]{Example of multithreading when simulating a 4 processing elements on
-a host computer with 2 cores.}
+\caption[Execution order when managing worker phases]{Example of multithreading when simulating 4 \acp{PE} on a host computer with 2 cores.}
 \label{fig:work-management-blocks}
 \end{figure}
 
-The \texttt{WorkerFactory} uses Java's reflection API to create instances of
+The \texttt{WorkerFactory} uses Java's reflection \acs{API} to create instances of
 any implementation of the \texttt{\textit{Worker}} interface. When constructing
 this factory, the programmer provides a \texttt{Class} object of the
 \texttt{FoxOtto} implementation, for example.
@@ -482,7 +483,7 @@ result $C_{1,4}$.
 To send point-to-point messages, both
 the sender and recipient must call \texttt{sendData} and \texttt{receiveData},
 respectively. The \texttt{receiveData(i, j, label)} method does not return a
-value, but instead modifies the recipient's memory at label \texttt{label},
+value, but instead modifies the recipient's memory at location \texttt{label},
 but this change does not happen until
 \texttt{CommunicationManager::flush()} is called. When sending data with
 \texttt{sendData}, \texttt{broadcastCol} or \texttt{broadcastRow}, the data
@@ -496,7 +497,7 @@ An obvious alternative to this approach is making the \texttt{receiveData} metho
 return the number received, which can be done by putting the recipient
 \texttt{Worker} to sleep until data has been received. Compared with this
 approach, my approach allows cleanly separating computation and communication.
-As we will discuss in the following subsection, this gives many benefits.
+This, as we will see in the following subsection, gives many benefits.
 
 \subsection{Estimating computation and communication times}%
 \label{sub:Estimating computation and communication times}
@@ -505,8 +506,8 @@ Even if we are using a simulator, we want the execution time measurements to
 be as realistic as possible. This is achieved by measuring computation time
 directly and using a communication model proposed by \citeauthor{hockney} for
 message-passing \cite{hockney}. I first cover the theory and ideas behind
-how the measurements done, then go into how this is implemented in the
-\texttt{timingAnalysis} package.
+how the measurements are done, and then go into detail on how this
+is implemented in the \texttt{timingAnalysis} package.
 
 % The points to introduce this sub section with are:
 % * Diagram of how communication causes stalls, counted as comTime:
@@ -551,8 +552,10 @@ we want to repeat each phase several times and average their computation time.
     \vspace{-10pt}
     \import{figs/}{communication-model.pdf_tex}%
     \vspace{-10pt}
-    \caption[Demonstration of communication model through a simple example]{An example of the communication model based on
-    \cref{eq:communication}. The ``$\delta t$''s are the times it takes to
+    \caption[Demonstration of communication model through a simple
+    example]{Example execution of three \acp{PE}, where simulated time is
+        reconstructed with 
+    \cref{eq:communication}. The ``$\delta t$''s are the time it takes to
     send a message, as defined in \cref{eq:send-time}.}%
     \label{fig:communication-model}
 \end{wrapfigure}
@@ -560,10 +563,10 @@ we want to repeat each phase several times and average their computation time.
 The communication time is estimated with a theoretical model. The time it takes
 to send a $s$-byte message can be modelled with $t=\alpha+\beta\cdot s$, which
 is a model that has been previously used to estimate communication time
-\cite{hockney}.
-To simplify our model, I assume that the constants $\alpha$ and $\beta$ are fixed
-for all point-to-point links. Incorporating our interconnect topology, if the
-shortest distance between two nodes $i$ and $j$ is $\delta(i,j)$, then the time
+on parallel hardware \cite{hockney}.
+To simplify the model, I assume that the constants $\alpha$ and $\beta$ are fixed
+for all broadcast and point-to-point links. Incorporating our interconnect topology, if the
+shortest distance between two \ac{PE}-nodes $i$ and $j$ is $\delta(i,j)$, then the time
 it takes to send a message $m$ from node $i$ to $j$ is
 \begin{equation}%
 \label{eq:send-time}
@@ -571,8 +574,8 @@ it takes to send a message $m$ from node $i$ to $j$ is
     \delta(i,j) \cdot (\alpha + \beta \cdot \textrm{size}(m)).
 \end{equation}
 Since each \ac{PE} executes independently, if recipient $j$ awaits data from
-sender $i$ at some time, but the sender has not reached the appropriate
-communication phase by this time, the recipient must stall until $i$ is ready
+sender $i$ at some point in time, but the sender has not reached the appropriate
+communication phase by then, the recipient must stall until $i$ is ready
 and has sent the data. An example of this is shown when $PE_1$ sends a message
 to $PE_2$ in \cref{fig:communication-model}.
 To model this, let $T^{(n)}_i$ be the simulated time at
@@ -680,11 +683,11 @@ Most of the functionality for simulating execution time is found in
 \texttt{TimedCommunicationManager}. Here, we maintain a matrix of the simulated
 times of each \ac{PE}, with entries $(i,j)$ initially corresponding to times
 $T^{(0)}_{(i,j)}$.
-These entries are then updates whenever we advance from phase $(n)$ to phase
+These entries are then updated whenever we advance from phase $(n)$ to phase
 $(n+1)$, with different rules for the phase type.
 For computation phases, we simply increment the time with
 the measurement from the \texttt{TimedWorker}. For the communication phases,
-we use the formula in \autoref{eq:communication}, where the sets
+we use the formula in \cref{eq:communication}, where the sets
 $S$ and $R$ are constructed by tracking calls to \texttt{sendData},
 \texttt{broadcastRow}, \texttt{receiveData}, etc.
 We also only evaluate this formula when executing
@@ -698,7 +701,8 @@ flow.  By running the unit of computation once before starting the timing,
 the effects of cache misses are minimized as the used data will be in cache by
 the time we get to the first timed \texttt{computation($l$)}. We also do several
 runs and average these to minimize the effect of background processes running
-on the host machine.
+on the host machine. I also want to emphasize that these tricks were only possible
+because we separated computation and communication into phases when managing work.
 
 % Points to write in some last paragraph on why this good idea:
 % * By seperating the timing functionality, we make implementation easier and
@@ -751,18 +755,21 @@ on the host machine.
     \vspace{-10pt}
 \end{wrapfigure}
 
-% TODO: Introduction paragraph
 We will now look at the \emph{\acl{MatSquare}} algorithm, which I will
-abbreviate as \emph{\acs{MatSquare}}. Before describing its execution,
+abbreviate as \emph{\acs{MatSquare}}. I consider the generalised version of
+the algorithm, which can handle any combination of $n$ and $p$.
+However, before describing its execution,
 I introduce some notation, and explain how the graph's adjacency matrix
 is used to find shortest paths by using an operation called
 the  \textit{distance product}.
 We then consider the  predecessor matrix,
 and how it is used to reconstruct paths. When introducing the algorithm
-for finding the distance- and predecessor matrix, I will look aside from how
+for finding the distance- and predecessor matrix, which is implemented in
+\texttt{MatSquare.java}, I will look aside from how
 the matrix-multiplication procedure is implemented, only focusing on
-its desired semantics. Afterwards, I describe a parallel implementation of the
-procedure, emphasising how it fulfils the semantics assumed.
+its desired semantics. Afterwards, I describe the parallel implementation of the
+procedure, which is found in \texttt{GeneralisedFoxOtto.java},
+and emphasize how it fulfils the semantics assumed.
 
 \subsubsection{Notation}%
 \label{ssub:Notation}
@@ -773,10 +780,10 @@ in a square lattice of size $p \times p$. We are solving \ac{APSP} for a graph
 with $n$ vertices, so the input is a $n \times n$ adjacency matrix.
 Before executing the algorithm, the adjacency matrix has been split up into
 submatrices and been distributed evenly among the \acp{PE}. If $p$ does not
-divide $n$, then we pad the adjacency matrix such that each \acp{PE} receives
+divide $n$, we pad the adjacency matrix such that each \ac{PE} receives
 a submatrix of size $\lceil n / p \rceil \times \lceil n / p \rceil$. We refer
 to the height and width of this submatrix as the \textit{submatrix size},
-abbreviated $n'$. The padding happens by adding $n-\lceil n/p\rceil\cdot p$
+abbreviated $n'$. The padding happens by adding $\lceil n/p\rceil\cdot p-n$
 vertices with no edges to the graph $G$. From here on, we will let $n$ be the
 number of vertices in this padded graph, and the adjacency matrix $A$ will also
 include inserted empty nodes. The goal of the algorithm is finding the distance-
@@ -785,20 +792,18 @@ and predecessor matrix.
 \begin{definition}
     A distance matrix $M_{dist}$ is a  $n \times n$ matrix, whose $(i,j)$
     entry is the length of a shortest path $i \rightsquigarrow j$ in graph
-    $G=(V,E,w)$.
+    $G=(V,E,w)$. If there is not such path, the entry is $\infty$.
 \end{definition}
-
-% TODO: Rename the adjeacency matrix "W" to "A" to unconfuse it with the
-%       witness matrix!
 
 \begin{definition}
     A predecessor matrix $M_{pred}$ is a $n \times n$ matrix, whose $(i,j)$
     entry is the immediate prior node to $j$ in a shortest path $i
-    \rightsquigarrow j$ in graph $G=(V,E,w)$.
+    \rightsquigarrow j$ in graph $G=(V,E,w)$. If there is no such path, the
+    entry is $j$.
 \end{definition}
 
 We also refer to $M_{dist}^{(x)}$ and $M_{pred}^{(x)}$ as the corresponding
-matrices, but only considering paths of length \textit{at most} $x$. This then
+matrices, but only considering paths of \textit{at most} $x$ edges. This then
 gives that $M_{dist}^{(n)}$ and $M_{pred}^{(n)}$ are distance and predecessor
 matrices, respectively\footnote{As long as the graph $G$ does not have negative
 cycles}.
@@ -822,12 +827,12 @@ cycles}.
             \Input{Adjacency matrix $A$}
             \Result{Distance matrix $M_{dist}$, Predecessor matrix $M_{pred}$}
 
-            $M_{dist} \gets W$\;
+            $M_{dist} \gets A$\;
 
             $M_{pred} \gets n \times n \textrm{ matrix}$\;
 
             \For{$(i,j) \in V^2$}{
-                $M_{pred}[i,j] \gets i \textbf{ if } W_{i,j} < \infty
+                $M_{pred}[i,j] \gets i \textbf{ if } A_{i,j} < \infty
                 \textbf{ else } j$\;
             }
 
@@ -858,7 +863,7 @@ $A^4_{0,1}$ would be the length of the path $1 \xrightarrow{2} 2
 contains 3 edges.  We notice that this modified adjacency matrix fits the
 definition of $M_{dist}^{(1)}$. Additionally, computing the
 distance product between two matrices $M_{dist}^{(x)}$ and $M_{dist}^{(y)}$ gives
-a matrix $M_{dist}^{(x+y)}$ containing distances shortest paths of length at most
+a matrix $M_{dist}^{(x+y)}$ containing distances of shortest paths of length at most
 $x+y$. As such, one way to compute the distance matrix is
 \begin{equation}
     M_{dist}=M_{dist}^{(n)}=
@@ -885,7 +890,7 @@ from $i$ to $j$. If we already know the predecessor of $j$ in the path
 $k \rightsquigarrow j$, then the predecessor of $j$ in path
 $i \rightsquigarrow k \rightsquigarrow j$ must be same. This allows us to
 correctly update the predecessor matrix after each distance product.
-Formally, we call these intermediate nodes for \textit{witnesses}, where
+Formally, we call these intermediate nodes for \textit{witnesses} \cite{stanford}, where
 \begin{definition}
     A witness matrix $W$ for a distance product $M \otimes M'$
     is a $n \times n$ matrix, whose entries $(i,j)$ are witnesses
@@ -896,7 +901,7 @@ Formally, we call these intermediate nodes for \textit{witnesses}, where
 These predecessor updates happen on lines 8--13 in \autoref{alg:matsquare}.
 We also note that the witness $k$ may be equal to $j$, in which case the path
 $k \rightsquigarrow j$ is a self-loop. This will obstruct the path reconstruction
-algorithm, so we want to keep the predecessor from path $i \rightsquigarrow k=j$
+algorithm, so we want to keep the old predecessor value
 in those cases, hence the \texttt{if}-statement on line 10.
 
 The algorithm to reconstruct  the paths is simple once we have computed
@@ -932,12 +937,14 @@ execute \autoref{alg:foxOtto} in parallel. To simplify the explanation, we
 consider what happens in the \texttt{for}-loop of \autoref{alg:matsquare}
 using slightly different
 notation: Let $A$ be the left matrix of the distance product and $B$ be the
-right matrix, such that both matrices are equal to $M_{dist}$ in line 7.
+right matrix, such that both matrices are equal to $M_{dist}$ at line 7.
 We also let $P$ be the predecessor matrix $M_{pred}$.
 We think of these three matrices as the input.
-After the parallel procedure, the distance product and the predecessor matrix
+After the parallel procedure, the distance product and the predecessor matrix---%
+the output---%
 should be stored in $M_{dist}$ and $M_{pred}$, respectively,
-just like in \autoref{alg:matsquare}.
+just like in \autoref{alg:matsquare}. On following executions, $M_{dist}$ and
+$M_{pred}$ are fed back into the procedure as inputs $A,B$ and $P$.
 
 \begin{algorithm}[htp]
     \caption{Generalised Fox-Otto execution at processing element $p_{i,j}$}%
@@ -949,7 +956,7 @@ just like in \autoref{alg:matsquare}.
     \Parameter{problem size $n$, PE grid size $p$, subMatrixSize $n'=\lceil n/p\rceil$,}
     \Result{$M_{dist}', M_{pred}'$}
 
-    \tcp{ ** Initialisation phase **}
+    \tcpp{ ** Initialisation phase **}
     $A_{const}' \leftarrow A'$\;
     $M_{dist}' \gets n' \times n' \textrm{ matrix}$\;
     $M_{pred}' \gets n' \times n' \textrm{ matrix}$\;
@@ -960,13 +967,13 @@ just like in \autoref{alg:matsquare}.
 
     \For{phase number $l = 0$ to $p-1$}{
 
-        \tcp{ ** CommunicationBefore phase $l$ **}
+        \tcpp{ ** CommunicationBefore phase $l$ **}
 
         \If{$j = (i + l) \mod p$}{
             \tcp{Received as a submatrix $A'$}
             \texttt{broadcastRow(}$A_{const}'$\texttt{)}\;
         }
-        \tcp{ ** Computation phase $l$ **}
+        \tcpp{ ** Computation phase $l$ **}
         \For{$0 \leq i_2,j_2 < n'$}{
             \tcp{We start with $m$ s.t. $k=i'$ at $l=0$, which causes shorter}
             \tcp{paths from the previous squaring to be considered first.}
@@ -974,11 +981,11 @@ just like in \autoref{alg:matsquare}.
             \For{$m=i_2,i_2+1, \dots n'-1, 0, 1, \dots, i_2-1$}{
 
 
-                \tcp{In this iteration, we compute A[i', k] + B[k, j'], where}
+                \tcpp{In this iteration, we compute A[i', k] + B[k, j'], where}
                 $k \gets (n' \cdot (i+l) + m) \mod n$\;
                 $i' \gets i \cdot n' + i_2$\;
                 $j' \gets j \cdot n' + j_2$\;
-                \tcp{Distance product}
+                \tcpp{Distance product}
                 $d_{new} \gets A'[i_2,m] + B'[m,j_2]$\;
 
                 \If{$d_{new} < M_{dist}'[i_2,j_2]$}{
@@ -992,7 +999,7 @@ just like in \autoref{alg:matsquare}.
                 }
             }
         }
-        \tcp{ ** ComunicationAfter phase $l$ **}
+        \tcpp{ ** ComunicationAfter phase $l$ **}
         \texttt{send(}$p+i-1 \mod p$\texttt{, }$j$\texttt{, }$B'$\texttt{)}\;
         \texttt{send(}$p+i-1 \mod p$\texttt{, }$j$\texttt{, }$P'$\texttt{)}\;
     }
@@ -1026,11 +1033,11 @@ responsible for computing the submatrices $M_{dist}[0\dots 3, 4\dots 7]$ and
 $M_{pred}[0\dots 3, 4\dots 7]$.
 As submatrices of $A,B$ and $P$ are shifted around during communication,
 I use the notation $A',B'$ and $P'$ to refer to submatrices the \ac{PE}
-currently holds, but that might be shifted around. Also, $M_{dist}'$ and
+currently holds, but that might be moved around later. Also, $M_{dist}'$ and
 $M_{pred}'$ refer to the submatrices a \ac{PE} is responsible for computing.
 
 If we consider the computation of an entry $(i',j')$ in
-the distance product in
+the distance product, as defined in
 \cref{eq:distanceProduct}, the order of the products
  $A_{i',j} \cdot B_{k,j'}$  does not matter because the $\min$-operator is
 commutative. By first considering the data that is local to each \ac{PE} first,
@@ -1038,10 +1045,10 @@ and then considering other $k$s as data is shifted around, the \acp{PE} can
 simultaneously perform minimisations without requiring more than
 $O(\lceil n^2 / p^2 \rceil)$ memory.
  \citeauthor{fox} describe
-a data movement technique for doing this \cite{fox}. As seen in
+a data movement technique for doing this \cite{fox}. As shown in
 \cref{fig:fox}, this technique consists of broadcasting the submatrices of
 $A$ along the rows before partially computing the $\min$. After computation,
-the submatrices of $B$ ared shifted upwards to the next \ac{PE}. This pattern
+the submatrices of $B$ are shifted upwards to the next \ac{PE}. This pattern
 ensures that in the computation phases, all the \acp{PE} have access to
 matching submatrices of $A$ and $B$. These communication
 phases are implemented in lines 9--11 and 26--27 in \autoref{alg:foxOtto}.
@@ -1066,7 +1073,8 @@ with the definition of the distance product.
 We can ascertain ourselves that $A'[i_2,m]$ and $B'[m,j_2]$ contain matching elements of
 the matrices $A$ and $B$ by working through the data movement pattern in
 \cref{fig:fox}. In fact, it can be shown that on line 17, we are computing
-$A[i',k] + B[k,j']$ with $i',j'$ and $k$ as defined on lines 14--16.
+$A[i',k] + B[k,j']$ with $i',j'$ and $k$ as defined on lines 14--16
+(see \cref{sec:Proof of correct addition in generalised FoxOtto}).
 Therefore, the witness will be $k$, which makes the predecessor update logic
 on lines 20--22 equivalent to what is done in lines 11--13 in
 \autoref{alg:matsquare}. 
@@ -1161,7 +1169,7 @@ We compress the graph by removing all nodes with exactly two neighbours and
 their edges. We refer to a contiguous sequence of such compressed
 nodes as a \textit{(compressed) chain}, and compensate for its removal by
 adding a new edge between the \textit{junctions} of the compressed chain,
-as shown in \autoref{fig:compression-notation}. The weight of the new edge
+as shown in \cref{fig:compression-notation}. The weight of the new edge
 is the sum of the weight of the edges removed. We do this for all chains containing
 at least one node of degree two. There are two edge-cases that may occur during
 the compression. Firstly, if the two junctions are the same node, I let
@@ -1171,8 +1179,8 @@ more edge-cases in the path-reconstruction step later.
 % TODO: rename Compressed edge -> compression edge, and make colour darker
 Secondly, if we have a two-degree-node path $p \rightarrow n_1 \rightarrow \cdots
 n_l \rightarrow q$ between two junctions $p$ and $q$, and there is an edge
-$(p,q) \in E$, then the compressed graph will be a have two different edges
-between $p$ and $q$. In this case, we only keep the edge with the lowest
+$(p,q) \in E$, then the compressed graph will have two different edges
+between $p$ and $q$. In this case, I only keep the edge with the lowest
 weight, discarding the other.
 
 To get any benefit from running some \ac{APSP} algorithm, like the
@@ -1180,8 +1188,8 @@ To get any benefit from running some \ac{APSP} algorithm, like the
 queries for the original graph onto the compressed graph, and then
 map back the result. To do this, extra bookkeeping during graph compression is
 needed. For each compressed node, we store a map to its two junctions, the list of
-nodes in the paths to the junctions, and the length of these paths. Additionally,
-with each compression edge, we store the list of compressed nodes.
+vertices in the paths to the junctions, and the length of these paths. Additionally,
+with each compressed chain of vertices, we store the list of compressed nodes.
 
 \begin{figure}[htp]
     \begin{center}
@@ -1194,13 +1202,14 @@ with each compression edge, we store the list of compressed nodes.
 
 To answer an \ac{APSP} query $p \rightsquigarrow q$, and reconstruct its path,
 consider the original graph in 
-\autoref{fig:compression-diagram}.
-We have 5 cases, each of which gives different queries to the original graph:
+\cref{fig:compression-diagram}.
+We have 5 cases, each of which gives different queries to the compressed graph:
 \begin{enumerate}
     \item Nodes $p$ and $q$ are on the same compressed chain, in which case
         no queries are made. Instead, we compute the path using
-        the list of vertices associated with the compressed chain.
-        This case corresponds to $A=C$ and $B=D$ in
+        the list of vertices associated with the compressed chain vertices
+        $p$ and $q$ were a part of.
+        This case corresponds to $A=C$ and $B=D$, or some symmetric case, in
         \cref{fig:compression-diagram}.
     \item We have $p=E,q=F$. We compute the four paths,
         $p \rightsquigarrow \{A,B\} \rightsquigarrow \{C,D\} \rightsquigarrow q$,
@@ -1234,12 +1243,15 @@ In this chapter, I explained the components implemented throughout the project.
 I discussed the datasets used as input. Then I went into depth on how I
 implemented a simulation of a parallel system, which met the requirements
 outlined in \autoref{sec:Requirements analysis}. The
-timing-estimation-functionality exceeded what was initially proposed, and the
+timing-estimation functionality exceeded what was initially proposed, and the
 interface for writing parallel programs was very successful.  I then explained
 the \ac{MatSquare} algorithm, by first considering a high-level overview of it,
 followed by an in-depth description of how the computation was parallelised.
+The \ac{MatSquare} algorithm described was a generalised version, which was one
+of the extensions proposed.
 Lastly, I looked at an optimisation that could significantly reduce the
-computation time required for solving \ac{APSP} on sparse graphs.
+computation time required for solving \ac{APSP} on sparse graphs. This was also
+an extension.
 
 % }}}
 

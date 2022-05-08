@@ -1,6 +1,5 @@
 package APSPSolver;
 
-import graphReader.GraphCompressor;
 import graphReader.GraphReader;
 import matrixMultiplication.FoxOtto;
 import matrixMultiplication.MinPlusProduct;
@@ -16,7 +15,7 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class RepeatedMatrixSquaring extends APSPSolver {
+public class MatSquare extends APSPSolver {
 
     private static final Logger LOGGER = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
 
@@ -32,8 +31,8 @@ public class RepeatedMatrixSquaring extends APSPSolver {
      * @param p the problem will be solves by p x p processing elements
      * @param minPlusProductImplementation
      */
-    public RepeatedMatrixSquaring(GraphReader graphReader, int p,
-                                  Class<? extends MinPlusProduct> minPlusProductImplementation) {
+    public MatSquare(GraphReader graphReader, int p,
+                     Class<? extends MinPlusProduct> minPlusProductImplementation) {
         super(graphReader);
         this.p = p;
         // problem size can be distributed nicely
@@ -46,8 +45,8 @@ public class RepeatedMatrixSquaring extends APSPSolver {
         this.minPlusProductImplementation = minPlusProductImplementation;
     }
 
-    public RepeatedMatrixSquaring(GraphReader graphReader,
-                                  Class<? extends MinPlusProduct> minPlusProductImplementation) {
+    public MatSquare(GraphReader graphReader,
+                     Class<? extends MinPlusProduct> minPlusProductImplementation) {
         this(graphReader, graphReader.getNumberOfNodes(), minPlusProductImplementation);
     }
 
@@ -198,7 +197,7 @@ public class RepeatedMatrixSquaring extends APSPSolver {
             return;
         }
 
-        APSPSolver solver = new RepeatedMatrixSquaring(graphReader, FoxOtto.class);
+        APSPSolver solver = new MatSquare(graphReader, FoxOtto.class);
         solver.solve();
 
         System.out.println(solver.getShortestPath(0, 4));

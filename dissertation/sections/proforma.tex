@@ -15,6 +15,10 @@ unaided except as may be specified below, and that the dissertation
 does not contain material that has already been used to any substantial
 extent for a comparable purpose.
 
+I, \authorname of \authorcollege,
+am content for my dissertation to be made available to the students and staff of
+the University.
+
 \bigskip
 \leftline{Signed}
 
@@ -32,7 +36,7 @@ TODO
         Candidate Number:   & \bf \candidatenumber \\
         % College:            & \bf St John's College                     \\
         Project Title:      & \bf \dissertationtitle \\
-        Examination:        & \bf Computer Science Tripos -- Part II, May 2021  \\
+        Examination:        & \bf Computer Science Tripos -- Part II, May 2022  \\
         Word Count:         & \bf 11134\footnotemark[1]   \\
         Final line count : &  \bf 4081 (Java, \texttt{main/}) + 1796 (Java, \texttt{test/}) + 728 (Python) \\
         Project Originator: & \originator \\
@@ -52,14 +56,14 @@ TODO
 The aim was to implement a massively
 parallel algorithm based on matrix-multiplication
 for solving all-pairs shortest paths (APSP). For this, a parallel system were to
-be simulated using Java. I would then evaluate the advantage of this parallel
+be simulated using Java. I would then evaluate the advantage of the parallel
 algorithm for solving APSP, and investigate how this advantage changed with
 increasing problem sizes.
 
 \section*{Work Completed}
 
 The project was successful. All the success criteria were met, and three
-extensions were completed. I implemented a an expressive simulator of
+extensions were completed. I implemented an expressive simulator of
 a massively parallel system with an interface that was simple to use. A
 parallel APSP algorithm based on matrix multiplication was then implemented
 using this interface, and was further generalised. I then extended the simulator
@@ -90,8 +94,9 @@ None
 
 % TODO: move acronyms to subfile
 \begin{acronym}
-    \acro{APSP}[APSP]{\emph{All-Pairs Shortest Paths}}
-    \acro{SSSP}{\emph{Single-source shortest paths}}
+    \acro{APSP}[APSP]{All-pairs shortest paths}
+    \acro{PE}{\LU{P}{p}rocessing element}
+    \acro{SSSP}{\LU{S}{s}ingle-source shortest paths}
     \acro{MatSquare}[MatSquare]{APSP via repeated matrix-squaring}
     \acro{SISD}[SISD]{Single-instruction-single-data}
     \acro{MISD}[MISD]{Multiple-instruction-single-data}
@@ -99,8 +104,11 @@ None
     \acro{MIMD}[MIMD]{Multiple-instruction-multiple-data}
     \acro{GPU}{\LU{G}{g}raphics processing unit}
     \acro{CPU}{\LU{C}{c}entral processing unit}
-    \acro{PE}{\LU{P}{p}rocessing element}
     \acro{MPP}{\LU{M}{m}assively parallel processor}
     \acro{OOP}{\LU{O}{o}bject-\LU{O}{o}riented \LU{P}{p}rogramming}
     \acro{JVM}{\LU{J}{J}ava virtual machine}
+    \acro{FPGA}{\LU{F}{f}ield-programmable gate array}
+    \acro{IDE}{Integrated development environment}
+    \acro{DAG}{\LU{D}{d}irected acyclic graph}
+    \acro{API}{\LU{A}{a}pplication programming interface}
 \end{acronym}

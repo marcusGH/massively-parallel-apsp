@@ -14,7 +14,7 @@ import java.util.logging.Logger;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class RepeatedMatrixSquaringTest {
+class MatSquareTest {
 
     private static final Logger LOGGER = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
 
@@ -35,7 +35,7 @@ class RepeatedMatrixSquaringTest {
             return;
         }
         // fox otto solver
-        APSPSolver matrixSolver = new RepeatedMatrixSquaring(graphReader, FoxOtto.class);
+        APSPSolver matrixSolver = new MatSquare(graphReader, FoxOtto.class);
         // dijkstra solver
         APSPSolver dijkstraSolver = new SerialDijkstra(graphReader);
 
@@ -69,7 +69,7 @@ class RepeatedMatrixSquaringTest {
             return;
         }
         // fox otto solver
-        APSPSolver matrixSolver = new RepeatedMatrixSquaring(graphReader, FoxOtto.class);
+        APSPSolver matrixSolver = new MatSquare(graphReader, FoxOtto.class);
         // dijkstra solver
         APSPSolver dijkstraSolver = new SerialDijkstra(graphReader);
 
@@ -83,6 +83,47 @@ class RepeatedMatrixSquaringTest {
                 // expected is first item, actual is second item
                 assertEquals(dijkstraSolver.getDistanceFrom(i, j),
                         matrixSolver.getDistanceFrom(i, j), "The distance from node " + i + " to node " + j
+                                + " is correct");
+                assertEquals(dijkstraSolver.getShortestPath(i, j), matrixSolver.getShortestPath(i, j),
+                        "The shortest path produced is correct: " + i + " -> " + j + " with dist="
+                                + matrixSolver.getDistanceFrom(i, j));
+            }
+        }
+    }
+
+
+    @Test
+    void nonGeneralAPSPAlgorithmGivesCorrectResultOnLargeGraph() {
+        // SETUP
+        GraphReader graphReader;
+        try {
+            graphReader = new GraphReader("../test-datasets/OL-but-smaller.cedge", false);
+            // compress it
+            GraphCompressor graphCompressor = new GraphCompressor(graphReader);
+            graphReader = graphCompressor.getCompressedGraph();
+        } catch (ParseException e) {
+            e.printStackTrace();
+            fail("The test data could not be read");
+            return;
+        }
+        // fox otto solver
+        APSPSolver matrixSolver = new MatSquare(graphReader, FoxOtto.class);
+        // dijkstra solver
+        APSPSolver dijkstraSolver = new SerialDijkstra(graphReader);
+
+        int num_nodes = graphReader.getNumberOfNodes();
+        System.out.println("Testing correctness on graph with " + num_nodes + " nodes.");
+
+        // ACT
+        matrixSolver.solve();
+        dijkstraSolver.solve();
+
+        // ASSERT
+        for (int i = 0; i < num_nodes; i++) {
+            for (int j = 0; j < num_nodes; j++) {
+                // expected is first item, actual is second item
+                assertEquals(dijkstraSolver.getDistanceFrom(i, j).doubleValue(),
+                        matrixSolver.getDistanceFrom(i, j).doubleValue(), 1E-5, "The distance from node " + i + " to node " + j
                                 + " is correct");
                 assertEquals(dijkstraSolver.getShortestPath(i, j), matrixSolver.getShortestPath(i, j),
                         "The shortest path produced is correct: " + i + " -> " + j + " with dist="
@@ -105,8 +146,8 @@ class RepeatedMatrixSquaringTest {
             fail("The test data could not be read");
             return;
         }
-        // fox otto solver
-        APSPSolver matrixSolver = new RepeatedMatrixSquaring(graphReader, 7, GeneralisedFoxOtto.class);
+        // general fox otto solver with 8 x 8 processing elements
+        APSPSolver matrixSolver = new MatSquare(graphReader, 8, GeneralisedFoxOtto.class);
         // dijkstra solver
         APSPSolver dijkstraSolver = new SerialDijkstra(graphReader);
 
@@ -145,7 +186,7 @@ class RepeatedMatrixSquaringTest {
             return;
         }
         // fox otto solver
-        APSPSolver matrixSolver = new RepeatedMatrixSquaring(graphReader,  2, GeneralisedFoxOtto.class);
+        APSPSolver matrixSolver = new MatSquare(graphReader,  2, GeneralisedFoxOtto.class);
         // dijkstra solver
         APSPSolver dijkstraSolver = new SerialDijkstra(graphReader);
 
@@ -179,7 +220,7 @@ class RepeatedMatrixSquaringTest {
             return;
         }
         // fox otto solver
-        APSPSolver matrixSolver = new RepeatedMatrixSquaring(graphReader, 4, GeneralisedFoxOtto.class);
+        APSPSolver matrixSolver = new MatSquare(graphReader, 4, GeneralisedFoxOtto.class);
         // dijkstra solver
         APSPSolver dijkstraSolver = new SerialDijkstra(graphReader);
 

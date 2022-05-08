@@ -2,7 +2,7 @@ package graphReader;
 
 import APSPSolver.APSPSolver;
 import APSPSolver.SerialDijkstra;
-import APSPSolver.RepeatedMatrixSquaring;
+import APSPSolver.MatSquare;
 import javafx.util.Pair;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;

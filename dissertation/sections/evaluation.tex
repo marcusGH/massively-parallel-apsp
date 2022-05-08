@@ -2,14 +2,11 @@
 \documentclass[../diss.tex]{subfiles}
 \chapter{Evaluation}
 
-% TODO: Instead of seperate unit test section, just add it as a figure somewhere
-%       with a sufficiently long caption explaining everything
-
 In this chapter, I review the software produced in the implementation phase.
 I relate systems and algorithms built to the success criteria in the project
 proposal, and describe how the work done exceeds what I initially set out to do.
 This is done by looking at the \ac{MatSquare} algorithm, the parallel system
-built, and the optimisations applied.
+simulated, and the optimisations applied.
 I review the tests I conducted to assert correctness. Then I proceed to
 discuss the advantage of parallel computation for solving \ac{APSP}, where
 I demonstrate that the benefit is large, even for different types of parallel
@@ -54,7 +51,7 @@ computers.
         %    to GitHub as backup.
     }%
     \label{fig:cal-node-paths}%
-    \vspace{-25pt}
+    \vspace{-55pt}
 \end{wrapfigure}
 
 % (1) MatMul-based algo, find shortet path, can give list of nodes
@@ -70,19 +67,22 @@ I initially set out to
 the length of the shortest path between all pairs of nodes in a graph, and it
 is able to give the list of nodes that make up such paths.}'' This resulted in
 the \ac{MatSquare} algorithm, which is indeed based on matrix multiplication,
-as shown in lines 7--8 in \cref{alg:matsquare}. To assert the correctness of the
+as shown in lines 7--8 in \cref{alg:matsquare}. I also completed the extension
+to generalise \ac{MatSquare}, such that it could solve a problem of size $n$
+with a different \ac{PE} grid-size $p \neq n$, both smaller and larger.
+To assert the correctness of the
 path lengths and the path reconstruction, I manually computed the results for
 two small graphs, then compared it with the algorithm's output.  Additionally,
-I took a subsection of one of the real-world graph datasets\footnote{I used the
-    \texttt{graph-extractor.py} script to extract all the nodes and vertices
-    within a fixed distance away from a point in the centre of a city in the
-Oldenburg city road network dataset. This gave a graph with 430 nodes and 476
-edges.}, and tested the path lengths and reconstructions on all $|V|^2$ pairs.
-To do this, I implemented Dijkstra's algorithm with path reconstruction, which
+I took a subsection of one of the real-world graph datasets\footnote{I used
+    as script to extract all the vertices and edges
+    within a fixed distance of a point in the centre of the city of
+Oldenburg. This gave a graph with 430 nodes and 476
+edges. See \cref{sec:extract} for more details.}, and tested the path lengths and reconstructions on all $|V|^2$ pairs.
+To do this, I implemented Dijkstra's algorithm with path-reconstruction, which
 is a easier to prove the correctness of compared to the \ac{MatSquare}
 algorithm. I then ran this and my algorithm and asserted the equality of the
 results for all $430^2$ vertex-pairs. We can see the results of these tests in
-\texttt{RepeatedMatrixSquaringTest}s in \cref{fig:unit-test}. They were done for
+\texttt{MatSquareTest} in \cref{fig:unit-test}. This was  done for
 both the regular and generalised version of the algorithm.
 
 \begin{wrapfigure}{r}{0.47\textwidth}
@@ -98,7 +98,8 @@ both the regular and generalised version of the algorithm.
 I also successfully extended the project with the graph compression optimisation.
 Arbitrary undirected graphs can be compressed through removal of two-degree nodes,
 which I have tested by comparing the output to manually-compressed graphs for
-some example graphs. The algorithm for mapping \ac{APSP} queries to the compressed
+adversarially chosen example graphs.
+The algorithm for mapping \ac{APSP} queries to the compressed
 graphs and mapping the results back is also correct. I verified this by
 comparing the paths found when compressing the graph to the output from
 \ac{MatSquare} running on the same graph, but uncompressed. I did this in a unit
@@ -108,7 +109,7 @@ To further
 demonstrate that paths are reconstructed properly when mapping results from
 the compressed graph to the uncompressed one, I ran four example queries on the
 Californian road network and plotted the list of vertices returned in
-\autoref{fig:cal-node-paths}, using additional data about each vertex's
+\cref{fig:cal-node-paths}, using additional data about each vertex's
 geographical position. Solving \ac{APSP} on such a large graph would be
 infeasible to do quickly without the graph compression optimisation.
 
@@ -125,10 +126,10 @@ algorithm}'' in the matrix-multiplication routine of the \ac{MatSquare}
 algorithm. The data movement pattern used is based on the technique
 \citeauthor{fox} used \cite{fox}. As we see in \cref{alg:foxOtto}, this makes all the
 \acp{PE} have exactly the data that they need at each computation phase, after
-sending a packet across a single interconnect channel, and possibly an uncontested
+sending a message across a single interconnect channel and possibly an uncontested
 row-broadcast channel as well. This is clearly minimal data movement if
-we are not allowed to utilize shared memory and each \ac{PE} do not have
-sufficient private memory to store the whole input.
+we are not allowed to utilize shared memory and each \ac{PE} cannot have more
+than $O(\lceil n^2 / p ^2 \rceil)$ private memory.
 
 % }}}
 
@@ -145,8 +146,8 @@ sufficient private memory to store the whole input.
 \section{Parallel simulation}%
 \label{sec:Parallel simulation}
 
-The parallel simulation met all the requirements laid out in
-\autoref{sec:Requirements analysis}, which results in ``... \textit{a simulated
+The parallel simulator met all the requirements laid out in
+\autoref{sec:Requirements analysis}, which resulted in ``... \textit{a simulated
 massively parallel processor, where each processing element can send data to
 each other through simulated interconnects.}'' When creating the
 \texttt{Manager} and \texttt{TimedManager}, I can configure the number of
@@ -158,16 +159,16 @@ not correctly match up \texttt{send}s and \texttt{receive}s. The
 interface and its capability has been thoroughly tested through unit
 tests that cover usage much
 more complex than the what was needed by \cref{alg:foxOtto}. The computation
-time measures  reduce the amount of noise to give better measurements.
+time measures  reduce the amount of noise, which gives better measurements.
 Additionally, a \ac{MIMD} model is used for the communication time, which is more
-complicated to implement compared to a na{\"i}ve \ac{SIMD} model, but with
+complicated to implement compared to the proposed na{\"i}ve \ac{SIMD} model, but with
 the benefit of giving a more realistic simulation. Lastly, the simulator runs in
 parallel by simultaneously executing worker-phases. This sped up
 simulation a lot, as computing the results for the compressed Californian road
 network for instance took about 25 minutes and the \ac{CPU}
 usage was close to 800\% while doing so\footnote{%
-I inspected this using \texttt{htop}},
-showing the parallelisation was successful.
+I measured this using \texttt{htop}},
+which shows that the parallelisation was successful in practice.
 % TODO: this last sentence a bit fluffy, maybe compared with Serial Dijkstra time
 %       ot compute, but in that case would need disclaimer on not built for my
 %       system
@@ -181,7 +182,7 @@ a parallel algorithm where coordination happens through message passing. The
 \texttt{Manager} allows intermediate results from each \ac{PE} to be fetched
 after each phase, which I used in my unit tests to verify that the distance
 product was computed correctly on test matrix inputs. Another justification for
-the correctness of the parallel matrix multiplication step is the \ac{APSP}
+the correctness of the parallel matrix multiplication step is the \ac{MatSquare}
 unit tests. For these, I used the parallel matrix multiplication step instead
 of a serial one, and it is unlikely for the shortest paths to be correct if there
 are any faults in the parallel distance product subroutine.
@@ -255,7 +256,7 @@ this whole range,
 I consider the two extremes and a supercomputer that lies in-between.
 For each class, I base the communication constants of a
 real-life system within the class. The values chosen are summarised in
-\autoref{tab:communication-constants}.
+\cref{tab:communication-constants}.
 
 % Sandy bridge
 \paragraph{Multi-core processor}%
@@ -273,7 +274,7 @@ round-trip latency is about 107 clock cyles
 80\% of the time \cite{timJones}. I make the simplifying
 assumption that the latency is always 107 cycles, and the latency is
 independent of the processor's clock frequency. 
-In the ring interconnect used to implement
+The ring interconnect, used to implement
 cache coherency in the Sandy Bridge microarchitecture, has a
 bandwidth of 32 bytes per cycle. I will assume this is is the available
 bandwidth for message-passing.
@@ -294,8 +295,8 @@ frequency than that of my laptop. I do not simulate this memory hierarchy,
 but instead assume that each individual \ac{PE} is connected
 through the system interface used on the Sunway TaihuLight system, and executes
 instructions at the same clock frequency as my laptop. I also half the bandwidth
-because messages-passing is one-directional in my architecture assumptions
-in \cref{sec:Parallel architecture assumptions}.
+because messages-passing is one-directional in the architecture assumptions
+laid out in \cref{sec:Parallel architecture assumptions}.
 
 \paragraph{Distributed computer}%
 \label{par:Distributed computer}
@@ -327,9 +328,9 @@ Western Europe, which is 90.56~Mbps \cite{broadband}.
         \hline
     \end{tabular}%
     \caption[The communication constants used in evaluation]{The communication constants used in my timing analysis of the
-    \ac{MatSquare} algorithm. Note that since each message consists of two
-    or fewer \texttt{Double}s, the latency will be the dominating contributor
-    to the communication cost, not the bandwidth.}%
+    \ac{MatSquare} algorithm. Note that for small submatrix-sizes $n'$, the
+    latency will be the dominating contributor
+    to the message-passing cost, not the bandwidth.}%
     \label{tab:communication-constants}%
 \end{table}
 
@@ -381,14 +382,14 @@ problem sizes.
 
 For the multi-core and supercomputer configuration,
 the total execution time does not increase, or increases step-wise,
- for small problem sizes, especially for large \ac{PE} layouts.
+ for small problem sizes. This is especially noticeable for large \ac{PE} layouts.
 In the flat portions, we have
 enough \acp{PE} for each cell in the input matrix, so increasing
 the problem size does not cause more computation per \ac{PE}. The step-wise
 increase  is caused by the input padding: To map for instance
 a problem of size $n=200$ onto $64 \times 64$ \acp{PE}, we must pad the input
 until the size is a multiple of 64, which can cause two different problem sizes
-to be mapped to the same size, causing a flat segment.
+to be mapped to the same size, causing the same amount of computation to be performed.
 
 As we get to larger problem sizes, the total times in figures
 \ref{fig:main-plot-fig-a} and \ref{fig:main-plot-fig-b} start to even out
@@ -404,11 +405,12 @@ We demonstrate the final success criteria by considering
 the  parallel efficiency. As we saw in
 \cref{eq:parallel-efficiency}, the parallel efficiency is equal to the
 computation ratio. We can therefore think of the $y$-axis in three right-column
-plots in \autoref{fig:main-eval-plot} as being the parallel efficiency.  With
+plots in \cref{fig:main-eval-plot} as measuring the parallel efficiency.  With
 the multi-core processor and supercomputer configurations, we quickly achieve
 $\varepsilon>0.9$ and it even reaches above 95\% eventually. This means the
 \ac{MatSquare} algorithm is able to efficiently utilize the available
-processing power on a parallel system without communication being a bottleneck.
+processing power on a parallel system without communication being a major
+bottleneck.
 The last success criteria is therefore achieved:
  ``\textit{The evaluation
 of the algorithm demonstrates that parallel computation gives a high parallel
@@ -425,12 +427,12 @@ since the communication is dominating. However, even with such a large
 message-passing overhead,
 we eventually achieve a high parallel efficiency, but this only happens
 for the $4 \times 4$ and $8 \times 8$ arrangements for problem sizes where
-$n \leq 700$, but we can expect other arrangements to also get to this point
+$n \leq 700$. However, we can expect other arrangements to also get to this point
 with larger problems. Also, as we reach the point where computation start to
-dominate, we total execution time starts following a trend  similar to that
+dominate, the total execution time starts following a trend  similar to that
 in figures \ref{fig:main-plot-fig-a} and \ref{fig:main-plot-fig-b}. Therefore,
 we would expect the $128 \times 128$ configuration to overtake all the smaller
-arrangements for very large problem sizes.
+arrangements for some very large problem.
 
 % }}}
 
@@ -440,8 +442,14 @@ arrangements for very large problem sizes.
 \label{sec:Summary3}
 
 In this chapter, I showed how the project met and exceeded the success criteria.
-The parallel system simulation was showed to work well through unit tests, and
-the interface it provides was very easy to work with. I demonstrated the correctness of the main algorithm of the project, and used timing measurements to prove the benefits of parallel computation for solving \ac{APSP} on real-world-like graphs on a wide range of different parallel systems.
+The parallel system simulator was showed to work well through unit tests, and
+the interface it provides was very easy to work with. I demonstrated the
+correctness of the main algorithm of the project and its generalised version.
+Furthermore, I successfully asserted the correctness of the graph compression
+optimisation by running it on demanding problem sizes. Lastly,
+I looked at the timing measurements of \ac{MatSquare}
+to prove the benefits of parallel computation for solving \ac{APSP} on
+real-world-like graphs on a wide range of different parallel systems.
 
 % The success criteria for creating parallel APSP algorithm and reconstructing
 % paths was successfull, MatSquare. And I asserted its correctness with several

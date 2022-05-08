@@ -9,7 +9,7 @@ import timingAnalysis.topology.SquareGridTopology;
 import timingAnalysis.topology.Topology;
 import org.junit.jupiter.api.BeforeAll;
 import timingAnalysis.MultiprocessorAttributes;
-import timingAnalysis.TimedRepeatedMatrixSquaring;
+import timingAnalysis.TimedMatSquare;
 import util.LoggerFormatter;
 
 import java.io.IOException;
@@ -89,7 +89,7 @@ public class Evaluation {
                     return;
                 }
                 // create the solver
-                TimedRepeatedMatrixSquaring solver = new TimedRepeatedMatrixSquaring(graph, p, TOPOLOGY, multiprocessor, FOXOTTO, AVG_REPETITIONS);
+                TimedMatSquare solver = new TimedMatSquare(graph, p, TOPOLOGY, multiprocessor, FOXOTTO, AVG_REPETITIONS);
 
                 solver.solve();
 
@@ -118,7 +118,7 @@ public class Evaluation {
         }
         // compress the graph
         GraphCompressor calCompressed = new GraphCompressor(cal);
-        TimedRepeatedMatrixSquaring solver = new TimedRepeatedMatrixSquaring(calCompressed.getCompressedGraph(), p, TOPOLOGY, multiprocessor, FOXOTTO, AVG_REPETITIONS);
+        TimedMatSquare solver = new TimedMatSquare(calCompressed.getCompressedGraph(), p, TOPOLOGY, multiprocessor, FOXOTTO, AVG_REPETITIONS);
 
         for (int i = ITER_OFFSET; i < numRepetitions; i++) {
             LOGGER.info(String.format("\n === Evaluation is measuring california road execution time for repetition %d / %d ===\n", i + 1, numRepetitions));

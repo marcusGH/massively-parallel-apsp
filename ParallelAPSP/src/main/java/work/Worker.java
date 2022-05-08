@@ -237,7 +237,7 @@ public abstract class Worker implements Runnable {
     }
 
     @Override
-    @Deprecated
+    // @Deprecated
     public void run() {
         LOGGER.warning("Using a worker as Runnable should only be used when testing a single worker."
             + " To run synchronised workers in parallel, the getCallable methods with a ExecutorService should be used instead.");

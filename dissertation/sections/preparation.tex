@@ -5,11 +5,13 @@
 This chapter gives an overview of work that was completed before any code was
 written. This includes theory surrounding parallel computing
 (\autoref{sec:Parallel computing}) and computing shortest paths through matrix
-multiplication (\autoref{sec:APSP algorithm}). It also includes the planning
-the components of the implementation, done through making up assumptions
-explicit (\autoref{sec:Parallel architecture assumptions}) and outline the
-requirements (\autoref{sec:Requirements analysis}).  Lastly, I go over the
-tools used (\autoref{sec:Choice of tools}) and the techniques used for
+multiplication (\autoref{sec:APSP algorithm}). It also includes planning
+the components of the implementation, which was done by explicitly stating
+the assumptions behind the parallel architecture
+(\autoref{sec:Parallel architecture assumptions}) and outlining the
+requirements of all the components (\autoref{sec:Requirements analysis}).
+Lastly, I go over the
+tools (\autoref{sec:Choice of tools}) and techniques used to achieve
 productive and manageable development (\autoref{sec:Software engineering}).
 
 % Parallel computing (400 words?):
@@ -32,7 +34,7 @@ we should be familiar with the landscape of parallel systems and their classific
 according to how the streams of instructions are mapped onto data, what
 hierarchies of memory are commonly used, and how this affects inter-processing-element communication. Additionally, we will discuss 
 the scale at which parallelisation happens and cover metrics used for evaluating
-how resource efficient a parallel algorithm is.
+how resource-efficient a parallel algorithm is.
 
 % Also define some metrics for evaluating how efficiently
 %   the algorithm uses the computation reousrces available.
@@ -66,15 +68,16 @@ computation is spread among \acp{CPU}.
 \subsection{Memory and communication}%
 \label{sub:Memory and communication}
 
-We can also classify parallel systems by how the memory is laid out. In systems
-that use \textit{distributed memory}, each processor has its own private memory.
-If communication between processors is required, there will be an interconnection
-between the \acp{PE} that allows message passing. One common approach is an
-interconnect network that can be arranged in a plethora of different
+We can also classify parallel systems by how their memory is laid out. In systems
+that use a \textit{distributed memory model}, each \ac{PE} has its own private memory.
+If communication between \acp{PE} is required, there will be hardware
+interconnections that allow message-passing.
+ One common approach is to create a network of interconnects, which
+can be arranged in a plethora of different
 \textit{topologies}. If the topology is not fully-connected, the messages need
 to be routed. A common network arrangement is the 2D Lattice Mesh, where there are
-$p^2$ \acp{PE} connected to each of their four orthogonal neighbours and there
-are cyclic connection that wrap around the edges.
+$p^2$ \acp{PE} connected to each of their four orthogonal neighbours, with
+additional cyclic connections that wrap around the edges.
 In \textit{shared memory} systems, all the processors have access to a shared
 address space. Multiple  \acp{PE} can communicate by reading and writing
 to the same segment of memory, and locking mechanisms can be implemented to
@@ -87,15 +90,13 @@ By looking at the extent to which the system supports parallelism and at the
 physical distance between the \acp{PE}, we create further classifications.
 In \textit{multi-core processors}, we refer to the \acp{PE} as \textit{cores}
 and have several of them on the same chip. The cores execute in \ac{MIMD}-fashion
-and there are typically both local memory for each core as well as some shared
+and there is often both local memory for each core as well as some shared
 memory between cores, that can be used for communication.
 In \acp{MPP}, we often have many thousands of processors, interconnected through
 a specialised network. An example is the Sunway TaihuLight supercomputer
 \cite{sunway}.
 There is also a wide class of computers known as \textit{distributed computers},
-where the \acp{PE} communicate over a network, such as the Internet.
-% TODO: cite Wikipedia?
-
+where the \acp{PE} communicate over a telecommunications network, such as the Internet.
 
 \subsection{Evaluating performance}%
 \label{sub:Evaluating performance}
@@ -117,26 +118,28 @@ Another useful metric is the \textit{parallel efficiency}, which is defined as
     \varepsilon = \frac{T_1}{p T_p} = \frac{S_p}{p}.
 \end{equation}
 The parallel efficiency ranges from 0 to 1, where $\varepsilon  =1$, means
-we have a perfect linear speed-up where no
-computation power is wasted when executing the algorithm on our parallel system.
+we have a perfect linear speed-up. In other words, no
+computational power is wasted on overhead from executing the algorithm on a parallel system.
 
 Both of these metrics do not take into account the speed-up lost from the algorithm
 having a serial part that cannot be parallelised. To incorporate this,
 Amdahl's law or Gustafson's law have been used  \citep{parallelPerformance}.
 However, the parallel algorithms developed in this project to solve \ac{APSP}
 have a negligible serial part if we ignore the time required to read the input
-and print the result. I will therefore not use these laws in evaluation.
+and print the result. I will therefore not use these laws during evaluation.
 
-In practice, what prevents linear speed-up is the \textit{communication cost} the
-algorithm incurs while running on the parallel system. This can include both
-\acp{PE} needing to idle while they wait for data to be ready or they are
-waiting for some data to be transferred. % TODO: aren't these the same?
-Another metric is therefore the ratio between computation and communication,
-where a high ratio means we use our resources efficiently. We let
-$T_p = \frac{T_{communication}+T_{computation}}{p}$, where $T_p$ is the time spent
-on executing the parallel algorithm, where the sum of the costs are split up
-into communication and computation costs. To execute a similar algorithm on a serial machine, we would avoid all the communication cost, but would still need to
-do all the computation, so $T_1=T_{computation}$\footnote{
+In practice, what prevents perfect linear speed-up is the \textit{communication
+cost} the algorithm incurs while running on the parallel system. This can
+include \acp{PE} having to wait for dependent data or spend time transferring
+some chunk of data to another \ac{PE}. In both cases, no useful computation is
+being performed during this time.
+Another metric is therefore the ratio between computation, $T_{comput}$,
+and communication, $T_{comms}$,
+where a high ratio means we use our resources efficiently. We consider the
+time spent on executing the parallel algorithm,
+$T_p = ({T_{comms}+T_{comput}})/{p}$,  where the costs are split
+into communication and computation costs. To execute a similar algorithm on a serial machine, we not have any  communication cost, but would still need to
+do all the computation, so $T_1=T_{comput}$\footnote{
     This is assuming we are not using a completely different algorithm
     when solving the problem serially.
 }.
@@ -144,14 +147,9 @@ We can relate this with the parallel
 efficiency:
 \begin{equation}%
 \label{eq:parallel-efficiency}
-    \varepsilon = \frac{T_1}{p T_p} = \frac{T_{computation}}{T_{computation}+T_{communication}}
+    \varepsilon = \frac{T_1}{p T_p} = \frac{T_{comput}}{T_{comput}+T_{comms}}
 \end{equation}
-It is also easier to measure this ratio of computation.
-
-% TODO: All of the above is very poorly worded. Redo this!
-% DONE: write from here, about communication and computation ratio, time where
-%  no useful work is done, stalling, waiting for data etc., SIMD masked computation
-
+This ratio is easy to measure, so we can use it together with \cref{eq:parallel-efficiency} to reason about the parallel efficiency of an algorithm.
 
 % }}}
 
@@ -173,13 +171,15 @@ It is also easier to measure this ratio of computation.
 % * What is a `distance product`, and explain concept of MatMul on the semiring
 
 The main algorithm of the dissertation is based on matrix multiplication and
-solves a problem in graph theory. By going through the notation and definitions
-I will be using, as well as discussing alternative approaches to parallelising
-\ac{APSP}, we can better understand the \ac{MatSquare} algorithm.
-Throughout the dissertation, we consider graphs on the form $G=(V,E,w)$, where we have a set $V$ of $n$ vertices and a set
-$E$ of edges and each edge $e \in E$ has a non-negative weight $w(e)$ assigned
+solves a problem in graph theory. By introducing some useful notations and
+definitions, as well as discussing alternative approaches to parallelising
+\ac{APSP}, we can better understand the \emph{\acl{MatSquare}} (\acs{MatSquare})
+\acused{MatSquare}
+algorithm.
+Throughout the dissertation, I consider a graph $G=(V,E,w)$,  with a set $V$ of $n$ vertices and a set
+$E$ of edges. Each edge $e \in E$ has a non-negative weight $w(e)$ assigned
 to it. The \ac{APSP} problem concerns finding the \textit{shortest path} between
-each pair of vertices.
+each pair of vertices, $(i,j) \in V^2$.
 
 \subsection{Parallelisation}%
 \label{sub:Parallelisation}
@@ -187,25 +187,31 @@ each pair of vertices.
 There are many widely-used algorithms for efficiently solving the
 \ac{SSSP} problem, such as Dijkstra's algorithm, Bellman-Ford and A$^*$-search.
 If we have fewer than $n$ \acp{PE}, a trivial parallelisation for solving \ac{APSP}
-is to run one of these algorithms on each \ac{PE}, distributing the sources.
+is to run one of these algorithms on each \ac{PE}, distributing the source-vertices
+evenly.
 However, this approach does not use our parallel resources efficiently if we have
 more than $n$ \acp{PE}. To exploit this, we must either consider other algorithms
 or parallelise parts of the \ac{SSSP} computation in one of these algorithms.
 Parallel versions of these algorithms have been developed in the past
 \cite{parallelDijkstra,astar},
-% TODO: citation needed
 but they incur a significant overhead. I have therefore decided to use a new
-algorithm based on matrix multiplication, a highly paralleliseable task,
+algorithm based on matrix multiplication, a highly parallelizable task,
 instead.
 
 \subsection{Repeated matrix squaring}%
 \label{sub:Repeated matrix squaring}
 
+I studied a lot of the theory behind the \ac{MatSquare} algorithm before writing
+any code, but parts of it are more relevant to present together with its
+implementation. Therefore, I just introduce the \textit{distance product} and
+the general idea behind the algorithm here, and cover the rest in
+\autoref{sec:APSP via repeated matrix-squaring}.
+
 Matrix multiplication usually happens over the \textit{semiring}\footnote{See
 appendix \autoref{sec:Abstract algebra}.} $(\mathbb{R},+,\cdot)$.
-However, we replace addition with multiplication and  multiplication by the
-$\min$-operator, resulting in the tropical semiring $(\mathbb{R}^*, \cdot,\min)$,
-where we define $\mathbb{R}^* \triangleq \mathbb{R}\cup\{\infty\}$. When doing
+However, if we replace addition with multiplication and  multiplication with the
+$\min$-operator, we get the tropical semiring $(\mathbb{R}^*, \cdot,\min)$,
+where $\mathbb{R}^* \triangleq \mathbb{R}\cup\{\infty\}$. When doing
 matrix multiplication over this algebra, we perform an operation called
 the \textit{distance product}.
 \begin{definition}
@@ -220,17 +226,18 @@ the \textit{distance product}.
     Each entry $M_{i,j}$ then gives the distance of the shortest path
     $i \rightsquigarrow k \rightsquigarrow j$ of length $n+m$.
 \end{definition}
-If we let $W$ be the adjacency matrix, where each entry $(i,j)$ is the weight
+If we let $A$ be the adjacency matrix, where each entry $(i,j)$ is the weight
 of edge $(i,j)$ and $\infty$ if $(i,j) \not\in E$, then computing the distance
-product of $W$ with itself $k$ times will give a matrix containing the length
+product of $A$ with itself $k$ times will give a matrix containing the length
 of shortest paths of length $k$.
-If we add a self-loop to each vertex with weight 0, and compute $W^n$, the matrix
+If we add a self-loop to each vertex with weight 0, and compute $A^n$, the matrix
 will contain the shortest-distances between all pairs of nodes that are of length
-at most $n$, i.e. the shortest path (because it cannot be longer).
+at most $n$, that is we have solved \ac{APSP} because no shortest-paths
+are longer than $n$.
 A more efficient way to compute this is by squaring
- $W$ $\lceil \log_2 n \rceil$ times. This
+ $A$ $\lceil \log_2 n \rceil$ times. This
 % TODO: explain abbreviation better
-is the idea behind the \ac{MatSquare} algorithm that I explain in
+ is the idea behind the \acf{MatSquare} algorithm that I elaborate on in
 \autoref{sec:APSP via repeated matrix-squaring}.
 
 % }}}
@@ -274,20 +281,19 @@ I assume a fully-distributed memory model, where each \ac{PE} has its own privat
 memory and no address space is shared between different \acp{PE}. To allow
 coordination, a message-passing interface is also assumed. This model scales well
 with a very large number of \acp{PE}, compared with shared-memory systems where
-the memory system becomes a bottleneck when the number of \acp{PE} that share
-the same memory are in the 1000s. I also assume that each \ac{PE} has sufficient
-private memory to store the data it will be working on, but I will not abuse this
-to store a copy of the input on each \ac{PE}.
-
-\paragraph{MIMD execution}%
+the memory system becomes a bottleneck when there is a massive number of \acp{PE}.
+I also assume that each \ac{PE} has sufficient
+private memory to store the data it will be working on, but not enough to store
+the whole input.
+\paragraph{MIMD execution (extension)}%
 \label{par:MIMD execution}
-I also assume that each \ac{PE} runs independently of the others, so their
+I also assume that each \ac{PE} runs independently, so their
 computation might not be synchronised even if they all execute the same algorithm.
 I have decided to assume this model of execution over \ac{SIMD} for the
 following reasons:
 \begin{itemize}
     \item In distributed-memory systems with message passing, \ac{MIMD} is the
-        most common, whereas \ac{SIMD} is most-often seen in shared-memory
+        most common, whereas \ac{SIMD} is most often seen in shared-memory
         systems. Simulating \ac{MIMD} thus gives more realism.
         % TODO: for this to make sense, add details on masking and on predecessor
         %    above in prepearation
@@ -302,23 +308,23 @@ following reasons:
     % flexibility?
 \end{itemize}
 In the initial plan for the project, I set out to use a na{\"i}ve simulation
-of \ac{SIMD}, where I would just average the computation time of each \ac{PE}.
+of \ac{SIMD}, where I would just average the computation time of each \ac{PE} or
+take their maximum.
 The change to a more realistic \ac{MIMD} execution model was an extension that
 was not planned for in the project proposal.
 
-\paragraph{Message passing}%
+\paragraph{Message-passing}%
 \label{par:Message passing}
 The \acp{PE} are interconnected through point-to-point links, arranged in
 some connected network topology. I will assume the \acp{PE} are laid
 out in a square lattice arrangement because the problem of matrix multiplication
-maps nicely to this. Additionally, the Fox-Otto algorithm assumes row-broadcast
-highways, so I will also assume these are available. Further, I will assume that
-each broadcast-highway as well as each point-to-point link can only be used to
-carry one message at a time. The messages are also delivered \textit{in-order}.
+maps nicely to this. Additionally, the Fox-Otto technique uses row-broadcast-highways, so I will also assume these are available. Further, I will assume that
+each broadcast-highway, as well as each point-to-point link, can only be used to
+carry one message at a time. The messages are delivered \textit{in-order}.
 
 The time it takes to send a message $m$ from \ac{PE} $i$ to \ac{PE} $j$ only
 depends on the size of $m$, the latency and bandwidth of the links, and the
-value of some fixed function $d(i,j)$, that depends on the interconnect topology.
+value of some fixed function $\delta(i,j)$, that depends on the interconnect topology.
 I will also assume the latency and bandwidth are the same for all messages sent.
 I also assume some fixed latency and bandwidth for the broadcasting.
 
@@ -334,7 +340,7 @@ I also assume some fixed latency and bandwidth for the broadcasting.
 We will now look at the main components to be implemented, and what their
 functional requirements are. To make implementation as smooth as possible, it
 is important to know beforehand what the different components will do and how
-they interface with other components. This will also make modular development
+they interface with each other. This will also make modular development
 easier as we only need to focus on one component and its interface at a time.
 
 \paragraph{Parallel system simulation}%
@@ -342,62 +348,62 @@ easier as we only need to focus on one component and its interface at a time.
 
 Since I do not have access to a physical system fitting the
 properties described in \autoref{sec:Parallel architecture assumptions},
-I will simulate one. The main requirements of this is:
+I will simulate one. The main requirements of this are:
 \begin{itemize}
-    \item Configurable number of \acp{PE} and topology
-    \item Simulation exploits inherent parallelism on system it is executed on,
-        such that it's as efficient as possible
+    \item Configurable number of \acp{PE} and topology.
+    \item Simulator exploits parallelism on the host machine it is executed on,
+        such that it is as efficient as possible.
     \item There is a simple, yet expressive, interface for describing the
-        computation to be performed at each \ac{PE}, where the programmer has
+        computation to be performed by each \ac{PE}, where the programmer has
         access to methods such as \texttt{send}, \texttt{receive},
         \texttt{broadcastRow} etc., and can retrieve its position in the grid with
+        identifiers
         \texttt{i} and \texttt{j}. 
-        % ?
-        With such an interface, other algorithms like parallel Floyd-Warshall
-        can also be implemented.
     \item There is an interface for distributing input data among the \acp{PE}
         as well as retrieving the result.
     \item The computation time is measured during \ac{PE} execution, and
-        communication time is estimated according to the message passing model in 
-        the assumed architecture.
-    % TODO: add something more about how should comply with assumed arch?
+        communication time is estimated with a mathematical model. Both of these
+        should comply with the execution and message-passing model described
+        in \cref{sec:Parallel architecture assumptions}.
 \end{itemize}
 
 \paragraph{Graph datasets}%
 \label{par:Graph datasets}
 
-To evaluate the performance scaling of our algorithms, we will need a large set
-of different input graphs, covering a sufficiently large space of sizes. Ideally,
-these graphs should have similar characteristics as well as resemble real-world
-graphs like road networks as this is a primary usage of our \ac{APSP} algorithm.
+To evaluate the performance scaling of our algorithms, we will need a set
+of different input graphs, covering a sufficiently large space of problem
+sizes. Ideally,
+these graphs should have characteristics that resemble those of real-world
+graphs like road networks, as route-planning is an important application of 
+the \ac{APSP} algorithm.
 
 We also need a \textit{graph input} component that can read the graphs from file
-and transform them into a suitable format to pass as input to the \ac{APSP}
+and transform them into a suitable format to pass as input to the \ac{MatSquare}
 algorithm.
 
-\paragraph{APSP algorithm}%
+\paragraph{\ac{MatSquare}, a parallel \ac{APSP} algorithm}%
 \label{par:APSP algorithm}
 
 We can summarise the requirements of this component as:
 \begin{itemize}
     \item Given an input graph $G$, it can compute the shortest paths between
-        each pair of nodes in $V$. This computation is done by using the
-        interface for the parallel architecture simulation.
+        each pair of vertices in $V$. This computation is done with a modified
+        parallel matrix-multiplication routine, which is implemented
+        by using the interface of the parallel architecture simulator.
     \item After this computation, each path $i \rightsquigarrow j$ can be
-        reconstructed.
-    \item This computation can also happen when the parallel arcitecture is
+        reconstructed as a list of vertices.
+    \item The algorithm is also \textit{generalized}. This means that the computation can also happen when the parallel architecture is
         configured to have fewer \acp{PE} than there are vertices in the
-        graph (extension).
+        graph \textbf{(extension)}.
 \end{itemize}
 
 \paragraph{Graph compressor (extension)}%
 \label{par:Graph compressor}
 
 The input graph can be passed to this module and a new ``equivalent'', but with
-all the 2-degree-nodes removed is returned. Additionally, after solving
-\ac{APSP} on this compressed graph, we can pass the solution back to the
-graph compressor to reconstruct \ac{APSP} solutions on the original graph.
-% TODO: rephrase...
+all the 2-degree vertices removed, is returned. Additionally, after solving
+\ac{APSP} on this compressed graph, the graph compressor can use the
+ solution to answer shortest-paths queries on the original path.
 
 % }}}
 
@@ -413,30 +419,34 @@ graph compressor to reconstruct \ac{APSP} solutions on the original graph.
 We will now go over various existing software, programming languages
 and services that can aid the development. When developing and testing
 a parallel program, there are many already built tools and utilities that
-handle a lot of the work, such as high-level synchronisation classes or
+handle a lot of the work, such as high-level synchronisation classes and
 unit testing frameworks. By using these tools, we can spend more time on the
-core parts of the project, like creating the simulation and developing the
+core parts of the project, such as creating the simulator and developing the
 \ac{MatSquare} algorithm.
 
 \subsection{Programming languages and libraries}%
 \label{sub:Programming languages and libraries}
 
-I chose Java for the implementation of the components of the project. The parallel
-simulation has many modules that interact with each other, and implementation
+I chose Java as the main implementation language.  The parallel
+simulator has many modules that interact with each other, and implementation
 is more manageable if these can be developed in isolation, abstracting away
 their functionality. Additionally, code-reuse and dynamic polymorphism will be
-important when implementing different algorithms for the parallel system's
-interface. As such, and object-oriented language like Java, which makes following
+important when implementing different algorithms for the simulated parallel system.
+As such, an object-oriented language like Java, which makes following
 these principles easier, is suitable. Additionally, Java is well-suited for
 creating concurrent programs as it has built-in primitives for synchronisation as
 well as classes for managing a large number of concurrent threads.
 
 For testing, I use JUnit\footnote{\url{https://junit.org}}, which is a testing
-framework for the \ac{JVM}. Since the code is modularised, this will allow me
+framework for the \ac{JVM}. Since the code is modularised, it allows me
 to create well-organised unit tests for the different modules. To generate the
-random graphs, I use the \texttt{NetworkX} library in Python, and these graphs
-can also be visualised using a \texttt{ForceAtlas2} library.  For plotting my
-evaluation results, I use python and modules like \texttt{pandas} and
+random graphs, I use the \texttt{NetworkX} library%
+\footnote{\url{https://networkx.org/}, freely available under the 3-clause BSD license}
+in Python, and these graphs
+can be visualised using the \texttt{ForceAtlas2} library%
+\footnote{\url{https://github.com/bhargavchippada/forceatlas2}, freely available under the GNU General Public License v3.0}
+.  For plotting my
+evaluation results, I use Python and modules like \texttt{pandas} and
 \texttt{matplotlib}.
 
 \subsection{Development, testing and revision control}%
@@ -444,14 +454,14 @@ evaluation results, I use python and modules like \texttt{pandas} and
 
 To easily manage different versions of the codebase, I will do revision control
 with \texttt{git} and GitHub\footnote{\url{https://github.com/}}. I also set up
-contiguous integration with  GitHub Workerflows, which compiles the project
+contiguous integration with  GitHub Workflows, which compiles the project
 every time I push a commit. This way, I can make sure the code is always in a
 valid state and there are no syntax errors.  I will use my Acer Nitro Laptop,
 running Ubuntu Linux 18.04 LTS, to both write and run all of my code. It has a
-quad-core CPU (an Intel i5-8300H \@ 2.30~Ghz), 8~GB of RAM, and an NVIDIA GTX
+quad-core CPU (an Intel i5-8300H @ 2.30~Ghz), 8~GB of RAM, and an NVIDIA GTX
 1050 Mobile. The CPU supports running 8 threads concurrently, which means
-parallelising the simulation itself will make a significant impact on the
-simulation time. To write the Java code, I use the IntelliJ IDEA IDE to improve
+parallelising the simulator itself will make a significant impact on the
+simulation time. To write the Java code, I use the IntelliJ IDEA \acs{IDE} to improve
 the quality of the code and spend less time on getting the Java syntax right.
 
 % }}}
@@ -491,28 +501,19 @@ for the evaluation.
 \section{Software engineering}%
 \label{sec:Software engineering}
 
-% TODO: disctintion between graph reader, and concept of input graphs is not
-%    very clear in both above reqAnal and the diagram!
-\begin{figure}
-\begin{center}
-    \includegraphics[scale=1]{figs/component-overview.pdf}
-\end{center}
-\caption{High-level overview of the implementation}
-\label{fig:component-overview}
-\end{figure}
-
 In \autoref{fig:component-overview}, we see the high-level structure of the
 implementation. This matches the requirements laid out in
-\autoref{sec:Requirements analysis}; The requirements in each group can also be
-associated with individual components. For example, allowing descriptions of
-computation comes from the \texttt{Worker} interface, while access to communication
-methods come from implementation of the communication manager. This sets up clear
-work items and achievements to aim for during implementation.
+\autoref{sec:Requirements analysis}; The requirements in each group can be
+associated with individual components. For example, the \texttt{Worker} interface
+should allow describing algorithms with utility methods such as \texttt{send} and
+\texttt{receive}, and  communication
+methods are implemented in the  communication manager. Together, the
+memory model and work management makes up the parallel system simulator.
+This sets up clear work items and achievements to aim for during implementation.
 
-I developed the parallel system simulation using the \textit{incremental build
+I developed the parallel system simulator using the \textit{incremental build
 model}. The simulator is very modular and the component dependencies form a
-% TODO: acronym: DAG
-directed acyclic graph, so implementation could happen by developing one module at
+\ac{DAG}, so implementation could happen by developing one module at
 a time, and incrementally expanding the simulator.
 I started implementation with the \texttt{Worker} and its private memory,
 and tested its independent execution using various test-sub-classes. I then moved
@@ -520,17 +521,32 @@ onto incorporating communication methods such as \texttt{send} and
 \texttt{broadcastRow} with the communication manager, which I tested using more
 sub-classes of the \texttt{Worker} interface. After this, managing several workers
 at a time, and handling their automatic creation, was implemented with the
-\texttt{Manager} class and the worker factory, respectively. Then I incorporated
-the communication manager. The functionality for timing the execution is
+\texttt{Manager} class and a worker factory, respectively. Then I incorporated
+the communication manager into the work management. The functionality for timing the execution is
 implemented using the \textit{decorator} pattern, so this could incrementally
-be developed at any time after the parallel system simulation was done.
+be developed at any time after the base simulator was complete.
 
-The higher-level components such as the simulation, the \ac{APSP} solver and
-the input graph module were implemented according to the
+\begin{figure}
+    \begin{center}
+        \includegraphics[scale=1]{figs/component-overview2.pdf}
+    \end{center}
+    \caption{High-level overview of the implementation}
+    \label{fig:component-overview}
+\end{figure}
+
+The higher-level components such as the simulator, the \ac{APSP} solver and
+the input graph module were implemented with the
 \textit{iterative development model}. These components were fairly independent
-as we could use a serial matrix multiplication algorithm instead of running code
-on the parallel system. This allowed me to focus on one component at a time, as
-well as separate testing.
+as we could use a serial matrix-multiplication algorithm instead of running code
+on the parallel system, making the \ac{MatSquare} temporarily independent of
+the Manager and the Fox-Otto routine.
+This allowed me to focus on one component at a time, as
+well creating separate tests for each unit. Additionally, the extensions nicely
+fit on top of the base program. For example, when the base program is complete,
+I can generalise the Fox-Otto technique by using the \texttt{Worker} interface.
+Afterwards, I just need to replace the Fox-Otto module with its generalised
+version to allow \ac{MatSquare} to use it.
+
 
 % Incrementally make
 % * parallel system simulation
@@ -546,9 +562,9 @@ well as separate testing.
 %   manager
 
 I followed proper software engineering techniques during development. Encapsulation and
-modularisation were widely used and realised through use of immutability, access control
+modularisation were widely used and realized through use of immutability, access control
 mechanisms and packaging my code. I also wrote exceptions and assertions throughout my
-code where it was appropriate. I also used a coherent coding style and documented both
+code where it was appropriate. A coherent coding style was used and I documented both
 my methods and classes according to the Javadoc\footnote{\url{https://www.oracle.com/java/technologies/javase/javadoc-tool.html}} standard. The various components were also
 unit-tested.
 

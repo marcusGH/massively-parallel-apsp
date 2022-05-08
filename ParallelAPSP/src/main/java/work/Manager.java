@@ -14,7 +14,7 @@ public class Manager {
 
     private static final Logger LOGGER = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
 
-    private static final int MAX_CONCURRENT_THREADS = 16;
+    private static final int MAX_CONCURRENT_THREADS = 8;
 
     // number of rows and columns in input
     private final int n;

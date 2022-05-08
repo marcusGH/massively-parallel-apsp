@@ -1,6 +1,6 @@
 package timingAnalysis;
 
-import APSPSolver.RepeatedMatrixSquaring;
+import APSPSolver.MatSquare;
 import graphReader.GraphCompressor;
 import graphReader.GraphReader;
 import matrixMultiplication.FoxOtto;
@@ -20,7 +20,7 @@ import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class TimedRepeatedMatrixSquaring extends RepeatedMatrixSquaring {
+public class TimedMatSquare extends MatSquare {
 
     private static final Logger LOGGER = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
 
@@ -31,11 +31,11 @@ public class TimedRepeatedMatrixSquaring extends RepeatedMatrixSquaring {
     private final MultiprocessorAttributes multiprocessorAttributes;
 
     /**
-     * Performs the same functionality as {@link RepeatedMatrixSquaring}, but with additional timing functionality.
+     * Performs the same functionality as {@link MatSquare}, but with additional timing functionality.
      * This driver will decorate the {@link CommunicationManager}, {@link work.Manager}, and all the
      * {@link work.Worker}s such that during execution, the computation time of the workers are measured and the
-     * time required to handle the communication between them is estimated. After {@link TimedRepeatedMatrixSquaring#solve()}
-     * is called, the timing analyses can be retrieved with {@link TimedRepeatedMatrixSquaring#getTimingAnalysisResults()}.
+     * time required to handle the communication between them is estimated. After {@link TimedMatSquare#solve()}
+     * is called, the timing analyses can be retrieved with {@link TimedMatSquare#getTimingAnalysisResults()}.
      *
      * @param graphReader Container for the input graph of that APSP should be solved for. Let the number of nodes be n.
      * @param p The processing element lattice dimension. Regardless of n, a {@code p x p} lattice of processing elements
@@ -49,22 +49,22 @@ public class TimedRepeatedMatrixSquaring extends RepeatedMatrixSquaring {
      * @param numRepetitionsPerPhase The number of times to run each {@link work.Worker#computation(int)} when
      *                               measuring the computation time. The average of all these runs will be used.
      */
-    public TimedRepeatedMatrixSquaring(GraphReader graphReader, int p, Function<Integer, Topology> topologyFunction,
-                                       MultiprocessorAttributes multiprocessorAttributes,
-                                       Class<? extends MinPlusProduct> minPlusProductImplementation, int numRepetitionsPerPhase) {
+    public TimedMatSquare(GraphReader graphReader, int p, Function<Integer, Topology> topologyFunction,
+                          MultiprocessorAttributes multiprocessorAttributes,
+                          Class<? extends MinPlusProduct> minPlusProductImplementation, int numRepetitionsPerPhase) {
         super(graphReader, p, minPlusProductImplementation);
         this.numRepetitionsPerPhase = numRepetitionsPerPhase;
         this.topologyFunction = topologyFunction;
         this.multiprocessorAttributes = multiprocessorAttributes;
     }
 
-    public TimedRepeatedMatrixSquaring(GraphReader graphReader, int p, Function<Integer, Topology> topologyFunction,
-                                       Class<? extends MinPlusProduct> minPlusProductImplementation, int numRepetitionsPerPhase) {
+    public TimedMatSquare(GraphReader graphReader, int p, Function<Integer, Topology> topologyFunction,
+                          Class<? extends MinPlusProduct> minPlusProductImplementation, int numRepetitionsPerPhase) {
         this(graphReader, p, topologyFunction, new MultiprocessorAttributes(), minPlusProductImplementation, numRepetitionsPerPhase);
     }
 
-    public TimedRepeatedMatrixSquaring(GraphReader graphReader, Function<Integer, Topology> topologyFunction,
-                                       Class<? extends MinPlusProduct> minPlusProductImplementation, int numRepetitionsPerPhase) {
+    public TimedMatSquare(GraphReader graphReader, Function<Integer, Topology> topologyFunction,
+                          Class<? extends MinPlusProduct> minPlusProductImplementation, int numRepetitionsPerPhase) {
         this(graphReader, graphReader.getNumberOfNodes(), topologyFunction, minPlusProductImplementation, numRepetitionsPerPhase);
     }
 
@@ -109,7 +109,7 @@ public class TimedRepeatedMatrixSquaring extends RepeatedMatrixSquaring {
         GraphCompressor graphCompressor = new GraphCompressor(graphReader);
         graphReader = graphCompressor.getCompressedGraph();
 
-        TimedRepeatedMatrixSquaring solver = new TimedRepeatedMatrixSquaring(graphReader,
+        TimedMatSquare solver = new TimedMatSquare(graphReader,
                 8, SquareGridTopology::new, new MultiprocessorAttributes(),
                 GeneralisedFoxOtto.class, 1);
         solver.solve();

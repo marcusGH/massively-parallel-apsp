@@ -1,7 +1,7 @@
 package graphReader;
 
 import APSPSolver.APSPSolver;
-import APSPSolver.RepeatedMatrixSquaring;
+import APSPSolver.MatSquare;
 import javafx.util.Pair;
 import matrixMultiplication.GeneralisedFoxOtto;
 import util.LoggerFormatter;
@@ -115,10 +115,10 @@ public class GraphCompressor extends APSPSolver {
      * can be passed to the graph compressor constructor.
      *
      * @param p number of rows and columns of processing elements to use in the solver
-     * @return partially applied constructor for a {@link RepeatedMatrixSquaring} solver.
+     * @return partially applied constructor for a {@link MatSquare} solver.
      */
     public static Function<GraphReader, ? extends APSPSolver> getCurriedFoxOttoAPSPSolverConstructor(int p) {
-        return (graphReader -> new RepeatedMatrixSquaring(graphReader, p, GeneralisedFoxOtto.class));
+        return (graphReader -> new MatSquare(graphReader, p, GeneralisedFoxOtto.class));
     }
 
     /**
@@ -556,12 +556,5 @@ public class GraphCompressor extends APSPSolver {
         System.out.println(graphCompressor.getCompressedGraph().getEdges());
         System.out.println(graphCompressor.getShortestPath(1, 7));
         System.out.println(graphCompressor.getDistanceFrom(1, 7));
-
-        // Current bugs:
-        // * If there are multiples of an edge, we might need to use the edge from the original graph instead of the
-        //   compressed on if it is shorter. However, this will be a pain to fix, so just assume the uncompressed edge
-        //   is shorter in those cases by creating a check for Graph::hasEdge in the middle path thing
-        // * When uncompressing the edges, the order may be reversed. To fix this, check if hasEdge start middle.get(0)
-        //   and if not, just reverse the list before adding it
     }
 }

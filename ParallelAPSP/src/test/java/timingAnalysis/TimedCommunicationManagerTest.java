@@ -159,10 +159,10 @@ class TimedCommunicationManagerTest {
     @Test
     void summedTimingsAreCorrect() {
         // SETUP
-        TimedRepeatedMatrixSquaring solver;
+        TimedMatSquare solver;
         try {
             GraphReader graphReader = new GraphReader("../test-datasets/cal-compressed-random-graphs/50.cedge", false);
-            solver = new TimedRepeatedMatrixSquaring(graphReader, 4, SquareGridTopology::new, new MultiprocessorAttributes(), GeneralisedFoxOtto.class, 10);
+            solver = new TimedMatSquare(graphReader, 4, SquareGridTopology::new, new MultiprocessorAttributes(), GeneralisedFoxOtto.class, 10);
         } catch (ParseException e) {
             e.printStackTrace();
             fail("Could not read graph");

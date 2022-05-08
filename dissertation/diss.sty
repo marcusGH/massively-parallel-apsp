@@ -22,6 +22,9 @@
 \usepackage[final]{pdfpages} 
 % Pseudo-code
 \usepackage[linesnumbered,ruled]{algorithm2e}
+\newcommand\bluecomm[1]{\ttfamily\textcolor{blue}{#1}}
+\newcommand\blackcomm[1]{\ttfamily{#1}}
+\newcommand\tcpp[1]{\SetCommentSty{bluecomm}\tcp{#1}\SetCommentSty{blackcomm}}
 % figures on side of text
 \usepackage{wrapfig} 
 % Nice tables
@@ -149,3 +152,5 @@
 
 \DeclareMathOperator*{\argmax}{argmax}
 \DeclareMathOperator*{\argmin}{argmin}
+
+\def\erdos{Erd\H{o}s-R{\'e}nyi\xspace}
