@@ -9,13 +9,10 @@ import pandas as pd
 from matplotlib.legend_handler import HandlerLine2D
 
 tex_fonts = {
-    # Use LaTeX to write all text
     "text.usetex": True,
     "font.family": "serif",
-    # Use 12pt font in plots, to match 12pt font in document
     "axes.labelsize": 12,
     "font.size": 12,
-    # Make the legend/label fonts a little smaller
     "legend.fontsize": 8,
     "legend.title_fontsize": 10,
     "xtick.labelsize": 5, # 8 at full scale
@@ -191,7 +188,7 @@ def stall_until_last_one_finished(df):
     return df
 
 
-def plot_with_errorbars(ax, ns, ys, err, label, plot_kwargs=None, use_caps=False):
+def plot_with_errorbars(ax, ns, ys, err, label, plot_kwargs=None, use_caps=True):
     """
     Utility function for formatting the line segment plot
     :param ax: 
@@ -216,7 +213,7 @@ def plot_with_errorbars(ax, ns, ys, err, label, plot_kwargs=None, use_caps=False
             plot_kwargs.pop('c')
         # ax.fill_between(ns, ys - err, ys + err, alpha=0.3, **plot_kwargs)
 
-    SymHandler.get_legend_func()(ax)
+    # SymHandler.get_legend_func()(ax)
     #ax.legend(loc='lower right') #, prop={'size': 4})
 
 
@@ -388,7 +385,7 @@ def plot_ratio_bucket(base_path, ns, ps):
 def plot_cal():
     path = "timing-data/cal-real-sandy-bridge/cal-real-sandy-bridge" #-p-4.0.csv"
     y_func, y_err_func = lambda t: t['finish_time'] * 1E-6, lambda t: t['finish_time_err'] * 1E-6
-    fig, ax = plt.subplots(figsize=(7,7))
+    fig, ax = plt.subplots(figsize=set_size(fraction=.5, ratio=.87))
     ys = []
     err = []
     ps = [4,8,16,32,64,128,256]
@@ -400,6 +397,21 @@ def plot_cal():
     plot_with_errorbars(ax, ps, ys, err, label="Time")
     ax.set_yscale('log', nonpositive='clip')
     ax.set_xscale('log', nonpositive='clip')
+
+    ax.set_xlabel(r"Multiprocessor size: $p$", fontsize=10)
+    ax.set_ylabel("Time (ms)", fontsize=10)
+    # ax.set_title("Total execution time by MatSquare", fontsize=10)
+    ax.set_xticks(ps)
+    ax.set_xticklabels([str(p) for p in ps])
+    #ax.tick_params(axis='x', labelrotation=45)
+    # ax.get_xaxis().set_major_formatter(matplotlib.ticker.ScalarFormatter())
+    # ax.get_xaxis().get_major_ticks()[0].label.set_visible(False)
+    ax.get_xaxis().set_major_locator(FixedLocator(2 ** np.arange(1, 10)))
+    ax.get_xaxis().set_tick_params(which='minor', bottom=False)
+    fig.tight_layout()
+    #fig.set_constrained_layout_pads(w_pad=2, h_pad=2)
+    #fig.savefig('plots/total-time-scaling-internet-full-width-no-errorbars.pdf', format='pdf', bbox_inches='tight')
+    fig.savefig('plots/total-time-california.pdf', bbox_inches='tight')
     plt.show()
 
 def plot_cal2():
@@ -427,32 +439,31 @@ def plot_cal2():
                 communicate = np.sum(df['total_communication_time'].to_numpy())
                 ratio = compute / (communicate + compute)
                 # the number of elements per PE
-                classes[class_id]['xs'].append(math.ceil(1362 / p))
+                classes[class_id]['xs'].append(p)
                 # the parallel efficiency
                 classes[class_id]['ys'].append(ratio)
-                means[math.ceil(1362 / p)].append(ratio)
+                means[p].append(ratio)
                 # colour
                 col_id = int(np.log2(p) - 2)
                 classes[class_id]['col'].append(f"C{col_id}")
             else:
                 break
-    fig, ax = plt.subplots(figsize=set_size())
+    fig, ax = plt.subplots(figsize=set_size(fraction=.5,ratio=.87))
     # setup the plot
     ax.set_xscale('log', nonpositive='clip')
     ax.set_ylim([0, 1])
-    ax.set_xlabel("submatrix size per procesing element")
-    ax.set_ylabel("Parallel efficinecy")
-    ax.set_title("Parallel efficiency for different submatrix sizes")
+    ax.set_xlabel("Multiprocessor size: $p$",fontsize=10)
+    ax.set_ylabel("Computation ratio",fontsize=10)
     # scatter for the different multiprocessor classes
     for mpc in classes:
         ax.scatter(mpc['xs'], mpc['ys'], c=mpc['col'], s=8, marker='x',
                    label=f"{mpc['p']} x {mpc['p']}",
                    alpha=0.5, edgecolors='none')
     # produce a legend
-    leg = ax.legend(loc="lower right", title="Multiprocessor size")
-    for lh in leg.legendHandles:
-        lh.set_alpha(1)
-        lh._sizes = [14]
+    # leg = ax.legend(loc="lower right", title="Multiprocessor size")
+    # for lh in leg.legendHandles:
+    #     lh.set_alpha(1)
+    #     lh._sizes = [14]
     # overlay a mean across the points
     xs2 = []
     ys2 = []
@@ -467,6 +478,15 @@ def plot_cal2():
     ax.plot(xs2, ys2, zorder=-8)
     # error behind scatter
     ax.fill_between(xs2, ys2 - err, ys2 + err, zorder=-10, alpha=0.3)
+    ax.set_ylim([0,1])
+    ax.set_yticks([0,.1,.2,.3,.4,.5,.6,.7,.8,.9,1])
+    ax.set_xticks(ps)
+    ax.set_xticklabels([str(p) for p in ps])
+    ax.get_xaxis().set_tick_params(which='minor', bottom=False)
+    ax.get_xaxis().set_major_locator(FixedLocator(2 ** np.arange(1, 10)))
+    ax.grid(True)
+    fig.tight_layout()
+    fig.savefig('plots/bucket-california.pdf', bbox_inches='tight')
     plt.show()
 
 if __name__ == "__main__":
@@ -480,4 +500,5 @@ if __name__ == "__main__":
     internet = "timing-data/cal-random-internet/cal-random-internet-3-repeats"
     #plot_total_time_scaling(internet, ns, [4, 8, 16, 32, 64, 128])
     #plot_ratio_scaling(taihu, ns, [16, 32, 64, 128])
-    plot_ratio_bucket(sandy, ns, [4, 8, 16, 32, 64, 128])
+    #plot_ratio_bucket(sandy, ns, [4, 8, 16, 32, 64, 128])
+    plot_cal2()

@@ -9,15 +9,11 @@ from shapely.geometry import Point, LineString
 import sys, getopt
 
 tex_fonts = {
-        # Use LaTeX to write all text
         "text.usetex": True,
         "font.family": "serif",
-        # Use 12pt font in plots, to match 12pt font in document
         "axes.labelsize": 12,
         "font.size": 12,
-        # Make the legend/label fonts a little smaller
         "legend.fontsize": 8,
-        # "legend.title_fontsize": 10,
         "xtick.labelsize": 10, # 8 at full scale
         "ytick.labelsize": 10
         }
@@ -69,6 +65,7 @@ def parse_space_separated_file(filename):
             yield [x for x in re.split(r'\s+', line.strip())]
 
 def plotGraph(ax, nodes_gdf, edges_gdf, alphaMult=1, extra_nodes=None, edge_col=None):
+    print(len(nodes_gdf))
     if extra_nodes is None:
         # wacky heatmap attempt
         nodes_gdf.plot(ax=ax,alpha=0.005 * alphaMult, color="red", markersize=100)
@@ -199,10 +196,11 @@ def main(argv):
     # filter out points
     elif dist is not None and doPlot:
         circle = Point(xloc, yloc).buffer(dist)
-        fig, ax = plt.subplots(figsize=(13,13))
-        plotGraph(ax, nodes_gdf, edges_gdf, 0.05)
+        fig, ax = plt.subplots(figsize=set_size(fraction=1))
+        plotGraph(ax, nodes_gdf, edges_gdf, 0.15)
         plotGraph(ax, nodes_gdf[nodes_gdf.within(circle)], edges_gdf[edges_gdf.within(circle)])
-        plt.show()
+        # plt.show()
+        fig.savefig("example-plot-woohoo.png", dpi=300)
 
     if output_file:
         if dist is None:
