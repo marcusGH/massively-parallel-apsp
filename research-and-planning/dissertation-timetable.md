@@ -64,12 +64,6 @@ TODO on rough cleanup:
 * Then set-up **sign-posts**, including introduction paragraphs ("temasetning senere")
 * Write introduction + conclusion with future work...
 
-Diagram cleanups:
-* 2.1 in preperation, add graph reader / input graph distinction
-* 3.2.4 Estimating time, add the diagram for stalling, and a par. explaining it!
-Paragraphs requiring more elaborate tidying:
-* APSP via repeated matSquaring
-
 TODO Larry draft by Tuesday:
 * Go through writing in implementation, and **shorten** the different sections.
   Cut out what's unceecsarry, e.g. predecessor matrix?, example graph?, and
@@ -89,16 +83,18 @@ TODO fine clean:
   after they are referenced
 
 Last couple of TODO:
-* Add description of evaluation.py, and indicate 100 lines not written
+* DONE Have a look through all of the code and remove sus comments!
+* DONE Add new unit test screenshot (collapsed)
+* DONE Full screenshot of unit tests in appendix as well
+* DONE Add description of evaluation.py, and indicate 100 lines not written
+* DONE Full unit test code repository in appendix
 * (Possible add something below main heading in introduction?)
-* Add "Parallel system simulator" box in fig 2.1, high-level overview in prep
-* Rearrange diagrams so doesn't go out of bounds...
-* Have a look through all of the code and remove sus comments!
-* Add new unit test screenshot (collapsed)
-* Full unit test code repository in appendix
-* Full screenshot of unit tests in appendix as well
 * Go over each diagram and fix in inkscape possibly
-* Finally, redo line and word count
+* DONE Add "Parallel system simulator" box in fig 2.1, high-level overview in prep
+* DONE Add topology to timing diagram, and rename to MatSquare
+* DONE Rearrange diagrams so doesn't go out of bounds...
+* Fix citations
+* Finally, redo line and word count and rerun make/build instructions?
 
 Fix up text in implementation, then move memory model infront of work management
 Mention "only possible because of seperating computation into phases" on time trick

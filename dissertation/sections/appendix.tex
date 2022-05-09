@@ -167,6 +167,33 @@ echo "$(head -n 4 diss.tex)
 \end{verbatim}
 % }}}
 
+% Final line count {{{
+\section{Final line count}%
+\label{sec:Final line count}
+
+I counted the \texttt{main/java/} lines with:
+
+\begin{verbatim}
+find ParallelAPSP/src/main/java/ -name '*.java' | xargs wc -l
+\end{verbatim}
+
+and the lines in \texttt{test/java/} with:
+
+\begin{verbatim}
+find ParallelAPSP/src/test/java/ -name '*.java' | xargs wc -l
+\end{verbatim}
+
+To count the lines of Python code, I ran:
+
+\begin{verbatim}
+find scripts/ -name '*.py' | xargs wc -l
+\end{verbatim}
+
+and subtracted 53 from the total count (see \cref{sec:evaluation}).
+
+% }}}
+
+
 % random graphs{{{
 \section{\texttt{random-graphs.py}}%
 \label{sec:ttsdasdasd}
@@ -232,23 +259,13 @@ done
 
 % evaluation.py {{{
 \section{\texttt{evaluation.py}}%
-\label{sec:evaluation.py}
+\label{sec:evaluation}
 
 This script was used to create all the plots involving timing measurement data.
 There is a total of 53 lines of Python code in this script that was not written
 by me, and the corresponding code has been attributed to their authors.
 
 % }}}
-
-\begin{figure}[t]
-    \begin{center}
-        \includegraphics[scale=.6]{figs/unit-test-full.png}
-    \end{center}
-    \caption[All unit tests passed]{A screenshot showing all of the unit tests and
-    their success.}
-    \label{fig:unit-test-full}
-\end{figure}
-
 
 \chapter{Further plots}
 
@@ -365,18 +382,19 @@ To run the unit tests, run the command
 mvn clean test
 \end{verbatim}
 
-from the directory \texttt{ParallelAPSP/}. This takes about 90 seconds to run on
-my computer and results in the output (some lines have been omitted):
+from the directory \texttt{ParallelAPSP/}. Note that this requires some test input
+graph files to be present, otherwise some tests will fail.
+The output should be (some lines have been omitted):
 \begin{verbatim}
 ...
 [INFO] Results:
 [INFO] 
-[INFO] Tests run: 30, Failures: 0, Errors: 0, Skipped: 0
+[INFO] Tests run: 32, Failures: 0, Errors: 0, Skipped: 0
 [INFO] 
 [INFO] ---------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ---------------------------------------------------------------------
-[INFO] Total time:  01:21 min
+[INFO] Total time:  04:21 min
 [INFO] Finished at: 2022-05-06T16:40:04+01:00
 [INFO] ---------------------------------------------------------------------
 \end{verbatim}

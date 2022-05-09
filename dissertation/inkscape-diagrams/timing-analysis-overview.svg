@@ -11,8 +11,8 @@
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    width="453.53799pt"
-   height="445.35632pt"
-   viewBox="0 0 159.99813 157.11182"
+   height="505pt"
+   viewBox="0 0 159.99813 178.15278"
    version="1.1"
    id="svg8"
    inkscape:version="0.92.3 (2405546, 2018-03-11)"
@@ -25,8 +25,8 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="1.4142136"
-     inkscape:cx="180.97631"
-     inkscape:cy="262.89322"
+     inkscape:cx="270.77824"
+     inkscape:cy="407.3279"
      inkscape:document-units="pt"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -37,7 +37,7 @@
      fit-margin-bottom="5"
      inkscape:window-width="2560"
      inkscape:window-height="1410"
-     inkscape:window-x="1920"
+     inkscape:window-x="0"
      inkscape:window-y="30"
      inkscape:window-maximized="1"
      showguides="true"
@@ -779,6 +779,53 @@
          style="fill:#ffffff;fill-rule:evenodd;stroke:#000000;stroke-width:1.00000003pt;stroke-opacity:1"
          transform="scale(0.8)" />
     </marker>
+    <marker
+       inkscape:stockid="EmptyTriangleOutL"
+       orient="auto"
+       refY="0"
+       refX="0"
+       id="marker6421-2"
+       style="overflow:visible"
+       inkscape:isstock="true"
+       inkscape:collect="always">
+      <path
+         id="path6419-6"
+         d="M 5.77,0 -2.88,5 V -5 Z"
+         style="fill:#ffffff;fill-rule:evenodd;stroke:#000000;stroke-width:1.00000003pt;stroke-opacity:1"
+         transform="matrix(0.8,0,0,0.8,-4.8,0)"
+         inkscape:connector-curvature="0" />
+    </marker>
+    <marker
+       inkscape:isstock="true"
+       style="overflow:visible"
+       id="marker6982-7"
+       refX="0"
+       refY="0"
+       orient="auto"
+       inkscape:stockid="Arrow1Mend">
+      <path
+         transform="matrix(-0.4,0,0,-0.4,-4,0)"
+         style="fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:1.00000003pt;stroke-opacity:1"
+         d="M 0,0 5,-5 -12.5,0 5,5 Z"
+         id="path6980-4"
+         inkscape:connector-curvature="0" />
+    </marker>
+    <marker
+       inkscape:stockid="EmptyDiamondL"
+       orient="auto"
+       refY="0"
+       refX="0"
+       id="marker11384-7"
+       style="overflow:visible"
+       inkscape:isstock="true"
+       inkscape:collect="always">
+      <path
+         id="path2788-9"
+         d="M 0,-7.0710768 -7.0710894,0 0,7.0710589 7.0710462,0 Z"
+         style="fill:#ffffff;fill-rule:evenodd;stroke:#000000;stroke-width:1.00000003pt;stroke-opacity:1"
+         transform="scale(0.8)"
+         inkscape:connector-curvature="0" />
+    </marker>
   </defs>
   <metadata
      id="metadata5">
@@ -796,12 +843,12 @@
      inkscape:groupmode="layer"
      id="layer2"
      inkscape:label="Layer 2"
-     transform="translate(0,15.522217)" />
+     transform="translate(0,36.563177)" />
   <g
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1"
-     transform="translate(0,-139.8882)">
+     transform="translate(0,-118.84724)">
     <rect
        style="fill:#a6b3ee;fill-opacity:1;stroke:none;stroke-width:0.65875518;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        id="rect1402"
@@ -1200,7 +1247,7 @@
          id="tspan1229"
          x="16.441963"
          y="284.63016"
-         style="stroke-width:0.26458332"></tspan></text>
+         style="stroke-width:0.26458332" /></text>
     <rect
        style="fill:#f5ff88;fill-opacity:1;stroke:none;stroke-width:1.24930799;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        id="rect1460-3-0"
@@ -1268,14 +1315,14 @@
     <text
        xml:space="preserve"
        style="font-style:normal;font-weight:normal;font-size:10.58333302px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458335"
-       x="40.165447"
+       x="51.807125"
        y="293.04419"
        id="text1481-9-0-9-2-1-8"><tspan
          sodipodi:role="line"
-         x="40.165447"
+         x="51.807125"
          y="293.04419"
          style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:3.88055587px;font-family:cmr10;-inkscape-font-specification:'cmr10, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;stroke-width:0.26458335"
-         id="tspan1491-6-8-3-5-9-2">RepeatedMatrixSquaring</tspan></text>
+         id="tspan1491-6-8-3-5-9-2">MatSquare</tspan></text>
     <rect
        style="fill:#e98e8e;fill-opacity:1;stroke:none;stroke-width:0.23869801;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
        id="rect1373-4"
@@ -2466,21 +2513,21 @@
          id="tspan1491-6-8-36-6">Manager</tspan></text>
     <rect
        ry="0"
-       y="147.55676"
+       y="144.93225"
        x="1.6302557"
-       height="80.324814"
+       height="82.949318"
        width="71.554817"
        id="rect1203-4-0-2"
-       style="fill:#baf1c6;fill-opacity:1;stroke:#000000;stroke-width:0.42792475;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+       style="fill:#baf1c6;fill-opacity:1;stroke:#000000;stroke-width:0.43485948;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
     <text
        id="text866-76-0"
-       y="151.29449"
+       y="149.70702"
        x="10.465488"
        style="font-style:italic;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.23333359px;line-height:1.25;font-family:'Century Schoolbook L';-inkscape-font-specification:'Century Schoolbook L, Italic';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458335"
        xml:space="preserve"><tspan
          id="tspan868-0-7"
          style="font-style:normal;font-variant:normal;font-weight:200;font-stretch:normal;font-size:4.23333311px;font-family:'CMU Typewriter Text';-inkscape-font-specification:'CMU Typewriter Text, Ultra-Light';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;stroke-width:0.26458335"
-         y="151.29449"
+         y="149.70702"
          x="10.465488"
          sodipodi:role="line">TimedCommunicationManager</tspan></text>
     <text
@@ -2573,7 +2620,7 @@
     <path
        inkscape:connector-curvature="0"
        id="path4952-9-2-1"
-       d="M 1.4610621,153.48943 H 72.554756"
+       d="M 1.4610621,151.37275 H 72.554756"
        style="fill:none;stroke:#000000;stroke-width:0.26996523px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
     <path
        inkscape:connector-curvature="0"
@@ -2583,27 +2630,32 @@
     <text
        transform="scale(0.98983088,1.0102736)"
        id="text866-7-5-8-6-8"
-       y="155.3257"
+       y="152.70676"
        x="2.7356942"
        style="font-style:italic;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.27682543px;line-height:69.99999881%;font-family:'Century Schoolbook L';-inkscape-font-specification:'Century Schoolbook L, Italic';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26730159"
        xml:space="preserve"><tspan
          id="tspan5668-7-7"
          style="font-style:normal;font-variant:normal;font-weight:200;font-stretch:normal;font-size:2.82222223px;line-height:69.99999881%;font-family:'CMU Typewriter Text';-inkscape-font-specification:'CMU Typewriter Text, Ultra-Light';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;stroke-width:0.26730159"
-         y="155.3257"
+         y="152.70676"
          x="2.7356942"
          sodipodi:role="line">-memoryTopology : Topology</tspan><tspan
          style="font-style:normal;font-variant:normal;font-weight:200;font-stretch:normal;font-size:2.82222223px;line-height:69.99999881%;font-family:'CMU Typewriter Text';-inkscape-font-specification:'CMU Typewriter Text, Ultra-Light';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;stroke-width:0.26730159"
-         y="158.31947"
+         y="155.70053"
          x="2.7356942"
          sodipodi:role="line"
          id="tspan6057">-attributes : MultiprocessorAttributes</tspan><tspan
          style="font-style:normal;font-variant:normal;font-weight:200;font-stretch:normal;font-size:2.82222223px;line-height:69.99999881%;font-family:'CMU Typewriter Text';-inkscape-font-specification:'CMU Typewriter Text, Ultra-Light';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;stroke-width:0.26730159"
-         y="161.31325"
+         y="158.69431"
          x="2.7356942"
          sodipodi:role="line"
          id="tspan6059">-workers : Matrix&lt;TimedWorker&gt;</tspan><tspan
          style="font-style:normal;font-variant:normal;font-weight:200;font-stretch:normal;font-size:2.82222223px;line-height:69.99999881%;font-family:'CMU Typewriter Text';-inkscape-font-specification:'CMU Typewriter Text, Ultra-Light';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;stroke-width:0.26730159"
-         y="164.30704"
+         y="161.6881"
+         x="2.7356942"
+         sodipodi:role="line"
+         id="tspan5533">-currentWorkerTimes : Matrix&lt;Double&gt;</tspan><tspan
+         style="font-style:normal;font-variant:normal;font-weight:200;font-stretch:normal;font-size:2.82222223px;line-height:69.99999881%;font-family:'CMU Typewriter Text';-inkscape-font-specification:'CMU Typewriter Text, Ultra-Light';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;stroke-width:0.26730159"
+         y="164.68187"
          x="2.7356942"
          sodipodi:role="line"
          id="tspan6061">- ...</tspan></text>
@@ -2878,14 +2930,14 @@
     <text
        id="text6409"
        y="293.04419"
-       x="102.07795"
+       x="115.30709"
        style="font-style:normal;font-weight:normal;font-size:10.58333302px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458335"
        xml:space="preserve"><tspan
          id="tspan6407"
          style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:3.88055587px;font-family:cmr10;-inkscape-font-specification:'cmr10, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;stroke-width:0.26458335"
          y="293.04419"
-         x="102.07795"
-         sodipodi:role="line">TimedRepeatedMatrixSquaring</tspan></text>
+         x="115.30709"
+         sodipodi:role="line">TimedMatSquare</tspan></text>
     <path
        style="fill:none;stroke:#000000;stroke-width:0.35277778;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#marker6421)"
        d="M 98.028123,292.10522 H 86.783332"
@@ -2943,7 +2995,7 @@
        sodipodi:nodetypes="cc" />
     <path
        style="fill:none;stroke:#000000;stroke-width:0.35277778;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#marker11384)"
-       d="m 73.306084,191.34749 7.391832,0.11053"
+       d="m 73.306084,191.34749 7.987144,-0.0218"
        id="path4655-5-6-5-2-6"
        inkscape:connector-curvature="0"
        sodipodi:nodetypes="cc" />
@@ -2956,6 +3008,86 @@
        style="fill:none;stroke:#000000;stroke-width:0.34147352;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#marker11384-1)"
        d="m 73.083777,160.27964 17.525728,0.0631"
        id="path4655-5-6-5-2-6-6"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="cc" />
+    <rect
+       ry="0"
+       y="119.6386"
+       x="10.191919"
+       height="19.924137"
+       width="57.219151"
+       id="rect1203-2-5-4-7"
+       style="fill:#f5ff88;fill-opacity:1;stroke:#000000;stroke-width:0.34466389;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+    <text
+       id="text866-3-0-0-8-8"
+       y="134.64874"
+       x="11.027353"
+       style="font-style:italic;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.23333359px;line-height:69.99999881%;font-family:'Century Schoolbook L';-inkscape-font-specification:'Century Schoolbook L, Italic';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458335"
+       xml:space="preserve"><tspan
+         style="font-style:normal;font-variant:normal;font-weight:200;font-stretch:normal;font-size:2.82222223px;line-height:69.99999881%;font-family:'CMU Typewriter Text';-inkscape-font-specification:'CMU Typewriter Text, Ultra-Light';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;stroke-width:0.26458335"
+         y="134.64874"
+         x="11.027353"
+         sodipodi:role="line"
+         id="tspan6362-0">+distance(i1 : int, j1 : int,</tspan><tspan
+         style="font-style:normal;font-variant:normal;font-weight:200;font-stretch:normal;font-size:2.82222223px;line-height:69.99999881%;font-family:'CMU Typewriter Text';-inkscape-font-specification:'CMU Typewriter Text, Ultra-Light';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;stroke-width:0.26458335"
+         y="137.61208"
+         x="11.027353"
+         sodipodi:role="line"
+         id="tspan5917">  i2 : int, j2 : int) : int</tspan></text>
+    <text
+       id="text866-5-4-1-0-9"
+       y="123.4727"
+       x="38.696819"
+       style="font-style:italic;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.23333359px;line-height:1.25;font-family:'Century Schoolbook L';-inkscape-font-specification:'Century Schoolbook L, Italic';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458335"
+       xml:space="preserve"><tspan
+         id="tspan868-31-9-3-7-7"
+         style="font-style:normal;font-variant:normal;font-weight:200;font-stretch:normal;font-size:4.23333311px;font-family:'CMU Typewriter Text';-inkscape-font-specification:'CMU Typewriter Text, Ultra-Light';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:center;writing-mode:lr-tb;text-anchor:middle;stroke-width:0.26458335"
+         y="123.4727"
+         x="38.696819"
+         sodipodi:role="line">&lt;&lt;interface&gt;&gt;</tspan><tspan
+         style="font-style:italic;font-variant:normal;font-weight:500;font-stretch:normal;font-size:4.23333311px;font-family:'CMU Typewriter Text';-inkscape-font-specification:'CMU Typewriter Text, Medium Italic';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:center;writing-mode:lr-tb;text-anchor:middle;stroke-width:0.26458335"
+         y="128.86699"
+         x="38.696819"
+         sodipodi:role="line"
+         id="tspan5880">Topology</tspan></text>
+    <path
+       inkscape:connector-curvature="0"
+       id="path4952-6-1-8-3-0-5"
+       d="m 10.310405,132.01717 h 57.31726"
+       style="fill:none;stroke:#000000;stroke-width:0.35277778;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+    <path
+       inkscape:connector-curvature="0"
+       id="path4952-6-1-8-3-9-2-9"
+       d="m 10.460455,130.43241 h 57.31727"
+       style="fill:none;stroke:#000000;stroke-width:0.35277778;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+    <rect
+       y="125.1535"
+       x="79.289307"
+       height="9.8567305"
+       width="60.536549"
+       id="rect6405-9"
+       style="fill:#f5ff88;fill-opacity:1;stroke:none;stroke-width:1.36272418;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       ry="4.2094951" />
+    <text
+       id="text6409-4"
+       y="130.84219"
+       x="93.65564"
+       style="font-style:normal;font-weight:normal;font-size:10.58333302px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458335"
+       xml:space="preserve"><tspan
+         id="tspan6407-4"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:3.88055587px;font-family:cmr10;-inkscape-font-specification:'cmr10, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;stroke-width:0.26458335"
+         y="130.84219"
+         x="93.65564"
+         sodipodi:role="line">SquareGridTopology</tspan></text>
+    <path
+       style="fill:none;stroke:#000000;stroke-width:0.35277778;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#marker6421-2)"
+       d="M 79.02252,130.43241 H 67.777725"
+       id="path6411-6"
+       inkscape:connector-curvature="0" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:0.35277778;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#marker11384-7)"
+       d="m 39.382406,145.04548 -0.0165,-3.59363"
+       id="path4655-5-6-5-2-6-0"
        inkscape:connector-curvature="0"
        sodipodi:nodetypes="cc" />
   </g>

@@ -28,8 +28,6 @@
             [graph-extractor.py]
             [download-spatial-datasets.sh]
             [random-graphs.py]
-        ]
-        [evaluation/
             [evaluation.py]
         ]
         [ParallelAPSP/src/
@@ -102,10 +100,10 @@
     indicate Java interfaces or abstract classes.  Subdirectories within
     \texttt{main/java/}
     are Java packages. An overview of the unit tests in the \texttt{test/java/}
-    directory is presented in \cref{fig:unit-test-overview} and their result
-    in \ref{fig:unit-test-full}.
-    The whole codebase, as presented here, contains 5877 lines of Java code,
-    and 728 lines of Python code. All of the code, except about 120 lines of Python code, was written by me. The \texttt{work/}, \texttt{memoryModel/}
+    directory is presented in \cref{sec:Unit tests} and their result
+    in \cref{fig:unit-test-full}.
+    The whole codebase, as presented here, contains 5880 lines of Java code,
+    and 729 lines of Python code.  The \texttt{work/}, \texttt{memoryModel/}
     and \texttt{timingAnalysis/} packages are elaborated in their
     respective subsections in \cref{sec:Simulation of a distributed memory
     multiprocessor}, and the \texttt{APSPSolver/} and
@@ -251,8 +249,8 @@ the graphs were of sizes: \texttt{10,20,30,40,50,60,70,80,90,100,%
 \begin{center}
     \includegraphics[scale=.7]{figs/plots/example-graph.eps}
 \end{center}
-\caption[Example of Erd{\"o}s-R{\'e}nyi graph]{A visualisation of a graph generated with the modified
-Erd{\"o}s-Renyi model. The graph has $n=60$ vertices, and the length of the
+\caption[Example of \erdos graph]{A visualisation of a graph generated with the modified
+\erdos model. The graph has $n=60$ vertices, and the length of the
 edges correspond to their weight\footnotemark.}%
 \label{fig:example-graph-random}%
 \end{figure}
@@ -615,7 +613,7 @@ timing measurements were added.
     \includegraphics[scale=1]{figs/timing-analysis-overview.pdf}
 \end{center}
 \caption[An overview of the components in the \texttt{timingAnalysis} package]{An overview of the components of the \texttt{timingAnalysis} package.
-Note that the \texttt{GeneralisedFoxOtto} and the \texttt{RepeatedMatrixSquaring}
+Note that the \texttt{GeneralisedFoxOtto} and the \texttt{MatSquare}
 classes are not part of this package. Additionally, the green class diagrams with
 a yellow class inside it are short-hands for the decorator-pattern: The green
 classes extend the base class, shown in yellow, and contains a reference
@@ -747,16 +745,6 @@ because we separated computation and communication into phases when managing wor
 
 % TODO: Set up more sign-posts here, add introrudction paragraph, followed by notation paragraph, where also say what $p$, $n$ is, etc., and how we pad the input. Then read through again and make sure whole of algorithm, referecning pseudo-code mroe throughly, comes through
 
-\begin{wrapfigure}{r}{0.20\textwidth}
-    \centering
-    \vspace{-10pt}
-    \includegraphics[scale=1]{figs/example-apsp-graph.pdf}
-    \vspace{-20pt}
-    \caption{A directed graph with 7 vertices.}%
-    \label{fig:example-graph}
-    \vspace{-10pt}
-\end{wrapfigure}
-
 We will now look at the \emph{\acl{MatSquare}} algorithm, which I will
 abbreviate as \emph{\acs{MatSquare}}. I consider the generalised version of
 the algorithm, which can handle any combination of $n$ and $p$.
@@ -775,6 +763,13 @@ and emphasize how it fulfils the semantics assumed.
 
 \subsubsection{Notation}%
 \label{ssub:Notation}
+
+\begin{wrapfigure}{r}{0.20\textwidth}
+    \centering
+    \includegraphics[scale=1]{figs/example-apsp-graph.pdf}
+    \caption{A directed graph with 7 vertices.}%
+    \label{fig:example-graph}
+\end{wrapfigure}
 
 Before getting to the description of the algorithm, we must go through
 the notation I will be using. The parallel system has $p^2$ \acp{PE}, laid out
@@ -817,9 +812,30 @@ cycles}.
 \subsubsection{The \ac{MatSquare} algorithm}%
 \label{ssub:The algorithm}
 
+
+This algorithm computes
+the distance- and predecessor matrix. 
+Let  $A$ be the adjacency matrix for graph $G$.
+We want to add self-loops to each vertex, by setting
+$A_{i,i} \leftarrow 0$ for each $0 \leq i < n$, because
+it allows repeated distance products to capture shorter paths. For example,
+if  $A$ is the adjacency matrix for the graph in \cref{fig:example-graph},
+$A^4_{0,1}$ would be the length of the path $1 \xrightarrow{2} 2
+\xrightarrow{0} 2 \xrightarrow{2} 5 \xrightarrow{1} 1$, which in practice just
+contains 3 edges.  We notice that this modified adjacency matrix fits the
+definition of $M_{dist}^{(1)}$. Additionally, computing the
+distance product between two matrices $M_{dist}^{(x)}$ and $M_{dist}^{(y)}$ gives
+a matrix $M_{dist}^{(x+y)}$ containing distances of shortest paths of length at most
+$x+y$. As such, one way to compute the distance matrix is
+\begin{equation}
+    M_{dist}=M_{dist}^{(n)}=
+    \underbrace{M_{dist}^{(1)} \otimes \cdots \otimes M^{(1)}_{dist}}_{n-1 \textrm{ times}}
+    =
+    \underbrace{A \otimes \cdots \otimes A}_{n-1 \textrm{ times}}
+\end{equation}%
+%
 \begin{wrapfigure}{r}{0.55\textwidth}
     \begin{minipage}{0.55\textwidth}
-        \vspace{-60pt}
         \begin{algorithm}[H]
             \caption{MatSquare}%
             \label{alg:matsquare}
@@ -851,28 +867,7 @@ cycles}.
         \end{algorithm}
         \vspace{-15pt}
     \end{minipage}
-\end{wrapfigure}
-
-This algorithm computes
-the distance- and predecessor matrix. 
-Let  $A$ be the adjacency matrix for graph $G$.
-We want to add self-loops to each vertex, by setting
-$A_{i,i} \leftarrow 0$ for each $0 \leq i < n$, because
-it allows repeated distance products to capture shorter paths. For example,
-if  $A$ is the adjacency matrix for the graph in \cref{fig:example-graph},
-$A^4_{0,1}$ would be the length of the path $1 \xrightarrow{2} 2
-\xrightarrow{0} 2 \xrightarrow{2} 5 \xrightarrow{1} 1$, which in practice just
-contains 3 edges.  We notice that this modified adjacency matrix fits the
-definition of $M_{dist}^{(1)}$. Additionally, computing the
-distance product between two matrices $M_{dist}^{(x)}$ and $M_{dist}^{(y)}$ gives
-a matrix $M_{dist}^{(x+y)}$ containing distances of shortest paths of length at most
-$x+y$. As such, one way to compute the distance matrix is
-\begin{equation}
-    M_{dist}=M_{dist}^{(n)}=
-    \underbrace{M_{dist}^{(1)} \otimes \cdots \otimes M^{(1)}_{dist}}_{n-1 \textrm{ times}}
-    =
-    \underbrace{A \otimes \cdots \otimes A}_{n-1 \textrm{ times}}
-\end{equation}
+\end{wrapfigure}%
 However, we can reduce the number of distance product matrix multiplications
 from $\Theta(n)$ to $\Theta(\log n)$ by squaring $A$ $\lceil \log n \rceil$
 times, which is what happens in the \texttt{for}-loop in \autoref{alg:matsquare}.
@@ -1058,12 +1053,11 @@ phases are implemented in lines 9--11 and 26--27 in \autoref{alg:foxOtto}.
 
 % \begin{wrapfigure}{r}{0.36\textwidth} % at scale 1.0
 \begin{wrapfigure}{r}{0.27\textwidth}
-    \vspace{-35pt}
+    \vspace{-20pt}
     \includegraphics[scale=.8]{figs/compression-notation.pdf}
-    \vspace{-10pt}
     \caption{Graph before and after compression.}%
     \label{fig:compression-notation}%
-    \vspace{-60pt}
+    \vspace{-20pt}
 \end{wrapfigure}
 
 Since each \ac{PE} $p_{i,j}$ is responsible for computing a $n'\times n'$

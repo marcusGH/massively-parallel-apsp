@@ -51,7 +51,6 @@ computers.
         %    to GitHub as backup.
     }%
     \label{fig:cal-node-paths}%
-    \vspace{-55pt}
 \end{wrapfigure}
 
 % (1) MatMul-based algo, find shortet path, can give list of nodes
@@ -82,16 +81,17 @@ To do this, I implemented Dijkstra's algorithm with path-reconstruction, which
 is a easier to prove the correctness of compared to the \ac{MatSquare}
 algorithm. I then ran this and my algorithm and asserted the equality of the
 results for all $430^2$ vertex-pairs. We can see the results of these tests in
-\texttt{MatSquareTest} in \cref{fig:unit-test}. This was  done for
+\texttt{MatSquareTest} in \cref{fig:unit-test-full}. This was  done for
 both the regular and generalised version of the algorithm.
 
-\begin{figure}
-\begin{center}
-    \includegraphics[scale=.6]{figs/unit-test-small2.png}
-\end{center}
-\caption[Screenshot of unit tests' sucess]{A screenshot showing that all the unit tests written passed successfully. See \cref{fig:unit-test-full} for the list of each individual test. Additionally, the repository layout for \texttt{test/java/} is found in \cref{sec:Unit tests}}
-\label{fig:unit-test}
-\end{figure}
+% \begin{figure}
+% \begin{center}
+%     \includegraphics[scale=.6]{figs/unit-test-small2.png}
+% \end{center}
+% \caption[Screenshot of unit tests' sucess]{A screenshot showing that all the unit tests written passed successfully. See \cref{fig:unit-test-full} for the list of each individual test. Additionally, the repository layout for \texttt{test/java/} is found in \cref{sec:Unit tests}}
+% \label{fig:unit-test}
+% \end{figure}
+
 
 I also successfully extended the project with the graph compression optimisation.
 Arbitrary undirected graphs can be compressed through removal of two-degree nodes,
@@ -101,7 +101,7 @@ The algorithm for mapping \ac{APSP} queries to the compressed
 graphs and mapping the results back is also correct. I verified this by
 comparing the paths found when compressing the graph to the output from
 \ac{MatSquare} running on the same graph, but uncompressed. I did this in a unit
-test in \cref{fig:unit-test}, and found that it could correctly reconstruct the
+test in \cref{fig:unit-test-full}, and found that it could correctly reconstruct the
 list of vertices in all $430^2$ paths in a large graph.
 To further
 demonstrate that paths are reconstructed properly when mapping results from
@@ -469,5 +469,14 @@ real-world-like graphs on a wide range of different parallel systems.
 
 % }}}
 
+\begin{figure}[t]
+    \begin{center}
+        \includegraphics[scale=.6]{figs/unit-test-full.png}
+    \end{center}
+    \caption[All unit tests passed]{A screenshot showing all of the unit tests written and their status. The structure of the tests correspond to the directory
+        structure of \texttt{ParallelAPSP/src/test/java/}, but the full directory
+    structure can be found in \cref{sec:Unit tests}.}
+    \label{fig:unit-test-full}
+\end{figure}
 
 % vim: foldmethod=marker
