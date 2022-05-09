@@ -3,7 +3,7 @@
 
 \appendix
 
-\chapter{Further definitions}%
+\chapter{Definitions and proofs}%
 \label{cha:Further definitions}
 
 % {{{
@@ -11,7 +11,42 @@
 \section{Abstract algebra}%
 \label{sec:Abstract algebra}
 
-TODO
+A group $(G, \bullet)$ consists of a set $G$ and an operator $\bullet$ that takes
+two elements of $G$ and gives a new element in $G$. A group also:
+\begin{itemize}
+    \item is closed under $\bullet$
+    \item the operator is associative
+    \item There is a neutral element $e \in G$
+    \item Each element $a \in G$ has an inverse $b$ such that $a \bullet b=e=b \bullet a$
+\end{itemize}
+
+An \textit{abelian} group is a group that also has the property of commutativity,
+that is $a \bullet b = b \bullet a$ for all $a,b \in G$.
+
+A \textit{monoid} meets all the properties of a group, except that there is
+no requirements for there to be an inverse element for each $a \in G$.
+
+A \textit{ring} $(R, \oplus, \otimes)$ consists of a set $R$ and operators
+$\oplus, \otimes : R \times R \rightarrow R$ with the properties:
+\begin{itemize}
+    \item $(R, \oplus)$ meets the requirements of an abelian group
+    \item $(R, \otimes)$ meets the requirements of a monoid
+    \item $a \times (b \oplus c)$ for elements in $R$ follow the distributive law
+\end{itemize}
+
+In a \textit{semiring}, we meet all the requirements of a ring, except there is
+no requirement for the addition operator $\oplus$ to have inverses for all elements.
+
+A \textit{tropical semiring} is the class of the \textit{min} semiring $(\mathbb{R} \cup \{\infty\}, \oplus, \otimes)$ where
+\begin{itemize}
+    \item $\oplus = \min$
+    \item $\otimes = +$
+\end{itemize}
+and the \textit{max} semiring $(\mathbb{R} \cup \{-\infty\}, \oplus, \otimes)$ where
+\begin{itemize}
+    \item $\oplus = \min$
+    \item $\otimes = +$
+\end{itemize}
 
 \section{Proof of correct addition in generalised FoxOtto}%
 \label{sec:Proof of correct addition in generalised FoxOtto}
@@ -54,7 +89,62 @@ congruence as above.
 
 % }}}
 
-\chapter{Scripts used}
+\chapter{Java unit tests and various scripts used}
+
+% Unit tests {{{
+\section{Unit tests}%
+\label{sec:Unit tests}
+
+The layout of the \texttt{.java} files that were part of the unit-testing is
+found in \cref{fig:test-repo-overview}. The result of the unit tests is shown
+in \cref{fig:unit-test-full}.
+
+\begin{figure}[h]
+\begin{center}
+    \begin{adjustbox}{valign=t}
+    \begin{forest}
+        dirtree,
+        [test/java/
+            [APSPSolver/
+                [MatSquareTest.java]
+            ]
+            [graphReader/
+                [GraphCompressorTest.java]
+            ]
+            [matrixMultiplication/
+                [BroadcastMatrixMultiplicationTest.java]
+                [FoxOttoTest.java]
+                [GeneralisedFoxOttoTest.java]
+            ]
+            [memoryModel/
+                [CommunicationManagerTest.java]
+            ]
+            [timingAnalysis/
+                [testWorkers/
+                    [TestWorker1.java]
+                    [TestWorker2.java]
+                ]
+                TimedCommunicationManagerTest.java
+            ]
+            [util/
+                [MatrixTest.java]
+            ]
+            [work/
+                [ManagerTest.java]
+                [WorkerManagerExceptionTest.java]
+                [WorkerTest.java]
+            ]
+        ]
+    \end{forest}
+\end{adjustbox}
+\end{center}
+\caption{The repository layout of the \texttt{test/java/} folder. Also see the associated result of the unit tests in \cref{fig:unit-test-full}.}
+\label{fig:test-repo-overview}
+\end{figure}
+
+
+% }}}
+
 % word count{{{
 
 \section{Word count}%
@@ -105,19 +195,19 @@ tests \texttt{graphCompressorCorrectlySolvesAPSPOnLargeGraphs()} and
 checked that all paths between pairs $(i,j) \in V^2$ were computed and
 reconstructed correctly.
 
-\begin{figure}
-\begin{center}
-    \includegraphics[scale=1]{figs/appendix-ol-small.png}
-\end{center}
-\caption[Example output of graph extractor]{An example of extracting a subsection
-of a graph. Here, I ran \texttt{./graph-extractor.py -i ../datasets/OL -x 5000 -y 5000 -d 600 --plot} to extract a subgraph of 343 vertices from the City of Oldenburg
-dataset.}
-\label{fig:appendix-ol-small}
+\begin{figure}[h!]
+    \begin{center}
+        \includegraphics[scale=1]{figs/appendix-ol-small.png}
+    \end{center}
+    \caption[Example output of graph extractor]{An example of extracting a subsection
+        of a graph. Here, I ran \texttt{./graph-extractor.py -i ../datasets/OL -x 5000 -y 5000 -d 600 --plot} to extract a subgraph of 343 vertices from the City of Oldenburg
+    dataset.}
+    \label{fig:appendix-ol-small}
 \end{figure}
 
 % }}}
 
-% Download spatial datasets { {{
+% Download spatial datasets {{{
 \section{\texttt{download-spatial-datasets.sh}}%
 \label{sec:Download spatial datasets}
 
@@ -140,6 +230,24 @@ done
 
 % }}}
 
+% evaluation.py {{{
+\section{\texttt{evaluation.py}}%
+\label{sec:evaluation.py}
+
+This script was used to create all the plots involving timing measurement data.
+There is a total of 53 lines of Python code in this script that was not written
+by me, and the corresponding code has been attributed to their authors.
+
+% }}}
+
+\begin{figure}[t]
+    \begin{center}
+        \includegraphics[scale=.6]{figs/unit-test-full.png}
+    \end{center}
+    \caption[All unit tests passed]{A screenshot showing all of the unit tests and
+    their success.}
+    \label{fig:unit-test-full}
+\end{figure}
 
 
 \chapter{Further plots}
@@ -286,7 +394,7 @@ my computer and results in the output (some lines have been omitted):
 
 \setlength{\voffset}{0cm}
 \setlength{\hoffset}{0cm}
-\includepdf[pages=-]{../project-proposal/proposal} \setlength{\voffset}{\originalVOffset}
+\includepdf[pages=-]{../project-proposal/build/proposal} \setlength{\voffset}{\originalVOffset}
 \setlength{\hoffset}{\originalHOffset}
 % }}}
 
