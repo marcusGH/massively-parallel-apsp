@@ -161,7 +161,7 @@ class TimedCommunicationManagerTest {
         // SETUP
         TimedMatSquare solver;
         try {
-            GraphReader graphReader = new GraphReader("../test-datasets/test-datasets/cal-small-50.cedge", false);
+            GraphReader graphReader = new GraphReader("../test-datasets/cal-small-50.cedge", false);
             solver = new TimedMatSquare(graphReader, 4, SquareGridTopology::new, new MultiprocessorAttributes(), GeneralisedFoxOtto.class, 10);
         } catch (ParseException e) {
             e.printStackTrace();
