@@ -39,11 +39,11 @@ public class WorkerFactory {
      * Initialises the fields of the objects that are shared by all workers. This method should only be called once
      * and must be executed before {@link #createWorker} is called.
      *
-     * @param communicationManager the memory controller
+     * @param communicationManager the communication manager
      */
     void init(CommunicationManager communicationManager) {
         if (null == communicationManager) {
-            throw new IllegalArgumentException("A memory controller reference must be provided");
+            throw new IllegalArgumentException("A communication manager reference must be provided");
         } else {
             this.communicationManager = communicationManager;
         }

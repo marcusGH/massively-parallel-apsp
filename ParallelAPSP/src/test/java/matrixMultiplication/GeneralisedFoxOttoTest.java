@@ -32,7 +32,7 @@ class GeneralisedFoxOttoTest {
     }
 
     @Test
-    void workerProducesCorrectMatrixForSimpleGraph() {
+    void generalFoxOttoProducesCorrectMatrixForSimpleGraph() {
         // SETUP
 
         // the graph we're working with

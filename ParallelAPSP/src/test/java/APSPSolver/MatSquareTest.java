@@ -24,7 +24,7 @@ class MatSquareTest {
     }
 
     @Test
-    void apspAlgorithmGivesCorrectResultOnSmallGraph1() {
+    void nonGeneralAPSPAlgorithmGivesCorrectResultOnSmallGraph1() {
         // SETUP
         GraphReader graphReader;
         try {
@@ -58,7 +58,7 @@ class MatSquareTest {
     }
 
     @Test
-    void apspAlgorithmGivesCorrectResultOnSmallGraph2() {
+    void nonGeneralAPSPAlgorithmGivesCorrectResultOnSmallGraph2() {
         // SETUP
         GraphReader graphReader;
         try {
@@ -175,7 +175,7 @@ class MatSquareTest {
     // we now test the generalised version
 
     @Test
-    void generalizedAPSPAlgorithmGivesCorrectResultOnSmallGraph1() {
+    void generalisedAPSPAlgorithmGivesCorrectResultOnSmallGraph1() {
         // SETUP
         GraphReader graphReader;
         try {

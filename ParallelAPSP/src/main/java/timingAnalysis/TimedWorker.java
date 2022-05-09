@@ -103,11 +103,7 @@ public class TimedWorker extends Worker {
     }
 
     /**
-     * TODO: docs, explain that use system nanotime in non-average version because allow easier testing
-     *   enabling this is therefore switching to an improved way of timing the threads as also use
-     *   Thread.BeanTime()
-     *
-     * @param num_iterations
+     * @param num_iterations number of times to repeat each phase
      */
     void enableAverageComputeTimes(int num_iterations) {
         this.average_compute = true;

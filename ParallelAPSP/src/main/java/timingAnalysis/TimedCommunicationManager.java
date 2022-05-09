@@ -11,7 +11,7 @@ import java.util.*;
 
 /**
  * Simulates the communication dependencies in a MIMD multiprocessor.  When wrapping this class around a
- * memoryController, it will keep track of the simulates real-time state of each of the passed timedWorkers.
+ * communicationManager, it will keep track of the simulates real-time state of each of the passed timedWorkers.
  *
  * The state of the processing elements is represented by a matrix of times, {@code currentWorkerTimes}. Entry (i, j)
  * in the matrix represents the number of nanoseconds PE(i, j) has been running for since the start of computation,
@@ -58,7 +58,7 @@ public class TimedCommunicationManager extends CommunicationManager {
 
     /**
      *
-     * @param communicationManager this memory controller should be the same one used by the timedWorkers.
+     * @param communicationManager this communication manager should be the same one used by the timedWorkers.
      *                         Otherwise, behaviour is undefined.
      * @param timedWorkers
      * @param memoryTopology

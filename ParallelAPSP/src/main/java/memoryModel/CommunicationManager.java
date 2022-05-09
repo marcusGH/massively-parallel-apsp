@@ -7,14 +7,12 @@ import util.Triple;
 import java.util.*;
 import java.util.logging.Logger;
 
-// TODO: switch from synchronised to thread-safe queues etc.
-
 /**
- * <p>A MemoryController instance can be used as a "fine-grained monitor" for simulating the point-to-point and
+ * <p>A CommunicationManager instance can be used as a "fine-grained monitor" for simulating the point-to-point and
  * broadcasting communication happening in a multiprocessor where the processing elements are arranged in a square
  * grid and interconnected through some topology specified in the constructor. Only one instance of this class should
  * be made per simulated multiprocessor, and since this class' method are all thread-safe, all the processing elements
- * can invoke methods on the MemoryController object concurrently in a safe manner.</p>
+ * can invoke methods on the CommunicationManager object concurrently in a safe manner.</p>
  *
  * <p>The relevant point-to-point communication methods are:
  * <ul>
@@ -36,8 +34,8 @@ import java.util.logging.Logger;
  * <p> When any of the above methods are called, no changes will be made to the {@code privateMemories} supplied in the
  * constructor. The values to be sent and the receive-arguments are just stored in a queue and the actual changes to
  * {@code privateMemories} happen when {@link #flush()} is called. Additionally, all communication must happen in two
- * parts: The sender must tell the memoryController that it wants to send something, and the receiver must tell the
- * memoryController that it wants to receive some data, and how this received data should be stored.
+ * parts: The sender must tell the communicationManager that it wants to send something, and the receiver must tell the
+ * communicationManager that it wants to receive some data, and how this received data should be stored.
  * </p>
  */
 public class CommunicationManager {
@@ -79,7 +77,7 @@ public class CommunicationManager {
     }
 
     /**
-     * Constructs a MemoryController handling p x p processing elements, each starting with the private memory contents
+     * Constructs a CommunicationManager handling p x p processing elements, each starting with the private memory contents
      * as contained in the passed privateMemories. A constructor for the memory topology must be provided. Note that
      * the private memories of each processing elements do not need to be of size 1 x 1.
      *
@@ -156,7 +154,6 @@ public class CommunicationManager {
                 Pair<Integer, Integer> newID = new Pair<>(i, j);
                 Optional<Pair<Integer, Integer>> oldID = this.colBroadcasterID.get(j);
                 if (oldID.isPresent() && !oldID.get().equals(newID)) {
-                    // TODO: refactor to be consistent with below style
                     throw new CommunicationChannelCongestionException(String.format("The column broadcast highway with id "
                                     + "%d is already in use by PE(%d, %d), so PE(%d, %d) cannot use it.",
                             j, oldID.get().getKey(), oldID.get().getValue(), i, j));
@@ -169,7 +166,7 @@ public class CommunicationManager {
     }
 
     /**
-     * Tells the memory controller that processing element (i, j) wants to receive data from some other processing
+     * Tells the communication manager that processing element (i, j) wants to receive data from some other processing
      * element, or from itself, located in row i. The received data should be stored in its private memory by calling
      * PrivateMemory::set with arguments (mi, mj, label).
      *
@@ -186,7 +183,7 @@ public class CommunicationManager {
     }
 
     /**
-     * Tells the memory controller that processing element (i, j) wants to receive data from some other processing
+     * Tells the communication manager that processing element (i, j) wants to receive data from some other processing
      * element, or from itself, located in column j. The received data should be stored in its private memory by calling
      * PrivateMemory::set with arguments (mi, mj, label).
      *
@@ -203,9 +200,9 @@ public class CommunicationManager {
     }
 
     /**
-     * Tells the memory controller that processing element (sendI, sendJ) sends data {@code value} to processing
+     * Tells the communication manager that processing element (sendI, sendJ) sends data {@code value} to processing
      * element (receiveI, receiveJ) through point-to-point communication. The processing element (receiveI, receiveJ)
-     * should then invoke {@link #receiveData} to tell the memory controller how it wants to store the
+     * should then invoke {@link #receiveData} to tell the communication manager how it wants to store the
      * received data. If different processing elements send data at the same time to the same node, an exception is
      * thrown. This is because if all nodes symmetrically ran the same code, we would have a congested communication
      * channel, so it would not be possible to complete the required communication in one phase.
@@ -219,10 +216,6 @@ public class CommunicationManager {
      * node in the same communication phase.
      */
     public void sendData(int sendI, int sendJ, int receiveI, int receiveJ, Number value) throws CommunicationChannelCongestionException {
-        // TODO: do input sanitation here and throw check exception in case of failure. Otherwise, programmer errors
-        //       will lead to program not halting because one or more threads terminate on unchecked exception and
-        //       don't reach the cyclic barrier! (See manager test one if you do send to index out of bounds)
-
         synchronized (this.sentData) {
             synchronized (this.senderToRecipientID) {
                 Pair<Integer, Integer> newID = new Pair<>(sendI, sendJ);
@@ -247,7 +240,7 @@ public class CommunicationManager {
     }
 
     /**
-     * Tells the memory controller than processing element (i, j) wants to receive point-to-point communicated data
+     * Tells the communication manager than processing element (i, j) wants to receive point-to-point communicated data
      * and store it in its private memory by invoking PrivateMemory::set with arguments (mi, mj, label).
      *
      * @param i non-negative integer ID less than p
@@ -266,9 +259,9 @@ public class CommunicationManager {
     // as above methods
 
     /**
-     * When flush is invoked, the memory controller will attempt to align all the scheduled row broadcasting,
+     * When flush is invoked, the communication manager will attempt to align all the scheduled row broadcasting,
      * column broadcasting, and point-to-point data sent, with the corresponding specified receive-arguments. If a
-     * mismatch is found, an exception is thrown. Otherwise, the memory controller will go through the pairs of data
+     * mismatch is found, an exception is thrown. Otherwise, the communication manager will go through the pairs of data
      * and receive-arguments and invoke PrivateMemory::set on the processing elements with the corresponding data and
      * receive-arguments. When flush has finished, the {@code privateMemories} passed in the constructor will have been
      * modified, according to all the sendData, broadcastRow/Col, receiveData and receiveRow/ColBroadcast methods that

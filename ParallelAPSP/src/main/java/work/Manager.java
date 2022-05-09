@@ -50,7 +50,7 @@ public class Manager {
     }
 
     /**
-     * Creates a Manager. Upon construction, the manager will creates a MemoryController, and a matrix of n x n workers.
+     * Creates a Manager. Upon construction, the manager will creates a CommunicationManager, and a matrix of n x n workers.
      * The workers will start their execution when {@link #doWork} is called, which will block until all workers have
      * finished. If any error occurs during execution, such as {@link CommunicationChannelCongestionException}
      * or {@link InconsistentCommunicationChannelUsageException}, an exception will be thrown.
@@ -84,9 +84,6 @@ public class Manager {
             this.privateMemoryMatrix = new Matrix<>(this.p, () -> new PrivateMemory(n / p));
             this.setPrivateMemory(initialMemoryContent);
         }
-
-        // TODO: refactor to make privateMemoryMatrix be local variable, and don't use as field
-        //       also consider not referecing PrivateMemory at all, but set the worker's memory after created
 
         this.communicationManager = new CommunicationManager(this.p, this.privateMemoryMatrix);
 
@@ -140,8 +137,6 @@ public class Manager {
                    Class<? extends Worker> workerClass) throws WorkerInstantiationException {
         this(n, n, numComputationPhases, initialMemoryContent, workerClass);
     }
-
-    // TODO: resetMemory() which wipes everything
 
     /**
      * We want to return a list of features so that we can look at exceptions thrown during execution by workers
@@ -331,22 +326,20 @@ public class Manager {
     }
 
     /**
-     * Tells the Manager and all of its Workers to use a different memory controller object. NOTE: This causes all
+     * Tells the Manager and all of its Workers to use a different communication manager object. NOTE: This causes all
      * the Worker objects to be invalidated as all the workers are replaced by new ones, sharing the same private
-     * memory. The reasoning for this is as follows: In the Worker implementation, the memory controller must be
+     * memory. The reasoning for this is as follows: In the Worker implementation, the communication manager must be
      * final because it's used in a method that is called in the lambda functions defined in getComputationCallable etc.,
-     * so we can't have a setter for the memoryController. Instead, we must recreate the worker with a new memoryController
+     * so we can't have a setter for the communicationManager. Instead, we must recreate the worker with a new communicationManager
      * reference, which is what we do here.
      *
-     * @param communicationManager the new memory controller
+     * @param communicationManager the new communication manager
      * @throws WorkerInstantiationException if the worker factory fails
      */
     public void setCommunicationManager(CommunicationManager communicationManager) throws WorkerInstantiationException {
         // set the self reference
         this.communicationManager = communicationManager;
 
-        // TODO: maybe a setter in the Worker actually works as well, and the reason for it not working earlier
-        //       was just the manager.Method fluke instead of this.Method on the TimedManager constructor?
         WorkerFactory workerFactory = new WorkerFactory(this.algorithm);
         workerFactory.init(communicationManager);
         for (int i = 0; i < this.p; i++) {

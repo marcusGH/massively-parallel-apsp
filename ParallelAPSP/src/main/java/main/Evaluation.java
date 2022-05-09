@@ -179,10 +179,8 @@ public class Evaluation {
 //        List<Integer> ns = Arrays.asList(10, 20, 30, 40, 50, 60, 70, 80, 90, 100,
 //                150, 200, 250, 300, 350, 400, 450, 500, 550, 600, 650, 700);
 //        List<Integer> ns = Arrays.asList(700);
-//        evaluation.measureScaling(128, ns, 3);
+//        evaluation.measureScaling(128, ns, 5);
 //        evaluation.measureCalRoadNetworkExecutionTimes(128, 5);
-        // TODO:
-        //    serial for both cal and random
 
         evaluation.outputPathOnCaliforniaNetwork(8, 1, 10);
     }

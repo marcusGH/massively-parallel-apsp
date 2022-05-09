@@ -1,10 +1,5 @@
 package timingAnalysis;
 
-import util.Matrix;
-
-import java.util.List;
-import java.util.stream.Collectors;
-
 public class MultiprocessorAttributes {
 
     // cat /proc/cpuinfo | grep GHz

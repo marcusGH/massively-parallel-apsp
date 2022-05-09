@@ -26,10 +26,11 @@ public class MatSquare extends APSPSolver {
     protected Matrix<Number> predecessorMatrix;
 
     /**
+     * Creates a MatSquare solver, where p x p processing elements are used
      *
-     * @param graphReader
+     * @param graphReader input graph
      * @param p the problem will be solves by p x p processing elements
-     * @param minPlusProductImplementation
+     * @param minPlusProductImplementation procedure to perform the distance product and predecessor matrix computation
      */
     public MatSquare(GraphReader graphReader, int p,
                      Class<? extends MinPlusProduct> minPlusProductImplementation) {
@@ -45,6 +46,11 @@ public class MatSquare extends APSPSolver {
         this.minPlusProductImplementation = minPlusProductImplementation;
     }
 
+    /**
+     * Creates a non-general MatSquare solver. The number of processing elements will match the problem size
+     * @param graphReader input graph
+     * @param minPlusProductImplementation procedure to perform the distance product and predecessor matrix computation
+     */
     public MatSquare(GraphReader graphReader,
                      Class<? extends MinPlusProduct> minPlusProductImplementation) {
         this(graphReader, graphReader.getNumberOfNodes(), minPlusProductImplementation);
@@ -133,9 +139,7 @@ public class MatSquare extends APSPSolver {
                 return;
             }
 
-            // TODO: this can be removed if we modify the initialisation step in FoxOtto
-
-            // prepare for the next iteration by updating the input to what the result from the previous iteration was
+            // Read output after final iteration
             if (i == numIterations - 1) {
                 distMatrix = manager.getResult("dist");
                 LOGGER.fine("Distance matrix at iteration " + i + " is:\n" + distMatrix);

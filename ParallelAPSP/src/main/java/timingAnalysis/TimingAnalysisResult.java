@@ -9,41 +9,41 @@ import java.util.List;
 
 public class TimingAnalysisResult {
 
-    private final TimedCommunicationManager memoryController;
+    private final TimedCommunicationManager communicationManager;
     private final int problemSize;
 
 
-    public TimingAnalysisResult(TimedCommunicationManager memoryController, int problemSize) {
-        this.memoryController = memoryController;
+    public TimingAnalysisResult(TimedCommunicationManager communicationManager, int problemSize) {
+        this.communicationManager = communicationManager;
         this.problemSize = problemSize;
     }
 
     public Matrix<Double> getComputationTimes() {
-        return this.memoryController.getWorkerComputationTimes();
+        return this.communicationManager.getWorkerComputationTimes();
     }
 
     public Matrix<Double> getTotalCommunicationTimes() {
-        Matrix<Double> communicationTimes = new Matrix<>(this.memoryController.getWorkerCommunicationTimes());
+        Matrix<Double> communicationTimes = new Matrix<>(this.communicationManager.getWorkerCommunicationTimes());
         // add time the workers stall
-        for (int i = 0; i < this.memoryController.getProcessingElementGridSize(); i++) {
-            for (int j = 0; j < this.memoryController.getProcessingElementGridSize(); j++) {
+        for (int i = 0; i < this.communicationManager.getProcessingElementGridSize(); i++) {
+            for (int j = 0; j < this.communicationManager.getProcessingElementGridSize(); j++) {
                 communicationTimes.set(i, j, communicationTimes.get(i, j) +
-                        this.memoryController.getWorkerStallTimes().get(i, j));
+                        this.communicationManager.getWorkerStallTimes().get(i, j));
             }
         }
         return communicationTimes;
     }
 
     public Matrix<Double> getStallTimes() {
-        return this.memoryController.getWorkerStallTimes();
+        return this.communicationManager.getWorkerStallTimes();
     }
 
     public Matrix<Double> getSendTimes() {
-        return this.memoryController.getWorkerCommunicationTimes();
+        return this.communicationManager.getWorkerCommunicationTimes();
     }
 
     public Matrix<Double> getTotalExecutionTimes() {
-        return this.memoryController.getTotalWorkerTimes();
+        return this.communicationManager.getTotalWorkerTimes();
     }
 
     public void saveResult(String filename) throws IOException {

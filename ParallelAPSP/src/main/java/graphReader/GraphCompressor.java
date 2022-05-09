@@ -87,7 +87,7 @@ public class GraphCompressor extends APSPSolver {
                 }
                 // by default, map each edge (u, v) back to itself, but we change this mapping when compressing
 //                this.compressedTwoDegreePaths.get(u).put(edge.getKey(), Arrays.asList(u, edge.getKey()));
-                this.compressedTwoDegreePaths.get(u).put(edge.getKey(), Collections.emptyList()); // TODO: does this work?
+                this.compressedTwoDegreePaths.get(u).put(edge.getKey(), Collections.emptyList());
                 this.compressedTwoDegreePathLengths.get(u).put(edge.getKey(), edge.getValue());
             }
         }
@@ -496,10 +496,6 @@ public class GraphCompressor extends APSPSolver {
                     shortestPath.addAll(set);
 
                     LOGGER.fine("PathReconstruction: Complete path: " + shortestPath);
-//                    System.out.println(pathStart);
-//                    System.out.println(middlePath);
-//                    System.out.println(pathEnd);
-//                    System.out.println("-");
                 }
             }
         }

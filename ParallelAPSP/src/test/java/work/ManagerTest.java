@@ -182,8 +182,6 @@ class ManagerTest {
         assertEquals(expected, result, "The result is as expected");
     }
 
-    // TODO: another test where the same PE receives data from **different** nodes at each phase
-
     @Test
     void managerCanCreateALotOfWorkers() {
         // SETUP

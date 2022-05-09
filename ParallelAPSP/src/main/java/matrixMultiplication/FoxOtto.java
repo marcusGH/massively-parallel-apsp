@@ -43,7 +43,7 @@ public class FoxOtto extends MinPlusProduct {
      */
     @Override
     public void initialisation() {
-        // This is not the first management of this worker, so recall input (see main-loop in RepeatedMatrixSquaring)
+        // This is not the first management of this worker, so recall input (see main-loop in MatSquare)
         if (presentInMemory("dist")) {
             store("A", read("dist"));
             store("B", read("dist"));
@@ -54,7 +54,7 @@ public class FoxOtto extends MinPlusProduct {
         // the "A" entry is never shifted, only broadcasted, so make a copy of it to prevent overwrite
         store("A_CONST", read("A"));
         // keep a default pred value in case we don't find any
-        store("pred", read("P")); // TODO: this.j or "P"? Does it make a difference?
+        store("pred", read("P"));
     }
 
     /**
@@ -74,7 +74,7 @@ public class FoxOtto extends MinPlusProduct {
         if (otherDist < curDist) {
             store("dist", otherDist);
             // only update predecessor if it doesn't cause loops
-            if (k == j) { // or is it readInt("P")???
+            if (k == j) {
                 store("pred", readInt("pred"));
             } else {
                 store("pred", readInt("P"));

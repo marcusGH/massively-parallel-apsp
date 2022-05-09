@@ -105,6 +105,4 @@ class CommunicationManagerTest {
         assertEquals(privateMemory.get(1, 1).getDouble("A"), 3.14);
         assertEquals(privateMemory.get(2, 1).getDouble("A"), 3.14);
     }
-
-    // TODO: add more tests for when things go wrong, and assert correct exception is thrown
 }

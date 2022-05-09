@@ -58,7 +58,7 @@ public class GeneralisedFoxOtto extends MinPlusProduct {
                 // the "A" entry is never shifted, only broadcasted, so make a copy of it to prevent overwrite
                 store(i2, j2, "A_CONST", read(i2, j2,"A"));
                 // keep a default pred value in case we don't find any
-                store(i2, j2, "pred", read(i2, j2, "P")); // TODO: this.j or "P"? Does it make a difference?
+                store(i2, j2, "pred", read(i2, j2, "P"));
 
                 // we are using integer weights instead
                 if (read(i2, j2, "A") instanceof Integer) {
@@ -69,8 +69,6 @@ public class GeneralisedFoxOtto extends MinPlusProduct {
     }
 
     /**
-     * Worker(i, j) has received appropriate B
-     *
      * @param l a non-negative integer representing number of computation phases already completed
      */
     @Override

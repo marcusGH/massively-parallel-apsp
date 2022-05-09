@@ -38,7 +38,7 @@ public class TimedManager extends Manager {
         this.p = manager.getProcessingElementGridSize();
         this.problemSize = manager.getProblemSize();
 
-        // We decorate the memory controller with timing analyses functionality
+        // We decorate the communication manager with timing analyses functionality
         Topology topology = memoryTopology.apply(this.p);
         this.timedWorkers = new Matrix<>(this.p);
         this.timedCommunicationManager = new TimedCommunicationManager(manager.getCommunicationManager(),

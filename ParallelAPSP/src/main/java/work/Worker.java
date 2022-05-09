@@ -48,15 +48,15 @@ public abstract class Worker implements Runnable {
 
     /**
      * Constructs a Worker that handles the computation and communication on behalf of processing element (i, j).
-     * The workers should all be given the same memoryController, cyclicBarrier and runExceptionHandler.
+     * The workers should all be given the same communicationManager, cyclicBarrier and runExceptionHandler.
      *
      * @param i non-negative row ID of worker
      * @param j non-negative column ID of worker
      * @param p non-negative integer such that the number of workers == p ^ 2
      * @param numPhases number of computation phases to be performed during execution
      * @param privateMemory the worker's own private memory. May already contain values
-     * @param communicationManager a reference to a unique memory controller.
-     *                         All workers should use the same memory controller
+     * @param communicationManager a reference to a unique communication manager.
+     *                         All workers should use the same communication manager
      */
     public Worker(int i, int j, int p, int n, int numPhases, PrivateMemory privateMemory, CommunicationManager communicationManager) {
         this.i = i;
@@ -67,8 +67,6 @@ public abstract class Worker implements Runnable {
 
         this.privateMemory = privateMemory;
         this.communicationManager = communicationManager;
-
-        // TODO: add method and assert for memory controller on size match
     }
 
     /**

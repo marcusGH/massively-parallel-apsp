@@ -12,11 +12,6 @@ import java.util.stream.IntStream;
 
 import util.Matrix;
 
-import javax.swing.*;
-
-/**
- * TODO: write a bit more documentation on the methods here
- */
 public class GraphReader {
     private final List<Triple<Integer, Integer, Double>> edges;
     private final Set<Pair<Integer, Integer>> edgeSet;
@@ -83,31 +78,13 @@ public class GraphReader {
         this.edgeSet = findEdgeSet(this.edges);
     }
 
-    public void onlyUseLargestConnectedComponent() {
-        Set<Integer> visited = new HashSet<>();
-        List<List<Pair<Integer, Double>>> adjacencyList = this.getAdjacencyList();
-        List<List<Triple<Integer, Integer, Double>>> newEdges = new ArrayList<>();
-
-        // iterate all nodes, finding their appropriate connected components
-        for (int i = 0; i < this.n; i++) {
-            newEdges.add(findConnectedComponent(adjacencyList, visited, i));
-        }
-
-        newEdges.sort(Comparator.comparingInt(List::size));
-        Collections.reverse(newEdges);
-
-        // TODO: only prints at the moment. Doesn't do what it says.
-        for (int i = 0; i < 8; i++) {
-            System.out.println(newEdges.get(i).size());
-        }
-    }
 
     /**
      * Does a flood fill from the source and returns all the edges found
      * @param adjacencyList
      * @param visited
      * @param source
-     * @return
+     * @return the largest connected component
      */
     private List<Triple<Integer, Integer, Double>> findConnectedComponent(List<List<Pair<Integer, Double>>> adjacencyList,
                                                                           Set<Integer> visited, int source) {
@@ -246,8 +223,6 @@ public class GraphReader {
     public List<Triple<Integer, Integer, Double>> getEdges() {
         return edges;
     }
-
-// TODO: Make method for finding the number of connected components in the graph
 
     public void printSummary() {
         System.out.println("Number of edges: " + this.edges.size());

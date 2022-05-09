@@ -68,6 +68,48 @@ class GraphCompressorTest {
     }
 
     @Test
+    void graphCompressorCorrectlySolvesAPSPOnSmallExampleGraph2() {
+        // The graph in this test looks like this:
+        //   1        2       5       6
+        // 0 ---- 1 ----- 2 ----- 3 ---- 4
+        //      ____3___/                |
+        //    /                          |   5
+        // 9 ---- 8 ----- 7 ----- 6 ---- 5
+        //    4      7       13      11
+
+        // SETUP
+        GraphReader graphReader;
+        try {
+            graphReader = new GraphReader("../test-datasets/compressor-test2.cedge", false);
+        } catch (ParseException e) {
+            e.printStackTrace();
+            fail("The graph file is not present");
+            return;
+        }
+        GraphCompressor solver = new GraphCompressor(graphReader, GraphCompressor.getCurriedFoxOttoAPSPSolverConstructor(4));
+
+        // ACT
+        solver.solve();
+
+        // ASSERT
+
+        // size of compressed graph is 3 edges (we have the "Q" edge-case, so one 2-degree vertex is saved
+        assertEquals(3, solver.getCompressedGraph().getNumberOfNodes(), "The compressed graph has 3 nodes");
+        // 0 -> 2
+        assertEquals(Optional.of(Arrays.asList(0, 1, 2)), solver.getShortestPath(0, 2));
+        assertEquals(3.0, solver.getDistanceFrom(0, 2));
+        // 9 -> 3
+        assertEquals(Optional.of(Arrays.asList(9, 2, 3)), solver.getShortestPath(9, 3));
+        assertEquals(8.0, solver.getDistanceFrom(9, 3));
+        // 4 -> 6
+        assertEquals(Optional.of(Arrays.asList(4, 5, 6)), solver.getShortestPath(4, 6));
+        assertEquals(16.0, solver.getDistanceFrom(4, 6));
+        // 7 -> 2
+        assertEquals(Optional.of(Arrays.asList(7, 8, 9, 2)), solver.getShortestPath(7, 2));
+        assertEquals(14.0, solver.getDistanceFrom(7, 2));
+    }
+
+    @Test
     void graphCompressorCorrectlySolvesAPSPOnLargeGraph() {
         // SETUP
         GraphReader graphReader;

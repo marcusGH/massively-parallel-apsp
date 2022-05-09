@@ -28,7 +28,7 @@ class FoxOttoTest {
     }
 
     @Test
-    void workerProducesCorrectMatrixForSimpleGraph() {
+    void foxOttoProducesCorrectMatrixForSimpleGraph() {
         // SETUP
 
         // the graph we're working with
