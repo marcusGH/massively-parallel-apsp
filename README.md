@@ -41,9 +41,9 @@ more than 20 000 vertices.
 Note: A more thorough overview of the code is presented on page 24 in the
 [report](reports/dissertation/build/diss.pdf).
 
-* [`part-II-project/ParallelAPSP/src/main/java/`](part-II-project/ParallelAPSP/src/main/java)
+* [`ParallelAPSP/src/main/java/`](ParallelAPSP/src/main/java)
   * This folder contains all the Java code for the simulator and parallel algorithm
-* [`part-II-project/ParallelAPSP/src/test/java/`](part-II-project/ParallelAPSP/src/test/java)
+* [`ParallelAPSP/src/test/java/`](ParallelAPSP/src/test/java)
   * This folder contains all the unit tests
 * [`reports/`](reports)
   * This folder contains the project proposals, the progress report made, and the final
