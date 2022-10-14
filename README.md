@@ -17,3 +17,18 @@ _Note: this document is only a brief summary of the final report. For more detai
 ## Evaluation
 
 ## Conclusions
+
+:--------------------------:|:-------------------------:
+![](scripts/evaluation/plots/figs/plots/total-time-scaling-sandy-full-width-no-errorbars.pdf-1.png) | ![](scripts/evaluation/plots/figs/plots/ratio-bucket-sandy-half-scale.pdf-1.png)
+
+Multi-core processor (Sandy Bridge)
+
+:--------------------------:|:-------------------------:
+![](scripts/evaluation/plots/total-time-scaling-taihu-full-width-no-errorbars.pdf-1.png) | ![](scripts/evaluation/plots/ratio-bucket-taihu-half-scale.pdf-1.png)
+
+Supercomputer (Sunway TaihuLight)
+
+:--------------------------:|:-------------------------:
+![](scripts/evaluation/plots/total-time-scaling-internet-full-width-no-errorbars.pdf-1.png) | ![](scripts/evaluation/plots/ratio-bucket-internet-half-scale.pdf-1.png)
+
+Distributed computer (internet)
